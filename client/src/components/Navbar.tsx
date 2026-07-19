@@ -1,10 +1,23 @@
 import { useState } from 'react';
 import { Link } from "react-router-dom";
-import {getUserFromStorage} from "../../services/getUserService";
+import { getUserFromStorage } from "../../services/getUserService";
 
 const Navbar = () => {
 
-  const links = ["Who we are", "About us", "Ready to Smile with us?"];
+  const links = [
+    {
+      title: "Who we are",
+      slug: "who-we-are"
+    },
+    {
+      title: "About us",
+      slug: "about-us"
+    },
+    {
+      title: "Ready to Smile with us?",
+      slug: "ready-to-smile"
+    }
+  ];
   const currentUser = getUserFromStorage();
   const [open, setOpen] = useState(false);
 
@@ -20,14 +33,14 @@ const Navbar = () => {
 
         {/* DESKTOP MENU */}
         <div className="hidden md:flex items-center gap-8 lg:gap-10 font-medium text-gray-700">
-          {links.map((link, index) => (
+          {links.map((link) => (
             <Link
-              key={index}
-              to={`/${link.toLowerCase().replace(/\s+/g, "-")}`}
+              key={link.slug}
+              to={`/about/${link.slug}`}
               className="relative group"
             >
               <span className="group-hover:text-[#2596be] transition">
-                {link}
+                {link.title}
               </span>
 
               {/* underline hover */}
@@ -53,14 +66,14 @@ const Navbar = () => {
       {/* MOBILE MENU */}
       <div className={`md:hidden fixed top-0 right-0 w-full h-screen bg-white z-40 flex flex-col items-center justify-center gap-8 text-lg font-medium transition-all duration-300 ${open ? "translate-x-0" : "translate-x-full"}`}>
 
-        {links.map((link, index) => (
+        {links.map((link) => (
           <Link
-            key={index}
+            key={link.slug}
             onClick={() => setOpen(false)}
-            to={`/${link.toLowerCase().replace(/\s+/g, "-")}`}
+            to={`/about/${link.slug}`}
             className="hover:text-[#2596be] transition"
           >
-            {link}
+            {link.title}
           </Link>
         ))}
 

@@ -5,6 +5,7 @@ import { registerUser } from "../../../services/authService";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 
 
 const userSchema = z.object({
@@ -26,6 +27,7 @@ type FormData = z.infer<typeof userSchema>;
 
 const Register = () => {
     const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false)
 
     const {
         register,
@@ -50,150 +52,256 @@ const Register = () => {
 
     return (
         <div>
-            <section className="flex flex-col flex-1 px-16 py-16">
-                <h2 className="text-3xl mb-10 text-center">
-                    Your smile deserves the best 😄 <br />
-                    join <b>Odora</b> today.
+            <section className="flex flex-col flex-1 px-6 sm:px-10 lg:px-14 py-10 lg:py-14">
+
+                <h2 className="text-3xl sm:text-4xl font-bold text-[#2596be] text-center">
+                    Create Your Account
                 </h2>
 
+                <p className="text-center text-gray-600 mt-4 mb-10 leading-7">
+                    Join Odora today and begin managing your dental care with confidence.
+                </p>
+
                 {/* First Name */}
-                <label className="mt-2">First name</label>
+
+                <label className="font-medium text-gray-700">
+                    First Name
+                </label>
+
                 <input
                     {...register("firstName")}
                     type="text"
-                    placeholder="Ex: John"
-                    className={`mt-2 shadow-md rounded-xl p-2 outline-none ${
-                        errors.firstName ? "border border-red-500" : ""
-                    }`}
+                    placeholder="John"
+                    className={`mt-2 h-14 rounded-xl border bg-white px-4 outline-none transition-all
+            focus:border-[#2596be]
+            focus:ring-2
+            focus:ring-cyan-100
+            ${errors.firstName
+                            ? "border-red-500"
+                            : "border-gray-200"
+                        }`}
                 />
+
                 {errors.firstName && (
-                    <p className="text-red-500 text-sm">{errors.firstName.message}</p>
+                    <p className="text-red-500 text-sm mt-2">
+                        {errors.firstName.message}
+                    </p>
                 )}
 
                 {/* Last Name */}
-                <label className="mt-2">Last name</label>
+
+                <label className="mt-6 font-medium text-gray-700">
+                    Last Name
+                </label>
+
                 <input
                     {...register("lastName")}
                     type="text"
-                    placeholder="Ex: Doe"
-                    className={`mt-2 shadow-md rounded-xl p-2 outline-none ${
-                        errors.lastName ? "border border-red-500" : ""
-                    }`}
+                    placeholder="Doe"
+                    className={`mt-2 h-14 rounded-xl border bg-white px-4 outline-none transition-all
+            focus:border-[#2596be]
+            focus:ring-2
+            focus:ring-cyan-100
+            ${errors.lastName
+                            ? "border-red-500"
+                            : "border-gray-200"
+                        }`}
                 />
+
                 {errors.lastName && (
-                    <p className="text-red-500 text-sm">{errors.lastName.message}</p>
+                    <p className="text-red-500 text-sm mt-2">
+                        {errors.lastName.message}
+                    </p>
                 )}
 
                 {/* Email */}
-                <label className="mt-2">Email</label>
+
+                <label className="mt-6 font-medium text-gray-700">
+                    Email Address
+                </label>
+
                 <input
                     {...register("email")}
-                    type="text"
-                    placeholder="Enter your Email"
-                    className={`mt-2 shadow-md rounded-xl p-2 outline-none ${
-                        errors.email ? "border border-red-500" : ""
-                    }`}
+                    type="email"
+                    placeholder="Enter your email"
+                    className={`mt-2 h-14 rounded-xl border bg-white px-4 outline-none transition-all
+            focus:border-[#2596be]
+            focus:ring-2
+            focus:ring-cyan-100
+            ${errors.email
+                            ? "border-red-500"
+                            : "border-gray-200"
+                        }`}
                 />
+
                 {errors.email && (
-                    <p className="text-red-500 text-sm">{errors.email.message}</p>
+                    <p className="text-red-500 text-sm mt-2">
+                        {errors.email.message}
+                    </p>
                 )}
 
                 {/* Mobile */}
-                <label className="mt-2">Mobile number</label>
+
+                <label className="mt-6 font-medium text-gray-700">
+                    Mobile Number
+                </label>
+
                 <input
                     {...register("mobileNumber")}
                     type="text"
-                    placeholder="07xxxxxxxx"
-                    className={`mt-2 shadow-md rounded-xl p-2 outline-none ${
-                        errors.mobileNumber ? "border border-red-500" : ""
-                    }`}
+                    placeholder="07XXXXXXXX"
+                    className={`mt-2 h-14 rounded-xl border bg-white px-4 outline-none transition-all
+            focus:border-[#2596be]
+            focus:ring-2
+            focus:ring-cyan-100
+            ${errors.mobileNumber
+                            ? "border-red-500"
+                            : "border-gray-200"
+                        }`}
                 />
+
                 {errors.mobileNumber && (
-                    <p className="text-red-500 text-sm">
+                    <p className="text-red-500 text-sm mt-2">
                         {errors.mobileNumber.message}
                     </p>
                 )}
 
                 {/* Birthday */}
-                <label className="mt-2">Birth Day</label>
+
+                <label className="mt-6 font-medium text-gray-700">
+                    Date of Birth
+                </label>
+
                 <input
                     {...register("birthDay")}
                     type="date"
-                    className={`mt-2 shadow-md rounded-xl p-2 outline-none ${
-                        errors.birthDay ? "border border-red-500" : ""
-                    }`}
+                    className={`mt-2 h-14 rounded-xl border bg-white px-4 outline-none transition-all
+            focus:border-[#2596be]
+            focus:ring-2
+            focus:ring-cyan-100
+            ${errors.birthDay
+                            ? "border-red-500"
+                            : "border-gray-200"
+                        }`}
                 />
+
                 {errors.birthDay && (
-                    <p className="text-red-500 text-sm">{errors.birthDay.message}</p>
+                    <p className="text-red-500 text-sm mt-2">
+                        {errors.birthDay.message}
+                    </p>
                 )}
 
                 {/* Gender */}
-                <label className="mt-2">Gender</label>
-                <div
-                    className={`mt-2 shadow-md rounded-xl p-2 outline-none ${
-                        errors.gender ? "border border-red-500" : ""
-                    }`}
+
+                <label className="mt-6 font-medium text-gray-700">
+                    Gender
+                </label>
+
+                <select
+                    {...register("gender")}
+                    className={`mt-2 h-14 rounded-xl border bg-white px-4 outline-none transition-all
+            focus:border-[#2596be]
+            focus:ring-2
+            focus:ring-cyan-100
+            ${errors.gender
+                            ? "border-red-500"
+                            : "border-gray-200"
+                        }`}
                 >
-                    <select
-                        {...register("gender")}
-                        className="w-full outline-none"
-                    >
-                        <option value="">Select below ...</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                    </select>
-                </div>
+                    <option value="">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+
                 {errors.gender && (
-                    <p className="text-red-500 text-sm">{errors.gender.message}</p>
+                    <p className="text-red-500 text-sm mt-2">
+                        {errors.gender.message}
+                    </p>
                 )}
 
                 {/* Address */}
-                <label className="mt-2">Address</label>
+
+                <label className="mt-6 font-medium text-gray-700">
+                    Address
+                </label>
+
                 <input
                     {...register("address")}
                     type="text"
                     placeholder="Enter your address"
-                    className={`mt-2 shadow-md rounded-xl p-2 outline-none ${
-                        errors.address ? "border border-red-500" : ""
-                    }`}
+                    className={`mt-2 h-14 rounded-xl border bg-white px-4 outline-none transition-all
+            focus:border-[#2596be]
+            focus:ring-2
+            focus:ring-cyan-100
+            ${errors.address
+                            ? "border-red-500"
+                            : "border-gray-200"
+                        }`}
                 />
+
                 {errors.address && (
-                    <p className="text-red-500 text-sm">{errors.address.message}</p>
+                    <p className="text-red-500 text-sm mt-2">
+                        {errors.address.message}
+                    </p>
                 )}
 
                 {/* Password */}
-                <label className="mt-2">Password</label>
-                <input
-                    {...register("password")}
-                    type="password"
-                    placeholder="********"
-                    className={`mt-2 shadow-md rounded-xl p-2 outline-none ${
-                        errors.password ? "border border-red-500" : ""
-                    }`}
-                />
+
+                <label className="mt-6 font-medium text-gray-700">
+                    Password
+                </label>
+
+                <div className="relative mt-2">
+
+                    <input
+                        {...register("password")}
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Create a secure password"
+                        className={`w-full h-14 rounded-xl border bg-white px-4 pr-14 outline-none transition-all
+                focus:border-[#2596be]
+                focus:ring-2
+                focus:ring-cyan-100
+                ${errors.password
+                                ? "border-red-500"
+                                : "border-gray-200"
+                            }`}
+                    />
+
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-500 hover:text-[#2596be]"
+                    >
+                        {showPassword ? "🙈" : "👁️"}
+                    </button>
+
+                </div>
+
                 {errors.password && (
-                    <p className="text-red-500 text-sm">{errors.password.message}</p>
+                    <p className="text-red-500 text-sm mt-2">
+                        {errors.password.message}
+                    </p>
                 )}
+
+                {/* Register */}
 
                 <button
                     onClick={handleSubmit(onSubmit)}
                     disabled={isSubmitting}
-                    className="mt-14 bg-sky-500 hover:bg-sky-600 p-2 rounded-xl text-white font-semibold"
-                >
-                    {isSubmitting ? "Signing up..." : "Sign up"}
+                    className=" mt-10 h-14 rounded-xl bg-[#2596be] text-white font-semibold transition-all duration-300 hover:bg-[#2088af] hover:-translate-y-1 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed " >
+                    {isSubmitting ? "Creating Account..." : "Create Account"}
                 </button>
 
-                <span className="flex justify-center mt-10">
-                    <span>
-                        Have an account?{" "}
-                        <span
-                            className="text-sky-500 underline cursor-pointer"
-                            onClick={() => navigate("/auth")}
-                        >
-                            Sign in
-                        </span>
-                    </span>
-                </span>
+                {/* Login */}
+
+                <div className="text-center mt-10 text-gray-600">
+                    Already have an account?
+
+                    <button type="button" onClick={() => navigate("/auth")} className="ml-2 font-semibold text-[#2596be] hover:underline">
+                        Sign In
+                    </button>
+
+                </div>
             </section>
         </div>
     );

@@ -1,12 +1,12 @@
+import { Link } from "react-router-dom";
+
 const Footer = () => {
   return (
     <footer className="w-full mt-12 bg-gradient-to-br from-[#2596be] via-[#2596be] to-[#21a262] text-white">
       
-      {/* Main Footer */}
-      <div className="max-w-7xl mx-auto px-6 py-12 grid gap-10 
-                      grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
 
-        {/* Brand Section */}
+      <div className="max-w-7xl mx-auto px-6 py-12 grid gap-10 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
+
         <div>
           <img src="/w_logo.png" alt="Odora logo" className="w-32 mb-4" />
           <p className="text-sm leading-relaxed text-gray-100">
@@ -15,7 +15,7 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* Services */}
+
         <div>
           <h3 className="font-semibold text-lg mb-4">Services</h3>
           <ul className="space-y-2 text-sm">
@@ -38,18 +38,17 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* Company */}
         <div>
           <h3 className="font-semibold text-lg mb-4">Company</h3>
           <ul className="space-y-2 text-sm">
-            <li className="hover:text-gray-200 cursor-pointer">About Us</li>
-            <li className="hover:text-gray-200 cursor-pointer">Contact</li>
-            <li className="hover:text-gray-200 cursor-pointer">Privacy Policy</li>
-            <li className="hover:text-gray-200 cursor-pointer">Terms & Conditions</li>
+            <li><Link to={"/about/about-us"} className="hover:text-gray-200 cursor-pointer">About Us</Link></li>
+            <li><Link to={"/about/contact"} className="hover:text-gray-200 cursor-pointer">Contact</Link></li>
+            <li><Link to={"/about/privacy-policy"} className="hover:text-gray-200 cursor-pointer">Privacy Policy</Link></li>
+            <li><Link to={"/about/terms-and-conditions"} className="hover:text-gray-200 cursor-pointer">Terms & Conditions</Link></li>
           </ul>
         </div>
 
-        {/* Social */}
+
         <div>
           <h3 className="font-semibold text-lg mb-4">Follow Us</h3>
           <div className="flex gap-4">
@@ -61,7 +60,7 @@ const Footer = () => {
 
       </div>
 
-      {/* Bottom Bar */}
+
       <div className="border-t border-white/20">
         <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row 
                         justify-between items-center text-sm text-gray-200 gap-2">
@@ -69,8 +68,8 @@ const Footer = () => {
           <span>© {new Date().getFullYear()} Odora. All rights reserved.</span>
 
           <div className="flex gap-4">
-            <span className="hover:text-white cursor-pointer">Privacy</span>
-            <span className="hover:text-white cursor-pointer">Terms</span>
+            <span className="hover:text-white cursor-pointer"><Link to={"/about/privacy-policy"}>Privacy</Link></span>
+            <span className="hover:text-white cursor-pointer"><Link to={"/about/terms-and-conditions"}>Terms</Link></span>
           </div>
         </div>
       </div>

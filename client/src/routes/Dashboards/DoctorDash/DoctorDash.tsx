@@ -12,10 +12,8 @@ const DoctorDash = () => {
 
     const [notify, setNotify] = useState(false);
     const [checked, setChecked] = useState(false);
-    const auth = useContext(AuthContext);
     const [cardData, setCardData] = useState<any>(null);
     const [cData, setCData] = useState<[]>([]);
-    const navigate = useNavigate();
     const currentUser = JSON.parse(localStorage.getItem("user") || "null");
 
     useEffect(() => {
@@ -43,15 +41,7 @@ const DoctorDash = () => {
         fetchCData();
     }, [currentUser._id]);
 
-    const handleLogout = () => {
-        try {
-            auth?.logout();
-            navigate("/");
-        } catch (err) {
-            console.log(err);
-        }
-    }
-
+   
         const cardDetails: CardType[] = [
             { img: "./userDash/calendar.png", desc: "Upcomming Appoinments", subDesc: cardData?.upcomming, color: "bg-blue-600" },
             { img: "./userDash/checked.png", desc: "Completed Appointments", subDesc: cardData?.completed, color: "bg-green-600" },
@@ -60,16 +50,7 @@ const DoctorDash = () => {
         ];
 
     return (
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-[1fr_4fr] w-full">
-            <div className=" hidden md:flex  flex-col gap-10  h-full sticky left-0 text-center ">
-                <Link to="/doctor_dash" className=" flex gap-8 mt-7 items-center cursor-pointer  p-2 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition duration-300 ease-in-out"><img src="./userDash/home.png" alt="" className=" w-5 h-5 ml-5" />Dashboard</Link>
-                <Link to="/doctor_appointments" className=" flex gap-8 items-center cursor-pointer  p-2 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition duration-300 ease-in-out"><img src="./userDash/appointment.png" alt="dashimg" className=" w-5 h-5 ml-5" />My Appointments</Link>
-                <Link to="/patients" className=" flex gap-8 items-center cursor-pointer  p-2 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition duration-300 ease-in-out"><img src="./userDash/patient.png" alt="dashimg" className=" w-5 h-5 ml-5" />Patients</Link>
-                <Link to="/my_performance" className=" flex gap-8 items-center cursor-pointer p-2 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition duration-300 ease-in-out"><img src="./userDash/line-chart.png" alt="dashimg" className=" w-5 h-5 ml-5" />My Performance</Link>
-                <Link to="/my_profile" className=" flex gap-8 items-center cursor-pointer p-2 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition duration-300 ease-in-out"><img src="./userDash/profile.png" alt="dashimg" className=" w-5 h-5 ml-5" />Profile</Link>
-                <div onClick={handleLogout} className=" flex gap-8 mb-7 items-center cursor-pointer p-2 rounded-xl shadow-md hover:shadow-xl hover:shadow-red-200 hover:-translate-y-1 hover:scale-105 transition duration-300 ease-in-out"><img src="./userDash/logout.png" alt="dashimg" className=" w-5 h-5 ml-5" />Logout</div>
-            </div>
-            <div className=" flex flex-col ml-8 mb-8 mt-7 rounded-xl p-4 backdrop-blur-md bg-green-700/20 border border-white/10 shadow-lg shadow-black/10 hover:shadow-xl transition-all duration-300">
+            <div className=" flex flex-col ml-8 mb-8  rounded-xl p-4 backdrop-blur-md bg-green-700/20 border border-white/10 shadow-lg shadow-black/10 hover:shadow-xl transition-all duration-300">
                 <div className=" flex justify-between  p-2">
                     <div className="">
                         <h1 className=" text-3xl font-semibold">Hello, Dr.{currentUser.firstName + " " + currentUser.lastName} 👋</h1>
@@ -100,7 +81,6 @@ const DoctorDash = () => {
                     <Charts data={cData as MyData[]} config={doctorConfig} />
                 </div>
             </div>
-        </div>
     )
 }
 

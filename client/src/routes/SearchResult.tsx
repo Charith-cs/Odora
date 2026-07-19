@@ -21,7 +21,6 @@ const SearchResult = () => {
             try {
                 const res = await API.get(`/search?q=${query}`);
                 setData(res.data);
-                console.log(res.data);
             } catch (err) {
                 toast.error("Oops! Something went wrong");
             }
@@ -31,53 +30,119 @@ const SearchResult = () => {
     }, [query]);
 
     return (
-        <div className=" mt-6 grid grid-cols-1 ">
-            <div className="flex w-full">
+        <div className="px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+            <div className="max-w-7xl mx-auto space-y-12">
                 <Search />
-            </div>
-            <div className=" flex flex-col  w-full  mt-10">
-                <div className="flex flex-col mt-2">
-                    <h1 className=" text-2xl mb-5">{data.totalClinics < 1 ? "No Clinics around you" : `Clinics located near you (${data.totalClinics})`}</h1>
-                    {
-                        data.clinics && data.clinics.map((c: any) => (
-                            <div key={c._id} className="group bg-white rounded-2xl shadow-md p-2 mt-2 mb-2 flex flex-row justify-between hover:shadow-xl hover:-translate-y-1 transition duration-300">
-                                <span className="flex items-center justify-center text-center cursor-pointer">
-                                    <img src={c.img} alt="clinicimg" className=" w-10 h-10 rounded-full object-cover" />
-                                    <span className=" ml-8 text-start">
-                                        <h2 className=" font-semibold">{c.clinicName}</h2>
-                                        <p className=" ">{c.address}</p>
-                                    </span>
-                                </span>
-                                <Link to={`/clinic/${c._id}`} className="">
-                                    <img src="./cardIcons/arrow-right.png" alt="clinicimg" className=" w-10 h-10 rounded-full object-cover cursor-pointer" />
-                                </Link>
+
+                {/* ================= Clinics ================= */}
+
+                <section>
+                    <div className="mb-8">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-[#2596be]">
+                            {data.totalClinics < 1
+                                ? "No Clinics Nearby"
+                                : `Clinics Near You (${data.totalClinics})`}
+                        </h2>
+
+                        <p className="text-gray-500 mt-2">
+                            Discover trusted dental clinics available in your area.
+                        </p>
+
+                    </div>
+                    <div className="space-y-5">
+
+                        {data.clinics && data.clinics.map((c: any) => (
+
+                            <div key={c._id}
+                                className=" group bg-white border border-gray-100 rounded-3xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-5 flex items-center justify-between">
+
+                                <div className="flex items-center flex-1">
+                                    <img src={c.img} alt="clinic" className=" w-16 h-16 rounded-2xl object-cover border border-gray-100" />
+
+                                    <div className="ml-5 flex-1">
+                                        <h3 className="text-lg font-semibold text-gray-800">{c.clinicName}</h3>
+                                        <p className="text-gray-500 mt-1">{c.address}</p>
+                                    </div>
+                                </div>
+
+                                <Link to={`/clinic/${c._id}`}
+                                    className=" flex items-center justify-center w-12 h-12 rounded-full bg-cyan-50 hover:bg-[#2596be] transition-all duration-300 shrink-0">
+
+                                    <img src="./cardIcons/arrow-right.png" alt="View Clinic"
+                                        className=" w-5 h-5 transition-all duration-300 hover:brightness-0 hover:invert" /></Link>
                             </div>
                         ))}
-                </div>
-                <div className="flex flex-col mt-5">
-                    <h1 className=" text-2xl mb-5">{data.totalDoctors < 1 ? "No Doctors around you" : `Doctors around you (${data.totalDoctors})`}</h1>
 
-                    {data.doctors && data.doctors.map((d: any) => (
-                        <div key={d._id} className="group bg-white rounded-2xl shadow-md p-2 mt-2 mb-2 flex flex-row justify-between hover:shadow-xl hover:-translate-y-1 transition duration-300">
-                            <span className="flex items-center justify-center text-center cursor-pointer">
-                                <img src={d.img} alt="clinicimg" className="  w-10 h-10  rounded-full object-cover" />
-                                <span className=" ml-8 text-start">
-                                    <h2 className=" font-semibold">Dr. {d.userId.firstName + " " + d.userId.lastName}</h2>
-                                    {d.specialization.slice(0, 2).map((s: any) => (
-                                        <span className=" flex flex-row gap-4">
-                                            <p className=" text-gray-400 text-sm">{s}</p>
-                                        </span>
-                                    ))}
+                        {data.totalClinics < 1 && (
+                            <div className="bg-white rounded-3xl border border-gray-100 shadow-md p-10 text-center">
+                                <h3 className="text-lg font-semibold text-gray-700">No clinics found nearby.</h3>
+                                <p className="text-gray-500 mt-2">Try another location or search keyword. </p>
+                            </div>
+                        )}
+                    </div>
+                </section>
 
-                                </span>
-                            </span>
-                            <Link to={`/${d.userId._id}`} className="">
-                                <img src="./cardIcons/arrow-right.png" alt="clinicimg" className=" w-10 h-10 rounded-full object-cover cursor-pointer" />
-                            </Link>
-                        </div>
-                    ))}
+                {/* ================= Doctors ================= */}
+                <section>
+                    <div className="mb-8">
+                        <h2 className="text-2xl sm:text-3xl font-bold text-[#2596be]">
+                            {data.totalDoctors < 1
+                                ? "No Dentists Nearby"
+                                : `Dentists Near You (${data.totalDoctors})`}
+                        </h2>
+                        <p className="text-gray-500 mt-2">Find experienced dental professionals ready to help you.</p>
+                    </div>
 
-                </div>
+                    <div className="space-y-5">
+                        {data.doctors &&
+                            data.doctors.map((d: any) => (
+                                <div
+                                    key={d._id}
+                                    className=" group bg-white border border-gray-100 rounded-3xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-5 flex items-center justify-between">
+
+                                    <div className="flex items-center flex-1">
+                                        <img
+                                            src={d.img}
+                                            alt="doctor"
+                                            className=" w-16 h-16 rounded-2xl object-cover border border-gray-100" />
+                                        <div className="ml-5 flex-1">
+                                            <h3 className="text-lg font-semibold text-gray-800"> Dr. {d.userId.firstName} {d.userId.lastName}</h3>
+
+                                            <div className="flex flex-wrap gap-2 mt-3">
+                                                {d.specialization
+                                                    .slice(0, 2)
+                                                    .map((s: any, index: number) => (
+                                                        <span
+                                                            key={index}
+                                                            className=" px-3 py-1 rounded-full bg-cyan-50 text-[#2596be] text-xs font-medium">
+                                                            {s}
+                                                        </span>
+                                                    ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <Link
+                                        to={`/${d.userId._id}`}
+                                        className=" flex items-center justify-center w-12 h-12 rounded-full bg-cyan-50 hover:bg-[#2596be] transition-all duration-300 shrink-0">
+
+                                        <img
+                                            src="./cardIcons/arrow-right.png"
+                                            alt="View Doctor"
+                                            className=" w-5 h-5 transition-all duration-300 group-hover:brightness-0 group-hover:invert" />
+                                    </Link>
+                                </div>
+                            ))}
+
+                        {data.totalDoctors < 1 && (
+
+                            <div className=" bg-white rounded-3xl border border-gray-100 shadow-md p-10 text-center ">
+                                <h3 className="text-lg font-semibold text-gray-700">No dentists found nearby.</h3>
+                                <p className="text-gray-500 mt-2">Try another location or search for a different specialty.</p>
+                            </div>
+                        )}
+                    </div>
+                </section>
             </div>
         </div>
     )

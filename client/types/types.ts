@@ -156,7 +156,7 @@ export type adminUsersTableType = {
 };
 
 export type AdminUser = {
-  _id?:string;
+  _id?: string;
   name: string;
   birthDay: string;
   mobileNumber: string;
@@ -164,7 +164,7 @@ export type AdminUser = {
 };
 
 export type AdminDoctor = {
-  _id?:string;
+  _id?: string;
   name: string;
   email: string;
   tpnum: string;
@@ -213,10 +213,10 @@ export type AdminUserCardProps<T> = {
   title: any;
   label: readonly { key: keyof T; label: string }[];
   data: T;
-  type:string;
+  type: string;
   img: string;
-  userId:string;
-  updateLabel: readonly { key: keyof T; label: string; placeholder:any }[];
+  userId: string;
+  updateLabel: readonly { key: keyof T; label: string; placeholder: any }[];
 };
 
 export type AdminUserCard = {
@@ -265,14 +265,14 @@ export type ChartDataType = {
   approved: number;
   completed: number;
   canceled: number;
-  paid:number;
+  paid: number;
 };
 export type FilterType = "Today" | "Weekly" | "Monthly" | "Yearly";
 
 export type revenueChartType = {
-  month:string;
-  revenue:string;
-  date:String;
+  month: string;
+  revenue: string;
+  date: String;
 }
 
 /* start frontend session data table */
@@ -291,57 +291,63 @@ export type DoctorListType = {
 /* end frontend session data table */
 
 export type PatientDetailsProps = {
-    data: any;
+  data: any;
 };
 
 export type AppointmentProps = {
-    data: any[];
-    refreshAppointments?: () => void;
+  data: any[];
+  refreshAppointments?: () => void;
 };
 
 export type UserFormData = {
-    firstName: string;
-    lastName: string;
-    email: string;
-    mobileNumber: string;
-    birthDay: string;
-    gender: string;
-    address: string;
-    password: string;
-    role: "user";
+  firstName: string;
+  lastName: string;
+  email: string;
+  mobileNumber: string;
+  birthDay: string;
+  gender: string;
+  address: string;
+  password: string;
+  role: "user";
 };
 
 export type UpdateLabelType = {
-    key: keyof UserFormData;
-    label: string;
-    value:string;
-    placeholder: string;
-    type?: string;
+  key: keyof UserFormData;
+  label: string;
+  value: string;
+  placeholder: string;
+  type?: string;
 };
 
 export type DoctorFormData = {
-    firstName: string;
-    lastName: string;
-    email: string;
-    mobileNumber: string;
-    birthDay: string;
-    gender: string;
-    address: string;
-    password: string;
-    role: "user";
+  firstName: string;
+  lastName: string;
+  email: string;
+  mobileNumber: string;
+  birthDay: string;
+  gender: string;
+  address: string;
+  password: string;
+  role: "user";
 
-    slmcReg:number;
-    university : string;
-    experience : number;
-    consultationFee : number;
-    specialization : [string];
-    desc: string;
-    degree : string;
+  slmcReg: number;
+  university: string;
+  experience: number;
+  consultationFee: number;
+  specialization: [string];
+  desc: string;
+  degree: string;
 };
 
 export type DoctorUpdateLabelType = {
-    key: keyof DoctorFormData;
-    label: string;
-    placeholder: string;
-    type?: string;
+  key: keyof DoctorFormData;
+  label: string;
+  placeholder: string;
+  type?: string;
 };
+
+export interface DashNavType {
+  name: string;
+  path: string;
+  image: string;
+}

@@ -144,18 +144,27 @@ const ViewUpdateProfile = () => {
     return (
         <>
             {isUpdateProfile === false ?
-                <div className=" mt-6 grid grid-cols-1 md:grid-cols-[2fr_4fr] ">
-                    <div className=" flex flex-col items-center  ">
-                        <div className="relative">
+                <div className="mt-8 grid grid-cols-1 xl:grid-cols-[340px_1fr] gap-8">
+
+                    <div className="bg-white rounded-3xl border border-gray-100 shadow-md p-8 flex flex-col items-center">
+
+                        <div className="relative group">
+
                             <img
-                                src={preview ? preview : currentUser?.img
-                                    ? currentUser.img
-                                    : "./userDash/user.png"
-                                }
+                                src={preview ? preview : currentUser?.img ? currentUser.img : "./userDash/user.png"}
                                 alt="profilepic"
-                                className="w-48 h-48 object-cover mt-10 cursor-pointer rounded-full"
+                                className="w-52 h-52 rounded-full object-cover border-4 border-[#2596be]/15 shadow-lg cursor-pointer transition duration-300 group-hover:scale-[1.02]"
                                 onClick={() => fileInputRef.current?.click()}
                             />
+
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="absolute bottom-3 right-3 w-12 h-12 rounded-full bg-[#2596be] text-white shadow-lg hover:bg-[#1f84a8] transition flex items-center justify-center"
+                            >
+                                ✎
+                            </button>
+
                             <input
                                 type="file"
                                 ref={fileInputRef}
@@ -171,220 +180,376 @@ const ViewUpdateProfile = () => {
                                 }}
                                 className="hidden"
                             />
+
                         </div>
-                        <span className=" w-4/5 gap-8 flex items-center justify-center mt-10">
+
+                        <h3 className="mt-6 text-2xl font-bold text-gray-800 text-center">
+                            {currentUser?.firstName} {currentUser?.lastName}
+                        </h3>
+
+                        <p className="text-sm text-gray-500 mt-1">
+                            {currentUser?.role === "doctor" ? "Doctor Account" : "Patient Account"}
+                        </p>
+
+                        <div className="w-full flex gap-3 mt-8">
+
                             <button
-                                onClick={handleUpload} disabled={loading}
-                                className=" w-1/3 border border-gray-500 shadow-md hover:text-sky-500 hover:border-sky-600 hover:shadow-xl p-2 rounded-xl text-gray-500 font-semibold" >
+                                onClick={handleUpload}
+                                disabled={loading}
+                                className="flex-1 rounded-2xl bg-[#2596be] text-white font-semibold py-3 shadow-md hover:bg-[#1f84a8] hover:shadow-lg disabled:opacity-60 transition-all duration-300"
+                            >
                                 {loading ? "Uploading..." : "Upload"}
                             </button>
-                            <button onClick={handleRemove} className=" w-1/3 border border-gray-500 shadow-md hover:text-red-500 hover:border-red-600 hover:shadow-xl p-2 rounded-xl text-gray-500 font-semibold" >Remove</button>
-                        </span>
-                    </div>
-                    <div className="flex flex-col ">
-                        <section className="flex flex-col px-16 py-16 gap-6 max-w-xl mx-auto w-full group bg-white rounded-2xl h-full shadow-md p-6  items-center justify-center
-                            hover:shadow-xl hover:-translate-y-1 transition duration-300">
-
-                            <h2 className="text-3xl mb-6 text-center">
-                                Your Information 😇
-                            </h2>
-
-                            <div className="grid grid-cols-2 gap-y-4 gap-x-6 items-center">
-                                <div className="font-semibold">Full name :</div>
-                                <span>{currentUser?.firstName + " " + currentUser?.lastName}</span>
-
-                                <div className="font-semibold">Email :</div>
-                                <span>{currentUser?.email}</span>
-
-                                <div className="font-semibold">Mobile number :</div>
-                                <span>{currentUser?.mobileNumber}</span>
-
-                                <div className="font-semibold">Address :</div>
-                                <span>{currentUser?.address}</span>
-                            </div>
 
                             <button
-                                className="mt-10 w-1/2 bg-sky-500 shadow-md hover:bg-sky-600 hover:shadow-xl p-2 rounded-xl text-white font-semibold transition"
-                                onClick={() => { setIsUpdateProfile(!isUpdateProfile) }}>
+                                onClick={handleRemove}
+                                className="flex-1 rounded-2xl border border-red-300 text-red-500 font-semibold py-3 hover:bg-red-50 transition-all duration-300"
+                            >
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-3xl border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 p-8">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+                            <div>
+                                <h2 className="text-3xl font-bold text-[#2596be]">Your Information</h2>
+                                <p className="text-gray-500 mt-2"> Review your personal account information.</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                            <div>
+                                <p className="text-sm text-gray-500">Full Name</p>
+                                <p className="mt-1 font-semibold text-gray-800">
+                                    {currentUser?.firstName + " " + currentUser?.lastName}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p className="text-sm text-gray-500">Email</p>
+                                <p className="mt-1 font-semibold text-gray-800 break-all">
+                                    {currentUser?.email}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p className="text-sm text-gray-500">Mobile Number</p>
+                                <p className="mt-1 font-semibold text-gray-800">
+                                    {currentUser?.mobileNumber}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p className="text-sm text-gray-500">Address</p>
+                                <p className="mt-1 font-semibold text-gray-800">
+                                    {currentUser?.address}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex justify-end mt-10">
+                            <button
+                                className="px-8 py-3 rounded-2xl bg-[#2596be] text-white font-semibold shadow-md hover:bg-[#1f84a8] hover:shadow-xl transition-all duration-300"
+                                onClick={() => {
+                                    setIsUpdateProfile(!isUpdateProfile);
+                                }}
+                            >
                                 Update Profile
                             </button>
-
-                        </section>
+                        </div>
                     </div>
                 </div>
                 :
-                <div className=" mt-6 grid grid-cols-1 ">
-                    {/* First Name */}
-                    <label className="mt-2">First name</label>
-                    <input
-                        {...register("firstName")}
-                        type="text"
-                        placeholder={currentUser.firstName}
-                        className={`mt-2 shadow-md rounded-xl p-2 outline-none ${errors.firstName ? "border border-red-500" : ""
-                            }`}
-                    />
-                    {errors.firstName && (
-                        <p className="text-red-500 text-sm">{errors.firstName.message}</p>
-                    )}
+                <div className="mt-8 max-w-6xl mx-auto">
+                    <div className="bg-white rounded-3xl border border-gray-100 shadow-md p-8 md:p-10">
 
-                    {/* Last Name */}
-                    <label className="mt-2">Last name</label>
-                    <input
-                        {...register("lastName")}
-                        type="text"
-                        placeholder={currentUser.lastName}
-                        className={`mt-2 shadow-md rounded-xl p-2 outline-none ${errors.lastName ? "border border-red-500" : ""
-                            }`}
-                    />
-                    {errors.lastName && (
-                        <p className="text-red-500 text-sm">{errors.lastName.message}</p>
-                    )}
+                        <div className="mb-10">
+                            <h2 className="text-3xl font-bold text-[#2596be]">
+                                Update Your Profile
+                            </h2>
+                            <p className="mt-2 text-gray-500">
+                                Keep your personal information accurate and up to date.
+                            </p>
+                        </div>
 
-                    {/* Email */}
-                    <label className="mt-2">Email</label>
-                    <input
-                        {...register("email")}
-                        type="text"
-                        placeholder={currentUser.email}
-                        className={`mt-2 shadow-md rounded-xl p-2 outline-none ${errors.email ? "border border-red-500" : ""
-                            }`}
-                    />
-                    {errors.email && (
-                        <p className="text-red-500 text-sm">{errors.email.message}</p>
-                    )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                    {/* Mobile */}
-                    <label className="mt-2">Mobile number</label>
-                    <input
-                        {...register("mobileNumber")}
-                        type="text"
-                        placeholder={currentUser.mobileNumber}
-                        className={`mt-2 shadow-md rounded-xl p-2 outline-none ${errors.mobileNumber ? "border border-red-500" : ""
-                            }`}
-                    />
-                    {errors.mobileNumber && (
-                        <p className="text-red-500 text-sm">
-                            {errors.mobileNumber.message}
-                        </p>
-                    )}
+                            {/* First Name */}
 
-                    {/* Birthday */}
-                    <label className="mt-2">Birth Day</label>
-                    <input
-                        {...register("birthDay")}
-                        type="text"
-                        placeholder={currentUser.birthDay}
-                        className={`mt-2 shadow-md rounded-xl p-2 outline-none ${errors.birthDay ? "border border-red-500" : ""
-                            }`}
-                    />
-                    {errors.birthDay && (
-                        <p className="text-red-500 text-sm">{errors.birthDay.message}</p>
-                    )}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    First Name
+                                </label>
 
-                    {/* Gender */}
-                    <label className="mt-2">Gender</label>
-                    <div
-                        className={`mt-2 shadow-md rounded-xl p-2 outline-none ${errors.gender ? "border border-red-500" : ""
-                            }`}
-                    >
-                        <select
-                            {...register("gender")}
-                            className="w-full outline-none"
-                        >
-                            <option value="">Select below ...</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                        </select>
+                                <input
+                                    {...register("firstName")}
+                                    type="text"
+                                    placeholder={currentUser.firstName}
+                                    className={`w-full rounded-2xl border bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10 ${errors.firstName ? "border-red-500" : "border-gray-200"}`}
+                                />
+
+                                {errors.firstName && (
+                                    <p className="mt-2 text-sm text-red-500">
+                                        {errors.firstName.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Last Name */}
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Last Name
+                                </label>
+
+                                <input
+                                    {...register("lastName")}
+                                    type="text"
+                                    placeholder={currentUser.lastName}
+                                    className={`w-full rounded-2xl border bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10 ${errors.lastName ? "border-red-500" : "border-gray-200"}`}
+                                />
+
+                                {errors.lastName && (
+                                    <p className="mt-2 text-sm text-red-500">
+                                        {errors.lastName.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Email */}
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Email Address
+                                </label>
+
+                                <input
+                                    {...register("email")}
+                                    type="text"
+                                    placeholder={currentUser.email}
+                                    className={`w-full rounded-2xl border bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10 ${errors.email ? "border-red-500" : "border-gray-200"}`}
+                                />
+
+                                {errors.email && (
+                                    <p className="mt-2 text-sm text-red-500">
+                                        {errors.email.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Mobile */}
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Mobile Number
+                                </label>
+
+                                <input
+                                    {...register("mobileNumber")}
+                                    type="text"
+                                    placeholder={currentUser.mobileNumber}
+                                    className={`w-full rounded-2xl border bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10 ${errors.mobileNumber ? "border-red-500" : "border-gray-200"}`}
+                                />
+
+                                {errors.mobileNumber && (
+                                    <p className="mt-2 text-sm text-red-500">
+                                        {errors.mobileNumber.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Birthday */}
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Birth Date
+                                </label>
+
+                                <input
+                                    {...register("birthDay")}
+                                    type="text"
+                                    placeholder={currentUser.birthDay}
+                                    className={`w-full rounded-2xl border bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10 ${errors.birthDay ? "border-red-500" : "border-gray-200"}`}
+                                />
+
+                                {errors.birthDay && (
+                                    <p className="mt-2 text-sm text-red-500">
+                                        {errors.birthDay.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Gender */}
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Gender
+                                </label>
+
+                                <select
+                                    {...register("gender")}
+                                    className={`w-full rounded-2xl border bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10 ${errors.gender ? "border-red-500" : "border-gray-200"}`}
+                                >
+                                    <option value="">Select Gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+
+                                {errors.gender && (
+                                    <p className="mt-2 text-sm text-red-500">
+                                        {errors.gender.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Address */}
+
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Address
+                                </label>
+
+                                <input
+                                    {...register("address")}
+                                    type="text"
+                                    placeholder={currentUser.address}
+                                    className={`w-full rounded-2xl border bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10 ${errors.address ? "border-red-500" : "border-gray-200"}`}
+                                />
+
+                                {errors.address && (
+                                    <p className="mt-2 text-sm text-red-500">
+                                        {errors.address.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Password */}
+
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Current Password
+                                </label>
+
+                                <input
+                                    {...register("password")}
+                                    type="password"
+                                    placeholder="Enter your current password"
+                                    className={`w-full rounded-2xl border bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10 ${errors.password ? "border-red-500" : "border-gray-200"}`}
+                                />
+
+                                {errors.password && (
+                                    <p className="mt-2 text-sm text-red-500">
+                                        {errors.password.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {currentUser?.role === "doctor" && (
+                                <>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Specialization
+                                        </label>
+
+                                        <input
+                                            {...register("specialization")}
+                                            type="text"
+                                            placeholder="Enter specialization"
+                                            className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Experience (Years)
+                                        </label>
+
+                                        <input
+                                            {...register("experience")}
+                                            type="text"
+                                            placeholder="Enter experience"
+                                            className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Consultation Fee
+                                        </label>
+
+                                        <input
+                                            {...register("consultationFee")}
+                                            type="text"
+                                            placeholder="Enter fee"
+                                            className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            University
+                                        </label>
+
+                                        <input
+                                            {...register("university")}
+                                            type="text"
+                                            placeholder="Enter university"
+                                            className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            SLMC Registration
+                                        </label>
+
+                                        <input
+                                            {...register("slmcReg")}
+                                            type="text"
+                                            placeholder="Enter SLMC registration"
+                                            className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Degree
+                                        </label>
+
+                                        <input
+                                            {...register("degree")}
+                                            type="text"
+                                            placeholder="Enter degree"
+                                            className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10"
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row justify-end gap-4 mt-10">
+
+                            <button
+                                type="button"
+                                onClick={() => setIsUpdateProfile(false)}
+                                className="px-8 py-3 rounded-2xl border border-gray-300 text-gray-600 font-semibold hover:bg-gray-100 transition-all duration-300"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={handleSubmit(onSubmit)}
+                                disabled={isSubmitting}
+                                className="px-8 py-3 rounded-2xl bg-[#2596be] hover:bg-[#1f84a8] text-white font-semibold shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300"
+                            >
+                                {isSubmitting ? "Updating..." : "Update Profile"}
+                            </button>
+
+                        </div>
+
                     </div>
-                    {errors.gender && (
-                        <p className="text-red-500 text-sm">{errors.gender.message}</p>
-                    )}
-
-                    {/* Address */}
-                    <label className="mt-2">Address</label>
-                    <input
-                        {...register("address")}
-                        type="text"
-                        placeholder={currentUser.address}
-                        className={`mt-2 shadow-md rounded-xl p-2 outline-none ${errors.address ? "border border-red-500" : ""
-                            }`}
-                    />
-                    {errors.address && (
-                        <p className="text-red-500 text-sm">{errors.address.message}</p>
-                    )}
-
-                    {/* Password */}
-                    <label className="mt-2">Password</label>
-                    <input
-                        {...register("password")}
-                        type="password"
-                        placeholder="Enter your current password"
-                        className={`mt-2 shadow-md rounded-xl p-2 outline-none ${errors.password ? "border border-red-500" : ""
-                            }`}
-                    />
-                    {errors.password && (
-                        <p className="text-red-500 text-sm">{errors.password.message}</p>
-                    )}
-
-                    {currentUser?.role === "doctor" && (
-                        <>
-                            <label className="mt-2">Specialization</label>
-                            <input
-                                {...register("specialization")}
-                                type="text"
-                                placeholder="Enter specialization"
-                                className="mt-2 shadow-md rounded-xl p-2 outline-none"
-                            />
-
-                            <label className="mt-2">Experience (Years)</label>
-                            <input
-                                {...register("experience")}
-                                type="text"
-                                placeholder="Enter experience"
-                                className="mt-2 shadow-md rounded-xl p-2 outline-none"
-                            />
-
-                            <label className="mt-2">Consultation Fee</label>
-                            <input
-                                {...register("consultationFee")}
-                                type="text"
-                                placeholder="Enter fee"
-                                className="mt-2 shadow-md rounded-xl p-2 outline-none"
-                            />
-
-                            <label className="mt-2">University</label>
-                            <input
-                                {...register("university")}
-                                type="text"
-                                placeholder="Enter university"
-                                className="mt-2 shadow-md rounded-xl p-2 outline-none"
-                            />
-
-                            <label className="mt-2">SLMC Registration</label>
-                            <input
-                                {...register("slmcReg")}
-                                type="text"
-                                placeholder="Enter SLMC reg"
-                                className="mt-2 shadow-md rounded-xl p-2 outline-none"
-                            />
-
-                            <label className="mt-2">Degree</label>
-                            <input
-                                {...register("degree")}
-                                type="text"
-                                placeholder="Enter degree"
-                                className="mt-2 shadow-md rounded-xl p-2 outline-none"
-                            />
-                        </>
-                    )}
-
-                    <button
-                        onClick={handleSubmit(onSubmit)}
-                        disabled={isSubmitting}
-                        className="mt-14 mb-8 bg-sky-500 hover:bg-sky-600 p-2 rounded-xl text-white font-semibold"
-                    >
-                        {isSubmitting ? "Updating..." : "Update"}
-                    </button>
                 </div>
             }
         </>

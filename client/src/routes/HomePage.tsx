@@ -15,14 +15,14 @@ const HomePage = () => {
     currentUser = null;
   }
 
-  const handleRedirect = (q:string) => {
+  const handleRedirect = (q: string) => {
     if (!currentUser) {
       navigate("/auth");
       return;
     }
     if (q === "all") {
       navigate(`/search?q=all`);
-    } else{
+    } else {
       navigate(`/search?q=clinic`);
     }
   };
@@ -102,10 +102,6 @@ const HomePage = () => {
 
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-semibold mb-6">
-          Popular Treatments
-        </h2>
-
         <div>
           <Card />
         </div>

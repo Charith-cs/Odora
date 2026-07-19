@@ -103,7 +103,7 @@ const handleSubmit = async () => {
 
                         {/* Appointment Details */}
                         <div className="flex flex-col w-full md:pr-6">
-                            <h1 className="text-xl font-semibold mb-3">Your Appointment Details</h1>
+                            <h1 className="text-xl text-[#2596be] font-semibold mb-3">Your Appointment Details</h1>
 
                             <div className="flex justify-between mt-2">
                                 <span className="font-bold text-sm">Name</span>
@@ -144,7 +144,7 @@ const handleSubmit = async () => {
 
                         {/* Billing Details */}
                         <div className="flex flex-col w-full md:pl-6">
-                            <h1 className="text-xl font-semibold mb-3">Your Billing Details</h1>
+                            <h1 className="text-xl text-[#2596be] font-semibold mb-3">Your Billing Details</h1>
 
                             <div className="flex justify-between mt-2">
                                 <span className="font-bold text-sm">Doctor Fee</span>

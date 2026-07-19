@@ -1,12 +1,12 @@
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import DashCard from '../../../components/dashComponents/userDash/DashCard';
 import Charts from '../../../components/dashComponents/doctorDash/Charts';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { adminConfig } from '../../../../types/constants';
 import API from '../../../../api/axios';
 import { toast } from 'react-hot-toast';
 import type { adminCardType, AdminchartData } from '../../../../types/types';
-import { AuthContext } from '../../../../context/AuthContext';
+
 
 const AdminDash = () => {
 
@@ -15,8 +15,7 @@ const AdminDash = () => {
     const [checked, setChecked] = useState(false);
     const [cardData, setCardData] = useState<any>(null);
     const [cData, setCData] = useState<[]>([]);
-    const auth = useContext(AuthContext);
-    const navigate = useNavigate();
+
 
     useEffect(() => {
         const fetchCardData = async () => {
@@ -43,15 +42,6 @@ const AdminDash = () => {
         fetchCData();
     }, [currentUser._id]);
 
-        const handleLogout = () => {
-        try {
-            auth?.logout();
-            navigate("/");
-        } catch (err) {
-            console.log(err);
-        }
-    }
-
 
     const adminCardDetails: adminCardType[] = [
         { img: "./userDash/calendar.png", desc: "Upcomming Appoinments", subDesc: cardData?.upcomming, color: "bg-blue-600" },
@@ -65,16 +55,7 @@ const AdminDash = () => {
     ];
 
     return (
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-[1fr_4fr] w-full">
-            <div className=" hidden md:flex  flex-col gap-10  h-full sticky left-0 text-center ">
-                <Link to="/" className=" flex gap-8 mt-7 items-center cursor-pointer  p-2 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition duration-300 ease-in-out"><img src="./userDash/home.png" alt="" className=" w-5 h-5 ml-5" />Home</Link>
-                <Link to="/user_setting" className=" flex gap-8 items-center cursor-pointer  p-2 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition duration-300 ease-in-out"><img src="./userDash/profile.png" alt="dashimg" className=" w-5 h-5 ml-5" />User</Link>
-                <Link to="/doctor_setting" className=" flex gap-8 items-center cursor-pointer  p-2 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition duration-300 ease-in-out"><img src="./userDash/doctors.png" alt="dashimg" className=" w-5 h-5 ml-5" />Doctor</Link>
-                <Link to="/staff_setting" className=" flex gap-8 items-center cursor-pointer p-2 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition duration-300 ease-in-out"><img src="./userDash/optimization.png" alt="dashimg" className=" w-5 h-5 ml-5" />Staff</Link>
-                <Link to="/reports" className=" flex gap-8 items-center cursor-pointer p-2 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition duration-300 ease-in-out"><img src="./userDash/profit-report.png" alt="dashimg" className=" w-5 h-5 ml-5" />Analysis & Reports</Link>
-                <button onClick={handleLogout} className=" flex gap-8 mb-7 items-center cursor-pointer p-2 rounded-xl shadow-md hover:shadow-xl hover:shadow-red-200 hover:-translate-y-1 hover:scale-105 transition duration-300 ease-in-out"><img src="./userDash/logout.png" alt="dashimg" className=" w-5 h-5 ml-5" />Logout</button>
-            </div>
-            <div className=" flex flex-col ml-8 mt-7">
+            <div className=" flex flex-col ml-8">
                 <div className=" flex justify-between  p-2">
                     <div className="">
                         <h1 className=" text-3xl font-semibold">Hello, {currentUser.firstName + " " + currentUser.lastName} 👋</h1>
@@ -105,7 +86,7 @@ const AdminDash = () => {
                     <Charts data={cData as AdminchartData[]} config={adminConfig} />
                 </div>
             </div>
-        </div>
+
     )
 }
 

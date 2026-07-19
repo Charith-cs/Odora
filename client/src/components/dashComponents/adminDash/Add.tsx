@@ -53,7 +53,7 @@ const createSchema = (role: "user" | "doctor" | "staff") => {
 type Props = {
     updateLabel: UpdateLabelType[];
     setShowForm: React.Dispatch<React.SetStateAction<boolean>>;
-    role: "user" | "doctor" | "staff";
+    role: "user" | "doctor" | "staff";z
 };
 type FormData = any;
 

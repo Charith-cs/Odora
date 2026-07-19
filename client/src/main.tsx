@@ -42,6 +42,7 @@ import Clinic from './routes/Clinic.tsx';
 import Doctors from './routes/Doctors.tsx';
 import PatientDetails from './components/dashComponents/staffDash/PatientDetails.tsx';
 import AppointmentComponent from './components/dashComponents/staffDash/AppointmentComponent.tsx';
+import AboutPage from './routes/AboutPage.tsx';
 
 
 const router = createBrowserRouter([
@@ -93,6 +94,10 @@ const router = createBrowserRouter([
         element: <SearchResult />
       },
       {
+        path:"/about/:section",
+        element:<AboutPage/>
+      },
+      {
         path: "/book/:id",
         element:
           <ProtectedRoute allowedRoles={["user"]}>
@@ -117,7 +122,7 @@ const router = createBrowserRouter([
   },
   {
     element: <DashLayout />,
-    children: [
+    children: [ 
       /* user routes */
 
       {
@@ -137,7 +142,7 @@ const router = createBrowserRouter([
       {
         path: "/my_profile",
         element:
-          <ProtectedRoute allowedRoles={["user" , "doctor"]}>
+          <ProtectedRoute allowedRoles={["user" , "doctor", "admin"]}>
             <Profile />
           </ProtectedRoute>
       },

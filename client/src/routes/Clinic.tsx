@@ -29,57 +29,80 @@ const Clinic = () => {
 
 
     return (
-        <div>
-            <div className=" mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2">
-                <div className=" flex flex-col p-4 gap-8 ">
+        <div className="px-4 sm:px-6 lg:px-8 py-8 lg:py-10">
+            <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
+                <div className="space-y-8">
 
-                    <div className=" flex ">
-                        <img src={details.clinic.img} alt="userimg" className=" w-24 h-24 object-cover rounded-full " />
-                        <span className=" ml-5 mt-5">
-                            <h1 className=" text-md md:text-3xl font-semibold ">{details.clinic.clinicName}</h1>
-                        </span>
+                    <div className=" bg-white rounded-3xl border border-gray-100 shadow-md p-6 sm:p-8">
+                        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+
+                            <img src={details.clinic.img} alt={details.clinic.clinicName} className=" w-28 h-28 rounded-3xl object-cover border border-gray-100" />
+                            <div className="flex-1 text-center sm:text-left">
+                                <h1 className="text-2xl sm:text-3xl font-bold text-[#2596be]">
+                                    {details.clinic.clinicName}
+                                </h1>
+                            </div>
+                        </div>
                     </div>
-                    <div className=" flex flex-col">
-                        <h1 className=" text-xl font-medium">About {details.clinic.clinicName}</h1>
-                        <p className=" mt-4 leading-relaxed">{details.clinic?.desc}</p>
+
+                    <div className=" bg-white rounded-3xl border border-gray-100 shadow-md p-6 sm:p-8">
+                        <h2 className="text-2xl font-bold text-[#2596be]">About {details.clinic.clinicName}</h2>
+                        <p className="mt-6 leading-8 text-gray-600">{details.clinic?.desc} </p>
                     </div>
                 </div>
-                {/* ///////////////////////////////////// */}
-                <div className=" flex flex-col p-4  gap-6 ">
-                    <Link to={`/doctors/${details.clinic._id}`} className=" w-full text-center mt-5 border-none bg-sky-500 shadow:md hover:bg-sky-600 hover:shadow-xl p-2 rounded-xl text-white font-semibold">{details.clinic.doctorList.length < 1 ? "No available doctors" : "See available sessions"}</Link>
-                    <div className="group bg-white rounded-2xl shadow-md p-4 mt-2 mb-2  ">
 
-                        <div className=" flex flex-row justify-between my-2">
-                            <span className="flex items-center justify-center text-center">
-                                {details.clinic.doctorList &&
-                                    <span className=" ml-8 text-start">
-                                        <h2 className=" text-md font-bold">Available Doctors</h2>
-                                        <p className=" text-sm">in our clinic</p>
-                                    </span>}
-                            </span>
-                            <div className="">
-                                <img src="/icons/verified.png" alt="bookingimg" className=" w-8 h-8  object-fit " />
+                <div className="space-y-6">
+                    <Link
+                        to={`/doctors/${details.clinic._id}`}
+                        className={` w-full flex items-center justify-center rounded-2xl py-4 font-semibold text-lg transition-all duration-300 shadow-md
+            ${details.clinic.doctorList.length > 0
+                                ? "bg-[#2596be] text-white hover:bg-[#1f7ea0] hover:shadow-xl hover:-translate-y-1"
+                                : "bg-gray-300 text-gray-600 cursor-not-allowed pointer-events-none"
+                            }`} >
+                        {details.clinic.doctorList.length > 0
+                            ? "See Available Doctors"
+                            : "No Available Doctors"}
+                    </Link>
+
+                    <div className=" bg-white rounded-3xl border border-gray-100 shadow-md p-6 sm:p-8">
+                        <div className="flex justify-between items-center">
+                            <div className="flex-1">
+                                <h2 className="text-xl font-bold text-[#2596be]">Available Doctors</h2>
+                                <p className="text-gray-500 mt-2">Meet the dentists currently practicing at this clinic.</p>
+                            </div>
+                            <div className=" flex items-center justify-center w-12 h-12 rounded-full bg-cyan-50 ">
+                                <img src="/icons/verified.png" alt="Verified" className="w-6 h-6" />
                             </div>
                         </div>
 
-                        {details.clinic.doctorList && details.clinic?.doctorList.map((d: any) => (
-                            <>
-                                <hr className=" my-2 mt-8" />
-                                <div className=" flex flex-row justify-between my-2">
-                                    <span className="flex items-center justify-center text-center cursor-pointer">
-                                        <span className=" ml-8 text-start">
-                                            <h2 className=" text-md font-semibold">Dr. {d.firstName + " " + d.lastName}</h2>
-                                            <p className=" text-sm">See more ..</p>
-                                        </span>
-                                    </span>
-                                    <img src="/icons/booking.png" alt="bookingimg" onClick={() => navigate(`/${d._id}`, {
-                                    })} className=" w-8 h-8  object-fit cursor-pointer hover:shadow-xl hover:-translate-y-1 transition duration-300" />
-                                </div>
-                            </>
-                        ))}
+                        <div className="mt-8 space-y-5">
+                            {details.clinic.doctorList &&
+                                details.clinic.doctorList.map((d: any) => (
+                                    <div
+                                        key={d._id}
+                                        className="border border-gray-100 rounded-2xl p-5 hover:shadow-md hover:-translate-y-1 transition-all duration-300">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <img
+                                                    src="./cardIcons/dentist.png"
+                                                    alt="Doctor"
+                                                    className=" w-14 h-14 rounded-2xl object-cover border border-gray-100" />
+                                                <div>
+                                                    <h3 className="text-lg font-semibold text-gray-800"> Dr. {d.firstName} {d.lastName} </h3>
+                                                    <p className="text-gray-500 mt-1"> View doctor's profile </p>
+                                                </div>
+                                            </div>
 
+                                            <button
+                                                onClick={() => navigate(`/${d._id}`)}
+                                                className=" flex items-center justify-center w-12 h-12 rounded-full bg-cyan-50 hover:bg-[#2596be] hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                                                <img src="/icons/booking.png" alt="View Doctor" className="w-6 h-6" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                        </div>
                     </div>
-
                 </div>
             </div>
         </div>
