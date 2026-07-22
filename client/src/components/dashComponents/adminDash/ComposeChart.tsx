@@ -44,7 +44,7 @@ const ComposeChart = () => {
     <div>
 
       <div className="flex justify-between items-center flex-wrap gap-3">
-        <h1 className="text-2xl font-semibold my-5">
+        <h1 className="text-2xl md:text-3xl font-semibold my-5">
           Total Appointments
         </h1>
 

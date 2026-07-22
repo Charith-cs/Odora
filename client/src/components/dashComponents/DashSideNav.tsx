@@ -67,6 +67,11 @@ const DashSideNav = () => {
                 image: "./userDash/appointment.png",
             },
             {
+                name: "My Sessions",
+                path: "/my_session",
+                image: "./userDash/training.png",
+            },
+            {
                 name: "Patients",
                 path: "/patients",
                 image: "./userDash/patient.png",

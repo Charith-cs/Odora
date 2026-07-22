@@ -55,23 +55,35 @@ const AdminDash = () => {
     ];
 
     return (
-            <div className=" flex flex-col ml-8">
-                <div className=" flex justify-between  p-2">
+             <div className=" flex flex-col mx-4 md:ml-8 mb-8 rounded-3xl bg-white border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 p-6 sm:p-8 ">
+                <div className=" flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                     <div className="">
-                        <h1 className=" text-3xl font-semibold">Hello, {currentUser.firstName + " " + currentUser.lastName} 👋</h1>
-                        <span className=" text-sm text-gray-500">Management</span>
+                        <h1 className=" text-2xl md:text-3xl font-bold text-[#2596be]">Hello, {currentUser.firstName + " " + currentUser.lastName} 👋</h1>
+                        <span className=" text-sm text-gray-500 mt-2 block">Management</span>
                     </div>
-                    <div className=" flex gap-5 items-center relative ">
+                    <div className=" flex gap-4 items-center relative self-start md:self-auto ">
                         <img src={notify === false ? `./userDash/bell.png` : `./userDash/notification.png`} onClick={() => { setChecked(!checked) }} alt="userimg" className=" w-7 h-7 object-cover cursor-pointer " />
-                        <img src={currentUser.img ? currentUser.img : "./userDash/user.png"} alt="userimg" className=" w-16 h-16 object-cover rounded-xl" />
-
+                        <Link to="/my_profile">
+                            <img src={currentUser?.img ? currentUser.img : "/userDash/user.png"} alt="userimg" className=" w-16 h-16 object-cover rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition" />
+                        </Link>
                         {checked === true && (
-                            <div className="absolute top-20 right-0 w-[350px] p-4 rounded-xl bg-white shadow-lg transition duration-300 ease-in-out z-50">
-                                <div className="flex flex-col gap-4">
-                                    <h1 className="font-semibold">Sakuki Dental Hospital</h1>
-                                    <p>Your appointment ID:123 has been approved! Please be prepared for the scheduled day.</p>
-                                    <p className="text-sm text-gray-500">12 min ago</p>
-                                    <hr />
+                            <div className=" absolute top-20 right-0 w-[320px] sm:w-[360px] rounded-3xl border border-gray-100 bg-white shadow-2xl overflow-hidden z-50 animate-fadeIn">
+                                <div className="p-6">
+
+                                    <div className="flex items-center gap-3 mb-5">
+
+                                        <div className="w-10 h-10 rounded-2xl bg-[#2596be]/10 flex items-center justify-center">🔔</div>
+                                        <div>
+                                            <h2 className="font-bold text-[#2596be]">Notifications</h2>
+                                            <p className="text-sm text-gray-500"> Latest update</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="rounded-2xl bg-gray-50 p-4">
+                                        <h3 className="font-semibold">Sakuki Dental Hospital</h3>
+                                        <p className="text-gray-600 mt-2 leading-7">Your appointment ID:123 has been approved! Please be prepared for your scheduled visit.</p>
+                                        <p className="text-xs text-gray-400 mt-4">12 min ago</p>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -82,7 +94,7 @@ const AdminDash = () => {
                     <DashCard cardDetails={adminCardDetails} />
                 </div>
                 <div className=" flex flex-col w-full mt-8 ">
-                    <h1 className=" text-xl font-semibold my-4">Monthly Revenue</h1>
+                    <h1 className=" text-2xl md:text-3xl font-semibold text-[#2596be] my-4">Monthly Revenue</h1>
                     <Charts data={cData as AdminchartData[]} config={adminConfig} />
                 </div>
             </div>

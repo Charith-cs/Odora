@@ -24,7 +24,6 @@ const AddTreatment = () => {
         const fetchAppointment = async () => {
             try {
                 const res = await API.get(`/appointment/treat/${id}`);
-                console.log(res.data)
                 setFetchedData(res.data)
             } catch (err) {
                 toast.error("Oops! Something went wrong");

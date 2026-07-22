@@ -50,8 +50,8 @@ const WalkInAppointment = () => {
         try {
             const res = await registerUser(data);
             toast.success(res.message);
-            console.log(res.user._id);
-            setRegisteredUser(res.user._id)
+            setRegisteredUser(res.user._id);
+            navigate("/staff_dash");
         } catch (err) {
             toast.error("Oops! Something went wrong");
         }

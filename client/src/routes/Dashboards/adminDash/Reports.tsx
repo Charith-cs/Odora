@@ -100,7 +100,7 @@ const Reports = () => {
           endDate
         );
         toast.success("Revenue report downloaded", { id: "report" });
-      }else if (selectedReport === "appointment") {
+      } else if (selectedReport === "appointment") {
 
         toast.loading("Generating report...", { id: "report" });
         const res = await API.get(
@@ -202,145 +202,206 @@ const Reports = () => {
 
 
   return (
-    <div className=" mt-6 grid grid-cols-1">
-      <div className=" w-full h-full flex flex-row flex-wrap mt-5 justify-center">
-        <DashCard cardDetails={reportCardDetails} />
-      </div>
-      <div className=" mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-5">
+    <div className="mt-6 space-y-8">
 
-        <div className=" p-2 rounded-xl shadow-md hover:shadow-lg bg-gray-50">
+      {/* Dashboard Cards */}
+      <section className="flex flex-wrap justify-center gap-6">
+        <DashCard cardDetails={reportCardDetails} />
+      </section>
+
+      {/* Dashboard Content */}
+      <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+        {/* Appointment Chart */}
+        <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
           <ComposeChart />
         </div>
 
-        <div className="p-2 rounded-xl shadow-md hover:shadow-lg bg-gray-50">
+        {/* Revenue Chart */}
+        <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
           <RevenueAreaChart />
         </div>
 
-        <div className=" col-span-2 p-2 rounded-xl shadow-md hover:shadow-lg bg-gray-50">
-          <div className=" flex justify-between items-center">
-            <h1 className="text-2xl font-semibold my-5">
+        {/* Doctor Performance */}
+        <div className="lg:col-span-2 rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+
+          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
               Doctor Performance
-            </h1>
+            </h2>
+
+            <div className="flex flex-wrap gap-2">
+              {["Today", "Weekly", "Monthly", "Yearly"].map((item) => (
+                <button
+                  key={item}
+                  onClick={() => setFilter(item as FilterType)}
+                  className={`rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${filter === item
+                    ? "bg-[#2596be] text-white shadow-md"
+                    : "border border-gray-200 bg-white text-gray-600 hover:border-[#2596be] hover:text-[#2596be]"
+                    }`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
 
           </div>
-          <div className=" w-full ml-4">
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex gap-2">
-                {['Today', 'Weekly', 'Monthly', 'Yearly'].map((item) => (
-                  <button
-                    key={item}
-                    onClick={() => setFilter(item as FilterType)}
-                    className={`px-3 py-1 rounded-lg text-sm border transition ${filter === item
-                      ? 'bg-blue-500 text-white shadow'
-                      : 'bg-white text-gray-600 hover:bg-gray-100'
-                      }`}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+
           <Table
             columns={DoctorRevenueColumns}
             data={DoctorRevenueTable}
             title={null}
             actions={(_row) => (
-              <div className="flex gap-2">
-                <Link to={`/view_edit_doctor/${_row?._id}`} className="px-3 py-1 rounded-lg border text-gray-600 hover:text-sky-500 hover:border-sky-500 transition">View</Link>
-                <button className="px-3 py-1 rounded-lg border text-gray-600 hover:text-red-500 hover:border-red-500 transition">Delete</button>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  to={`/view_edit_doctor/${_row?._id}`}
+                  className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-all duration-300 hover:border-[#2596be] hover:text-[#2596be]"
+                >
+                  View
+                </Link>
+
+                <button
+                  className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-all duration-300 hover:border-red-500 hover:text-red-500"
+                >
+                  Delete
+                </button>
               </div>
-            )} />
+            )}
+          />
+
         </div>
 
-        <div className=" p-2 rounded-xl shadow-md hover:shadow-lg bg-gray-50 ">
-          <h1 className="text-2xl font-semibold my-5">User Registraton and Others</h1>
-          <UserChart data={pieChart} />
+        {/* User Statistics */}
+        <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+
+          <h2 className="mb-6 text-2xl md:text-3xl font-bold text-gray-800">
+            User Registration and Others
+          </h2>
+
+          <div className="h-[320px] md:h-[380px]">
+            <UserChart data={pieChart} />
+          </div>
+
         </div>
 
-        <div className=" p-2 rounded-xl shadow-md hover:shadow-lg bg-gray-50">
-          <h1 className="text-2xl font-semibold my-5">Download reports</h1>
+        {/* Reports */}
+        <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
 
-          <div className=" mt-6 flex flex-col gap-8  ">
-            <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 ml-5 ">
-              <span className=" flex gap-5  items-center">
-                <label htmlFor="start" className=" font-semibold">Start Date : </label>
+          <h2 className="mb-6 text-2xl md:text-3xl font-bold text-gray-800">
+            Download Reports
+          </h2>
+
+          <div className="space-y-6">
+
+            {/* Date Pickers */}
+            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+              <div className="flex flex-col gap-2">
+
+                <label
+                  htmlFor="start"
+                  className="text-sm font-semibold text-gray-700"
+                >
+                  Start Date
+                </label>
+
                 <input
                   name="start"
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="p-1 rounded-xl shadow-md"
+                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 transition-all duration-300 focus:border-[#2596be] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#2596be]/10"
                 />
-              </span>
-              <span className=" flex gap-5 items-center">
-                <label htmlFor="end" className=" font-semibold">End Date : </label>
+
+              </div>
+
+              <div className="flex flex-col gap-2">
+
+                <label
+                  htmlFor="end"
+                  className="text-sm font-semibold text-gray-700"
+                >
+                  End Date
+                </label>
+
                 <input
                   name="end"
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="p-1 rounded-xl shadow-md"
+                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 transition-all duration-300 focus:border-[#2596be] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#2596be]/10"
                 />
-              </span>
-            </div>
 
-            <div className=" w-full">
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="flex gap-2">
-                  {['Today', 'Weekly', 'Monthly', 'Yearly'].map((item) => (
-                    <button
-                      key={item}
-                      onClick={() => setFilterReport(item as FilterType)}
-                      className={`px-3 py-1 rounded-lg text-sm border transition ${filterReport === item
-                        ? 'bg-blue-500 text-white shadow'
-                        : 'bg-white text-gray-600 hover:bg-gray-100'
-                        }`}
-                    >
-                      {item}
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
 
+            {/* Report Filters */}
+            <div className="flex flex-wrap gap-2">
 
-            <div className="">
-              <select
-                value={selectedReport}
-                onChange={(e) => setSelectedReport(e.target.value)}
-                className="p-2 rounded-xl shadow-md cursor-pointer w-full"
-              >
-                <option value="">Select Report</option>
+              {["Today", "Weekly", "Monthly", "Yearly"].map((item) => (
 
-                <option value="doctor">
-                  Doctor Performance Report
-                </option>
+                <button
+                  key={item}
+                  onClick={() => setFilterReport(item as FilterType)}
+                  className={`rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${filterReport === item
+                    ? "bg-[#2596be] text-white shadow-md"
+                    : "border border-gray-200 bg-white text-gray-600 hover:border-[#2596be] hover:text-[#2596be]"
+                    }`}
+                >
+                  {item}
+                </button>
 
-                <option value="patient">
-                  Patient Report
-                </option>
+              ))}
 
-                <option value="revenue">
-                  Revenue Report
-                </option>
-
-                <option value="appointment">
-                  Appointment Report
-                </option>
-              </select>
             </div>
 
-            <div className=" flex justify-between gap-5">
+            {/* Report Selector */}
+            <select
+              value={selectedReport}
+              onChange={(e) => setSelectedReport(e.target.value)}
+              className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 transition-all duration-300 focus:border-[#2596be] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#2596be]/10"
+            >
+              <option value="">Select Report</option>
+
+              <option value="doctor">
+                Doctor Performance Report
+              </option>
+
+              <option value="patient">
+                Patient Report
+              </option>
+
+              <option value="revenue">
+                Revenue Report
+              </option>
+
+              <option value="appointment">
+                Appointment Report
+              </option>
+
+            </select>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col gap-4 pt-4 sm:flex-row">
+
               <button
                 onClick={handleDownload}
-                className="w-1/2 mt-14 border-none bg-green-500 shadow:md hover:bg-green-600 hover:shadow-xl p-2 rounded-xl text-white font-semibold"> Download</button>
-              <button onClick={handleCancel} className=" w-1/2 mt-14 border-none bg-red-500 shadow:md hover:bg-red-600 hover:shadow-xl p-2 rounded-xl text-white font-semibold" >Cancel</button>
-            </div>
+                className="flex-1 rounded-2xl bg-[#21a262] px-5 py-3 font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#1c8d53] hover:shadow-lg"
+              >
+                Download
+              </button>
 
+              <button
+                onClick={handleCancel}
+                className="flex-1 rounded-2xl bg-red-500 px-5 py-3 font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-red-600 hover:shadow-lg"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

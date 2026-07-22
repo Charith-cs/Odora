@@ -47,7 +47,7 @@ const UserManagement = ({ data }: any) => {
 
                                 <button
                                     onClick={() => setShowForm(false)}
-                                    className=" mt-5 w-full border-none bg-red-500 shadow:md hover:bg-red-600 hover:shadow-xl p-2 rounded-xl text-white font-semibold">
+                                    className=" mt-5 w-full border-none bg-red-500 shadow:md hover:bg-red-600 hover:shadow-xl px-5 py-3.5 rounded-2xl text-white font-semibold">
                                     Close
                                 </button>
                             </div>

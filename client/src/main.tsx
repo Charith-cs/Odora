@@ -43,6 +43,7 @@ import Doctors from './routes/Doctors.tsx';
 import PatientDetails from './components/dashComponents/staffDash/PatientDetails.tsx';
 import AppointmentComponent from './components/dashComponents/staffDash/AppointmentComponent.tsx';
 import AboutPage from './routes/AboutPage.tsx';
+import MySession from './routes/Dashboards/DoctorDash/MySession.tsx';
 
 
 const router = createBrowserRouter([
@@ -94,8 +95,8 @@ const router = createBrowserRouter([
         element: <SearchResult />
       },
       {
-        path:"/about/:section",
-        element:<AboutPage/>
+        path: "/about/:section",
+        element: <AboutPage />
       },
       {
         path: "/book/:id",
@@ -122,7 +123,7 @@ const router = createBrowserRouter([
   },
   {
     element: <DashLayout />,
-    children: [ 
+    children: [
       /* user routes */
 
       {
@@ -142,7 +143,7 @@ const router = createBrowserRouter([
       {
         path: "/my_profile",
         element:
-          <ProtectedRoute allowedRoles={["user" , "doctor", "admin"]}>
+          <ProtectedRoute allowedRoles={["user", "doctor", "admin"]}>
             <Profile />
           </ProtectedRoute>
       },
@@ -171,132 +172,139 @@ const router = createBrowserRouter([
           </ProtectedRoute>
       },
       {
-      path: "/patients/:id",
-      element:
-      <ProtectedRoute allowedRoles={["staff", "doctor"]}>
-        <PatientDetails data={undefined}/>
-      </ProtectedRoute>
+        path: "/patients/:id",
+        element:
+          <ProtectedRoute allowedRoles={["staff", "doctor"]}>
+            <PatientDetails data={undefined} />
+          </ProtectedRoute>
       },
-  {
-    path: "/walk_in_appointment",
-    element:
-      <ProtectedRoute allowedRoles={["staff"]}>
-        <WalkInAppointment />
-      </ProtectedRoute>
-  },
-  {
-    path: "/payment_list",
-    element:
-      <ProtectedRoute allowedRoles={["staff"]}>
-        <PaymentTable />
-      </ProtectedRoute>
-  },
-  {
-    path: "/billing/:id",
-    element:
-      <ProtectedRoute allowedRoles={["staff"]}>
-        <Billing />
-      </ProtectedRoute>
-  },
+      {
+        path: "/walk_in_appointment",
+        element:
+          <ProtectedRoute allowedRoles={["staff"]}>
+            <WalkInAppointment />
+          </ProtectedRoute>
+      },
+      {
+        path: "/payment_list",
+        element:
+          <ProtectedRoute allowedRoles={["staff"]}>
+            <PaymentTable />
+          </ProtectedRoute>
+      },
+      {
+        path: "/billing/:id",
+        element:
+          <ProtectedRoute allowedRoles={["staff"]}>
+            <Billing />
+          </ProtectedRoute>
+      },
 
-  /* doctor routes */
-  {
-    path: "/doctor_dash",
-    element:
-      <ProtectedRoute allowedRoles={["doctor"]}>
-        <DoctorDash />
-      </ProtectedRoute>
-  },
-  {
-    path: "/doctor_appointments",
-    element:
-      <ProtectedRoute allowedRoles={["doctor"]}>
-        <DoctorAppointment />
-      </ProtectedRoute>
-  },
-  {
-    path: "/add_treatment/:id",
-    element:
-      <ProtectedRoute allowedRoles={["doctor"]}>
-        <AddTreatment />
-      </ProtectedRoute>
-  },
-  {
-    path: "/my_performance",
-    element:
-      <ProtectedRoute allowedRoles={["doctor"]}>
-        <MyPerformance />
-      </ProtectedRoute>
-  },
+      /* doctor routes */
+      {
+        path: "/doctor_dash",
+        element:
+          <ProtectedRoute allowedRoles={["doctor"]}>
+            <DoctorDash />
+          </ProtectedRoute>
+      },
+      {
+        path: "/doctor_appointments",
+        element:
+          <ProtectedRoute allowedRoles={["doctor"]}>
+            <DoctorAppointment />
+          </ProtectedRoute>
+      },
+      {
+        path: "/my_session",
+        element:
+          <ProtectedRoute allowedRoles={["doctor"]}>
+            <MySession />
+          </ProtectedRoute>
+      },
+      {
+        path: "/add_treatment/:id",
+        element:
+          <ProtectedRoute allowedRoles={["doctor"]}>
+            <AddTreatment />
+          </ProtectedRoute>
+      },
+      {
+        path: "/my_performance",
+        element:
+          <ProtectedRoute allowedRoles={["doctor"]}>
+            <MyPerformance />
+          </ProtectedRoute>
+      },
 
-  /* admin routes */
-  {
-    path: "/admin_dash",
-    element:
-      <ProtectedRoute allowedRoles={["admin"]}>
-        <AdminDash />
-      </ProtectedRoute>
-  },
-  {
-    path: "/user_setting",
-    element:
-      <ProtectedRoute allowedRoles={["admin"]}>
-        <UserSetting />
-      </ProtectedRoute>
-  },
+      /* admin routes */
+      {
+        path: "/admin_dash",
+        element:
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminDash />
+          </ProtectedRoute>
+      },
+      {
+        path: "/user_setting",
+        element:
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <UserSetting />
+          </ProtectedRoute>
+      },
 
-  {
-    path: "/staff_setting",
-    element:
-      <ProtectedRoute allowedRoles={["admin"]}>
-        <StaffSetting />
-      </ProtectedRoute>
-  },
-  {
-    path: "/reports",
-    element:
-      <ProtectedRoute allowedRoles={["admin"]}>
-        <Reports />
-      </ProtectedRoute>
-  },
-  {
-    path: "/view_edit/:id",
-    element:
-      <ProtectedRoute allowedRoles={["admin"]}>
-        <EditView />
-      </ProtectedRoute>
-  },
-  {
-    path: "/add",
-    element:
-      <ProtectedRoute allowedRoles={["admin"]}>
-        <Add />
-      </ProtectedRoute>
-  },
-  /* admin doctor routes */
-  {
-    path: "/doctor_setting",
-    element:
-      <ProtectedRoute allowedRoles={["admin"]}>
-        <DoctorSetting />
-      </ProtectedRoute>
-  },
-  {
-    path: "/view_edit_doctor/:id",
-    element:
-      <ProtectedRoute allowedRoles={["admin"]}>
-        <EditViewDoctor />
-      </ProtectedRoute>
-  },
-  /* admin staff routes */
-  {
-    path: "/view_edit_staff/:id",
-    element:
-      <ProtectedRoute allowedRoles={["admin"]}>
-        <EditViewStaff />
-      </ProtectedRoute>
-  }
-]
+      {
+        path: "/staff_setting",
+        element:
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <StaffSetting />
+          </ProtectedRoute>
+      },
+      {
+        path: "/reports",
+        element:
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <Reports />
+          </ProtectedRoute>
+      },
+      {
+        path: "/view_edit/:id",
+        element:
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <EditView />
+          </ProtectedRoute>
+      },
+      {
+        path: "/add",
+        element:
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <Add />
+          </ProtectedRoute>
+      },
+      /* admin doctor routes */
+      {
+        path: "/doctor_setting",
+        element:
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <DoctorSetting />
+          </ProtectedRoute>
+      },
+      {
+        path: "/view_edit_doctor/:id",
+        element:
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <EditViewDoctor />
+          </ProtectedRoute>
+      },
+      /* admin staff routes */
+      {
+        path: "/view_edit_staff/:id",
+        element:
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <EditViewStaff />
+          </ProtectedRoute>
+      }
+    ]
   }
 ]);
 

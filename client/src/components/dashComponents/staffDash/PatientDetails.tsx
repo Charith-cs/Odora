@@ -6,7 +6,7 @@ import API from "../../../../api/axios";
 const PatientDetails = ({ data }: PatientDetailsProps) => {
     const { state } = useLocation();
     const { id } = useParams();
-    const [currentPage, setCurrentPage] = useState(1); 
+    const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     const navigate = useNavigate();
     const [patientData, setPatientData] = useState<any>(data || null);
@@ -55,116 +55,153 @@ const PatientDetails = ({ data }: PatientDetailsProps) => {
     const totalPages = Math.ceil(history.length / itemsPerPage);
 
     return (
-        <div className=" mt-6 grid grid-cols-1 ">
-            <h2 className="text-3xl mb-6 mt-6 font-semibold ">Patient Information</h2>
+        <div className="mt-6 space-y-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+                Patient Information
+            </h2>
+            <div className="relative overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:shadow-xl">
+                {/* Close Button */}
+                <button
+                    onClick={() => navigate("/patients")}
+                    className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:border-red-400 hover:bg-red-50"
+                >
+                    <img src="/userDash/close.png" alt="close" className="h-4 w-4 object-contain" />
+                </button>
 
-            <div className=" relative flex items-center gap-20 mx-auto w-full bg-gray-50 rounded-2xl h-full shadow-md p-6 hover:shadow-xl hover:-translate-y-1 transition duration-300">
-                <img src={patientData?.appointment?.userId?.img || "/userDash/user.png"} alt="profilepic" className=" w-32 h-32 object-cover items-center " />
+                <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-start">
+                    <div className="flex w-full flex-col items-center lg:w-64">
+                        <img
+                            src={
+                                patientData?.appointment?.userId?.img ||
+                                "/userDash/user.png"
+                            }
+                            alt="profilepic"
+                            className="h-36 w-36 rounded-full border-4 border-[#2596be]/20 object-cover shadow-lg"
+                        />
 
-                <div className="flex flex-col ">
-                    <section className="flex flex-col ">
-                        <div className="grid grid-cols-2 gap-y-4 gap-x-6 items-center">
-                            <div className="font-semibold">Full name :</div>
-                            <span>
-                                {patientData?.appointment?.userId?.firstName + " " +
-                                    patientData?.appointment?.userId?.lastName}
-                            </span>
+                        <h3 className="mt-5 text-center text-xl font-bold text-gray-800">
+                            {patientData?.appointment?.userId?.firstName +
+                                " " +
+                                patientData?.appointment?.userId?.lastName}
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-500">Patient</p>
+                    </div>
 
-                            <div className="font-semibold">Email :</div>
-                            <span>{patientData?.appointment?.userId?.email}</span>
+                    <div className="flex-1 w-full">
+                        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                            <div className="rounded-2xl bg-gray-50 p-5">
+                                <p className="text-sm font-medium text-gray-500">Full Name</p>
+                                <p className="mt-2 font-semibold text-gray-800">
+                                    {patientData?.appointment?.userId?.firstName +
+                                        " " +
+                                        patientData?.appointment?.userId?.lastName}
+                                </p>
+                            </div>
 
-                            <div className="font-semibold">Mobile number :</div>
-                            <span>{patientData?.appointment?.userId?.mobileNumber}</span>
+                            <div className="rounded-2xl bg-gray-50 p-5">
+                                <p className="text-sm font-medium text-gray-500">Email</p>
+                                <p className="mt-2 break-all font-semibold text-gray-800">{patientData?.appointment?.userId?.email}</p>
+                            </div>
 
-                            <div className="font-semibold">Address :</div>
-                            <span>{patientData?.appointment?.userId?.address}</span>
+                            <div className="rounded-2xl bg-gray-50 p-5">
+                                <p className="text-sm font-medium text-gray-500">Mobile Number </p>
+                                <p className="mt-2 font-semibold text-gray-800">{patientData?.appointment?.userId?.mobileNumber}</p>
+                            </div>
+
+                            <div className="rounded-2xl bg-gray-50 p-5">
+                                <p className="text-sm font-medium text-gray-500">Address</p>
+                                <p className="mt-2 font-semibold text-gray-800 break-words">{patientData?.appointment?.userId?.address}</p>
+                            </div>
                         </div>
-                    </section>
+                    </div>
+                </div>
+            </div>
+            {/* ================= APPOINTMENT HISTORY ================= */}
+
+            <div className="mt-8 rounded-3xl border border-gray-100 bg-white p-5 shadow-md md:p-6">
+                <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Appointment History</h2>
+                        <p className="mt-2 text-sm text-gray-500">Showing {patientData?.history?.length || 0} results</p>
+                    </div>
                 </div>
 
-                <img
-                    onClick={()=>navigate("/patients")}
-                    src="/userDash/close.png"
-                    alt="closeimg"
-                    className=" absolute top-4 right-4 w-5 h-5 object-contain cursor-pointer"
-                />
-            </div>
+                {/* Desktop Table */}
 
-            {/* HISTORY */}
-            <div className=" mt-8">
-                <h2 className="text-3xl mb-6 font-semibold ">Appointment History</h2>
-
-                <p className="text-sm text-gray-400 mb-2">
-                    Showing {patientData?.history?.length || 0} results
-                </p>
-
-                {/* DESKTOP TABLE */}
-                <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full border-separate border-spacing-y-3">
+                <div className="hidden overflow-x-auto md:block">
+                    <table className="min-w-full border-separate border-spacing-y-3">
                         <thead>
-                            <tr className="text-left text-gray-500 text-sm">
-                                <th className="px-4">Doctor</th>
-                                <th className="px-4">Appointment Date</th>
-                                <th className="px-4">Treated Details</th>
-                                <th className="px-4">Paid</th>
+                            <tr className="text-left text-sm font-semibold text-gray-500">
+                                <th className="px-5 py-3">Doctor</th>
+                                <th className="px-5 py-3">Appointment Date</th>
+                                <th className="px-5 py-3">Treatment Details</th>
+                                <th className="px-5 py-3">Paid Amount</th>
                             </tr>
                         </thead>
-
                         <tbody>
+
                             {patientData?.history?.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="text-center py-6 text-gray-400">
-                                        No appointments found
-                                    </td>
+                                    <td colSpan={5} className="rounded-2xl bg-gray-50 py-10 text-center text-gray-400">No appointments found</td>
                                 </tr>
+
                             ) : (
+
                                 currentHistory.map((item: any, index: number) => (
                                     <tr
                                         key={index}
-                                        className="bg-white shadow-md rounded-xl hover:shadow-lg transition"
+                                        className="rounded-2xl bg-gray-50 shadow-sm transition-all duration-300 hover:bg-white hover:shadow-lg"
                                     >
-                                        <td className="px-4 py-4 font-semibold">
-                                            {item?.doctorId?.firstName + " " + item?.doctorId?.lastName}
-                                        </td>
+                                        <td className="rounded-l-2xl px-5 py-5 font-semibold text-gray-800">
+                                            {item?.doctorId?.firstName + " " + item?.doctorId?.lastName}</td>
+                                        <td className="px-5 py-5 text-gray-600">{item?.appointmentId?.dateTime}</td>
+                                        <td className="px-5 py-5">
+                                            <div className="space-y-2">
+                                                {item.treatments?.map((treat: any, i: number) => (
 
-                                        <td className="px-4 py-4">
-                                            {item?.appointmentId?.dateTime}
+                                                    <div
+                                                        key={i}
+                                                        className="rounded-xl bg-white px-3 py-2 text-sm text-gray-700 shadow-sm"
+                                                    >
+                                                        <span className="font-medium">{treat.name}</span>
+                                                        <span className="text-gray-500">{" "}- Rs. {treat.price} </span>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </td>
-
-                                        <td className="px-4 py-4 text-gray-500">
-                                            {item.treatments?.map((treat: any, i: number) => (
-                                                <p key={i}>
-                                                    {treat.name} - Rs.{treat.price}
-                                                </p>
-                                            ))}
-                                        </td>
-
-                                        <td className="px-4 py-4">
-                                            <span className="px-3 py-1 rounded-full text-sm font-semibold">
-                                                {item.amount}
-                                            </span>
+                                        <td className="rounded-r-2xl px-5 py-5">
+                                            <span className="inline-flex rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700"> Rs. {item.amount} </span>
                                         </td>
                                     </tr>
                                 ))
                             )}
                         </tbody>
                     </table>
-                    <div className="flex justify-center items-center gap-3 mt-6">
+
+                    {/* Pagination */}
+
+                    <div className="mt-8 flex flex-col items-center justify-between gap-4 sm:flex-row ">
                         <button
-                            className="px-3 py-1 border rounded-lg text-gray-600 disabled:opacity-40"
-                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            className="rounded-xl border border-gray-200 bg-white px-5 py-2 font-medium text-gray-600 transition-all duration-300 hover:border-[#2596be] hover:text-[#2596be] disabled:cursor-not-allowed disabled:opacity-40"
+                            onClick={() =>
+                                setCurrentPage((prev) => Math.max(prev - 1, 1))
+                            }
                             disabled={currentPage === 1}
                         >
-                            Prev
+                            Previous
                         </button>
 
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm font-medium text-gray-500">
                             Page {currentPage} of {totalPages || 1}
                         </span>
 
                         <button
-                            className="px-3 py-1 border rounded-lg text-gray-600 disabled:opacity-40"
-                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            className="rounded-xl border border-gray-200 bg-white px-5 py-2 font-medium text-gray-600 transition-all duration-300 hover:border-[#2596be] hover:text-[#2596be] disabled:cursor-not-allowed disabled:opacity-40"
+                            onClick={() =>
+                                setCurrentPage((prev) =>
+                                    Math.min(prev + 1, totalPages)
+                                )
+                            }
                             disabled={currentPage === totalPages}
                         >
                             Next
@@ -172,55 +209,77 @@ const PatientDetails = ({ data }: PatientDetailsProps) => {
                     </div>
                 </div>
 
-                {/* MOBILE */}
-                <div className="md:hidden flex flex-col gap-4">
+                {/* ================= MOBILE ================= */}
+
+                <div className="flex flex-col gap-5 md:hidden">
                     {patientData?.history?.length === 0 ? (
-                        <p className="text-center text-gray-400">
-                            No appointments found
-                        </p>
+                        <div className="rounded-2xl bg-gray-50 py-10 text-center text-gray-400 shadow-sm"> No appointments found</div>
+
                     ) : (
+
                         currentHistory.map((item: any, index: number) => (
+
                             <div
                                 key={index}
-                                className="bg-white p-4 rounded-xl shadow-md flex flex-col gap-3"
+                                className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-md transition-all duration-300 hover:shadow-lg"
                             >
-                                <div className="flex justify-between items-center font-semibold">
-                                    <h2>
-                                        {item?.doctorId?.firstName} {item?.doctorId?.lastName}
-                                    </h2>
-                                    <span className="px-2 py-1 rounded-full text-xs font-semibold">
-                                        {item?.appointmentId?.dateTime}
-                                    </span>
+
+                                <div className="border-b border-gray-100 bg-gray-50 p-5">
+                                    <h3 className="text-lg font-bold text-gray-800">
+                                        {item?.doctorId?.firstName}{" "}
+                                        {item?.doctorId?.lastName}
+                                    </h3>
+                                    <p className="mt-1 text-sm text-gray-500">{item?.appointmentId?.dateTime}</p>
                                 </div>
 
-                                <div className="font-semibold">
-                                    {item.treatments?.map((treat: any, i: number) => (
-                                        <p key={i}>
-                                            {treat.name} - Rs.{treat.price}
-                                        </p>
-                                    ))}
+                                <div className="space-y-5 p-5">
+                                    <div>
+                                        <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Treatments</p>
+                                        <div className="space-y-2">
+                                            {item.treatments?.map((treat: any, i: number) => (
+                                                <div
+                                                    key={i}
+                                                    className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3"
+                                                >
+                                                    <span className="font-medium text-gray-700">{treat.name}</span>
+                                                    <span className="font-semibold text-gray-600"> Rs. {treat.price} </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center justify-between rounded-2xl bg-green-50 px-4 py-3">
+                                        <span className="font-medium text-gray-600">Paid Amount</span>
+                                        <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">Rs. {item.amount}</span>
+                                    </div>
                                 </div>
-
-                                <p className="text-gray-500 text-sm">{item.amount}</p>
                             </div>
                         ))
                     )}
-                    <div className="flex justify-center items-center gap-3 mt-6">
+
+                    {/* Pagination */}
+
+                    <div className="mt-2 flex flex-col items-center gap-4">
                         <button
-                            className="px-3 py-1 border rounded-lg text-gray-600 disabled:opacity-40"
-                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            className="w-full rounded-2xl border border-gray-200 bg-white py-3 font-medium text-gray-600 transition-all duration-300 hover:border-[#2596be] hover:text-[#2596be] disabled:cursor-not-allowed disabled:opacity-40"
+                            onClick={() =>
+                                setCurrentPage((prev) => Math.max(prev - 1, 1))
+                            }
                             disabled={currentPage === 1}
                         >
-                            Prev
+                            Previous
                         </button>
 
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm font-medium text-gray-500">
                             Page {currentPage} of {totalPages || 1}
                         </span>
 
                         <button
-                            className="px-3 py-1 border rounded-lg text-gray-600 disabled:opacity-40"
-                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            className="w-full rounded-2xl border border-gray-200 bg-white py-3 font-medium text-gray-600 transition-all duration-300 hover:border-[#2596be] hover:text-[#2596be] disabled:cursor-not-allowed disabled:opacity-40"
+                            onClick={() =>
+                                setCurrentPage((prev) =>
+                                    Math.min(prev + 1, totalPages)
+                                )
+                            }
                             disabled={currentPage === totalPages}
                         >
                             Next

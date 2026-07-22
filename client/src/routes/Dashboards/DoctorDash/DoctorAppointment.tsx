@@ -18,7 +18,6 @@ const DoctorAppointment = () => {
     const fetchAppointment = async () => {
         try {
             const res = await API.get(`/appointment/my/${currentUser._id}`);
-            console.log(res.data)
             setAppointments(res.data.docAppoiintment);
         } catch (err) {
             toast.error("Failed to load appointments");

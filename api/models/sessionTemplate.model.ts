@@ -10,7 +10,7 @@ const sessionTemplateSchema = new Schema<sessionTemplayteModelType>({
     clinicId: {
         type: Schema.Types.ObjectId,
         ref: "Clinic",
-        required: true
+        //required: true
     },
     startDate: {
         type: Date,
@@ -25,7 +25,7 @@ const sessionTemplateSchema = new Schema<sessionTemplayteModelType>({
         required: true,
     },
     endTime: {
-        type: String,
+        type: String, 
         required: true,
     },
     daysOfWeek: {

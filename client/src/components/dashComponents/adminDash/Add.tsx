@@ -116,44 +116,52 @@ const Add = ({ updateLabel, setShowForm, role }: Props) => {
 
 
     return (
-        <div className="relative w-full">
-            <form className="flex flex-col" onSubmit={handleSubmit(onSubmit,
-                 (errors) => {
-                    console.log("❌ VALIDATION FAILED:", errors);
-                } )}>
+       <div className="w-full">
+    <form
+        className="space-y-6"
+        onSubmit={handleSubmit(
+            onSubmit,
+            (errors) => {
+                console.log("❌ VALIDATION FAILED:", errors);
+            }
+        )}
+    >
+        {updateLabel.map((item) => (
+            <React.Fragment key={String(item.key)}>
 
-                {updateLabel.map((item) => (
-                    <React.Fragment key={String(item.key)}>
-                        <label className="mt-3 font-medium">
-                            {item.label}
-                        </label>
+                <div className="flex flex-col">
 
-                        <input
-                            type={item.type || "text"}
-                            placeholder={item.placeholder}
-                            defaultValue={item?.value || ""}
-                            {...register(item.key as any)}
-                            className="mt-2 shadow-md rounded-xl p-3 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                        />
+                    <label className="mb-2 text-sm font-semibold text-gray-700">
+                        {item.label}
+                    </label>
 
-                        {errors?.[item.key] && (
-                            <p className="text-red-500 text-sm mt-1">
-                                {String((errors as any)[item.key]?.message)}
-                            </p>
-                        )}
-                    </React.Fragment>
-                ))}
+                    <input
+                        type={item.type || "text"}
+                        placeholder={item.placeholder}
+                        defaultValue={item?.value || ""}
+                        {...register(item.key as any)}
+                        className=" w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 placeholder:text-gray-400 transition-all duration-300 focus:border-[#2596be] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#2596be]/10"/>
 
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="mt-10 bg-sky-500 hover:bg-sky-600 transition-all duration-200 p-3 rounded-xl text-white font-semibold disabled:opacity-50"
-                >
-                    {isSubmitting ? "Adding..." : "Add now"}
-                </button>
+                    {errors?.[item.key] && (
+                        <p className="mt-2 text-sm font-medium text-red-500">
+                            {String((errors as any)[item.key]?.message)}
+                        </p>
+                    )}
 
-            </form>
-        </div>
+                </div>
+
+            </React.Fragment>
+        ))}
+
+        <button
+            type="submit"
+            disabled={isSubmitting}
+            className=" mt-4 w-full rounded-2xl bg-[#2596be] px-5 py-3.5 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#1f7ea0] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50">
+            {isSubmitting ? "Adding..." : "Add Now"}
+        </button>
+
+    </form>
+</div>
     );
 };
 

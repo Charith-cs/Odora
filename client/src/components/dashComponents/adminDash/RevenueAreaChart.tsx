@@ -31,8 +31,8 @@ const RevenueAreaChart = () => {
 
   return (
     <div className="">
-      <div className=" flex justify-between items-center">
-        <h1 className="text-2xl font-semibold my-5">
+      <div className=" flex flex-col items-start md:justify-between ">
+        <h1 className="text-2xl md:text-3xl font-semibold my-5">
           Revenue Trend
         </h1>
         <div className="flex items-center gap-3 flex-wrap">

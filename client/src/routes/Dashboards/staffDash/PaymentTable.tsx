@@ -98,7 +98,7 @@ const PaymentTable = () => {
                 <p className="text-sm text-gray-400 mt-4">
                     Showing {currentRecords.length} results
                 </p>
-                <Link to="/walk_in_appointment" className="px-3 py-1 mt-6 rounded-lg border border-red-500 text-red-500 hover:text-white hover:bg-red-500 transition">Add Walk-In-Appointment</Link>
+                <Link to="/walk_in_appointment" className="px-3 py-1 mt-6 rounded-lg border border-[#2596be] text-[#2596be] hover:text-white hover:bg-[#2596be] transition">Add Walk-In-Appointment</Link>
             </div>
             <hr className=" my-2" />
 

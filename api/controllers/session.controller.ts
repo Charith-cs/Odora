@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Session from "../models/session.model";
 import SessionTemplate from "../models/sessionTemplate.model";
 import mongoose from "mongoose";
+import Clinic from "../models/clinic.model";
 
 
 export const getAllSessions = async (req: Request, res: Response) => {
@@ -49,7 +50,6 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
     try {
         const {
             doctorId,
-            clinicId,
             startDate,
             endDate,
             startTime,
@@ -59,6 +59,16 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
             maxPatientsPerHour,
             fee
         } = req.body;
+
+        const clinic = await Clinic.findOne(
+            { doctorList: doctorId },
+            { _id: 1 }
+        );
+        if (!clinic) {
+            return res.status(404).json({
+                message: "Clinic not found"
+            });
+        }
 
         // ✅ VALIDATIONS (VERY IMPORTANT)
         if (!startTime || !endTime || !startTime.includes(":") || !endTime.includes(":")) {
@@ -76,7 +86,7 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
         // ✅ CREATE TEMPLATE
         const template = await SessionTemplate.create({
             doctorId,
-            clinicId,
+            clinicId: clinic._id,
             startDate,
             endDate,
             startTime,
@@ -118,7 +128,7 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
 
                 sessions.push({
                     doctorId,
-                    clinicId,
+                    clinicId: clinic._id,
                     templateId: template._id,
                     date: new Date(current),
                     startDateTime: startDT,
@@ -190,6 +200,29 @@ export const updateSessionTemplate = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Oops! Something went wrong" });
     }
 };
+
+export const getAllSessionTemplates = async (req: Request, res: Response) => {
+    try {
+
+        const { id } = req.params;
+
+        if (!id) {
+            return res.status(400).json({
+                message: "Doctor id is required",
+            });
+        }
+        const getSesssionTempdetails = await SessionTemplate.find({
+            doctorId: id,
+            isActive : true
+        });
+        if (getSesssionTempdetails.length === 0) {
+            return res.status(404).json("No available session templates")
+        }
+        return res.status(200).json(getSesssionTempdetails);
+    } catch (err) {
+        return res.status(500).json({ message: "Oops! Something went wrong" });
+    }
+}
 
 export const cancelSession = async (req: Request, res: Response) => {
     try {

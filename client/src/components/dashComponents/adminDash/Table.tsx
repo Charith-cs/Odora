@@ -44,7 +44,7 @@ const Table = <T extends Record<string, any>>({
 
     return (
         <div className=" p-2">
-            <h1 className="text-3xl  font-semibold">{title}</h1>
+            <h1 className="text-2xl md:text-3xl  font-semibold">{title}</h1>
 
             <div className="  h-4/5 overflow-x-auto overflow-y-auto">
 
@@ -113,52 +113,72 @@ const Table = <T extends Record<string, any>>({
                 </table>
             </div>
 
-            <div className="block md:hidden lg:hidden xl:hidden 2xl:hidden">
+            <div className="block md:hidden">
                 {paginatedData.length === 0 ? (
-                    <div className="text-center text-gray-400 mt-4">
+                    <div className="mt-6 rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center text-sm font-medium text-gray-500">
                         No data found
                     </div>
                 ) : (
-                    paginatedData.map((row, index) => (
-                        <div
-                            key={index}
-                            className="p-2 rounded-xl shadow-md mt-4 flex justify-between w-full hover:shadow-lg hover:translate-y-1 transition cursor-pointer"
-                        >
+                    <div className="space-y-4">
+                        {paginatedData.map((row, index) => (
+                            <div
+                                key={index}
+                                className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                            >
+                                <div className="grid grid-cols-2 gap-4">
 
-                            <span className="w-1/2 ml-5">
-                                {columns.slice(0, Math.ceil(columns.length / 2)).map((col) => (
-                                    <h1
-                                        key={String(col.key)}
-                                        className="text-sm"
-                                    >
-                                        {col.render
-                                            ? col.render(row[col.key], row, index)
-                                            : row[col.key]}
-                                    </h1>
-                                ))}
-                            </span>
+                                    <div className="space-y-3">
+                                        {columns
+                                            .slice(0, Math.ceil(columns.length / 2))
+                                            .map((col) => (
+                                                <div key={String(col.key)}>
+                                                    <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                                        {col.label}
+                                                    </div>
 
+                                                    <div className="break-words text-sm font-medium text-gray-700">
+                                                        {col.render
+                                                            ? col.render(row[col.key], row, index)
+                                                            : row[col.key]}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                    </div>
 
-                            <span className="w-1/2 flex flex-col justify-between items-end mr-5">
-                                {columns.slice(Math.ceil(columns.length / 2)).map((col) => (
-                                    <h1 key={String(col.key)} className="text-sm">
-                                        {col.render
-                                            ? col.render(row[col.key], row, index)
-                                            : row[col.key]}
-                                    </h1>
-                                ))}
+                                    <div className="space-y-3">
+                                        {columns
+                                            .slice(Math.ceil(columns.length / 2))
+                                            .map((col) => (
+                                                <div key={String(col.key)}>
+                                                    <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                                        {col.label}
+                                                    </div>
+
+                                                    <div className="break-words text-sm font-medium text-gray-700">
+                                                        {col.render
+                                                            ? col.render(row[col.key], row, index)
+                                                            : row[col.key]}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                    </div>
+
+                                </div>
 
                                 {actions && (
-                                    <div className="mt-2">
-                                        {actions(row, index)}
-                                    </div>
+                                    <>
+                                        <div className="my-4 h-px bg-gray-100" />
+
+                                        <div className="flex flex-wrap justify-end gap-2">
+                                            {actions(row, index)}
+                                        </div>
+                                    </>
                                 )}
-                            </span>
-                        </div>
-                    ))
+                            </div>
+                        ))}
+                    </div>
                 )}
             </div>
-
             <div className="flex justify-between items-center mt-4 px-2 text-sm text-gray-600">
                 <button
                     onClick={handlePrev}
