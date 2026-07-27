@@ -58,11 +58,12 @@ export const getDoctorSessionDetailsForWalkIn = async (req: Request, res: Respon
                 $lte: endOfDay
             }
         })
-        .populate("doctorId" , "firstName lastName")
-        .populate("clinicId" , "clinicName")
-        ;
+            .populate("doctorId", "firstName lastName")
+            .populate("clinicId", "clinicName")
+            ;
         return res.status(200).json(sessionDetails);
     } catch (err) {
         return res.status(500).json({ message: "Oops! something went wrong" });
     }
 }
+

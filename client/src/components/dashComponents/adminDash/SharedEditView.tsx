@@ -33,8 +33,8 @@ const SharedEditView = ({ dataColumns, tableData, tableTitle, title, label, data
             {!isUser && (
                 <section className="space-y-8 ">
                     {/* Performance Chart */}
-                    <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-md md:p-6">
-                        <h2 className="mb-6 text-2xl font-bold text-gray-800 md:text-3xl">
+                    <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-md md:p-6 hover:shadow-xl">
+                        <h2 className="mb-6 text-2xl font-bold text-[#2596be] md:text-3xl">
                             {performanceConf.title}
                         </h2>
                         <div className="h-[300px] md:h-[380px]">
@@ -46,8 +46,8 @@ const SharedEditView = ({ dataColumns, tableData, tableTitle, title, label, data
                     </div>
 
                     {/* Revenue Chart */}
-                    <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-md md:p-6">
-                        <h2 className="mb-6 text-2xl font-bold text-gray-800 md:text-3xl">
+                    <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-md md:p-6 hover:shadow-xl mb-5">
+                        <h2 className="mb-6 text-2xl font-bold text-[#2596be] md:text-3xl">
                             {revenueConf.title}
                         </h2>
 

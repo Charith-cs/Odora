@@ -44,67 +44,68 @@ const Table = <T extends Record<string, any>>({
 
     return (
         <div className=" p-2">
-            <h1 className="text-2xl md:text-3xl  font-semibold">{title}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-[#2596be]">{title}</h1>
 
-            <div className="  h-4/5 overflow-x-auto overflow-y-auto">
-
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between my-4">
-
-                    <div className="relative w-[90vw] md:w-2/3 ml-2">
-                        <input
-                            type="text"
-                            placeholder="Search ..."
-                            value={search}
-                            onChange={(e) => {
-                                setSearch(e.target.value);
-                                setCurrentPage(1);
-                            }}
-                            className=" w-full px-4 py-2 pl-10 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500"
-                        />
-                        <span className="absolute left-3 top-2.5 text-gray-400 text-sm">🔍</span>
+            <div className="h-4/5 overflow-x-auto overflow-y-auto">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 my-5">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+                        <div className="relative w-full lg:w-2/3">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+                            <input
+                                type="text"
+                                placeholder="Search..."
+                                value={search}
+                                onChange={(e) => {
+                                    setSearch(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-300 text-sm text-gray-700 shadow-sm
+                    focus:outline-none focus:ring-2 focus:ring-[#2596be] focus:border-[#2596be] transition"
+                            />
+                        </div>
                     </div>
-
                 </div>
 
 
-                <table className="hidden md:table w-full border-separate border-spacing-y-3">
-                    <thead>
-                        <tr className="text-left text-gray-500 text-sm">
+                <table className="hidden md:table w-full">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
                             {columns.map((col) => (
-                                <th key={String(col.key)} className="px-4">
-                                    {col.label}
-                                </th>
+                                <th key={String(col.key)} className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">{col.label}</th>
                             ))}
-                            {actions && <th className="px-4">Action</th>}
+
+                            {actions && (
+                                <th className="px-6 py-4 text-center text-xs font-semibold uppercase tracking-wider text-gray-500">Action</th>
+                            )}
                         </tr>
                     </thead>
 
-                    <tbody>
+                    <tbody className="divide-y divide-gray-100">
                         {paginatedData.length === 0 ? (
                             <tr>
-                                <td
-                                    colSpan={columns.length + (actions ? 1 : 0)}
-                                    className="text-center py-6 text-gray-400"
-                                >
-                                    No data found
+                                <td colSpan={columns.length + (actions ? 1 : 0)} className="py-12 text-center text-gray-400">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <span className="text-4xl">📄</span>
+                                        <p className="font-semibold text-gray-500">No data found</p>
+                                        <p className="text-sm">There are no records matching your search.</p>
+                                    </div>
                                 </td>
                             </tr>
+
                         ) : (
+
                             paginatedData.map((row, index) => (
-                                <tr
-                                    key={index}
-                                    className="bg-white shadow-md rounded-xl hover:shadow-lg transition"
-                                >
+                                <tr key={index} className="hover:bg-sky-50 transition-colors duration-200">
                                     {columns.map((col) => (
-                                        <td key={String(col.key)} className="px-4 py-4">
-                                            {col.render
-                                                ? col.render(row[col.key], row, index)
-                                                : row[col.key]}
+                                        <td key={String(col.key)} className="px-6 py-5 text-gray-700">
+                                            {col.render ? col.render(row[col.key], row, index) : row[col.key]}
                                         </td>
                                     ))}
 
                                     {actions && (
-                                        <td className="px-4 py-4">{actions(row, index)}</td>
+                                        <td className="px-6 py-5">
+                                            <div className="flex justify-center items-center gap-2 flex-wrap">{actions(row, index)}</div>
+                                        </td>
                                     )}
                                 </tr>
                             ))

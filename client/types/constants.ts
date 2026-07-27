@@ -1,12 +1,12 @@
 import type { doctorStatusType, StatusType } from "./types";
 
 export const statusStyles: Record<StatusType, string> = {
-  approved: "text-green-600 ",
-  pending: "text-yellow-600 ",
-  canceled: "text-red-600 ",
-  completed : "text-blue-600"
+  approved: "bg-green-100 text-green-700",
+  pending: "bg-yellow-100 text-yellow-700",
+  canceled: "bg-red-100 text-red-700",
+  completed: "bg-blue-100 text-blue-700",
+  paid: "bg-emerald-100 text-emerald-700",
 };
-
 export const doctorConfig = {
   xKey: 'month',
   areas: [
@@ -22,7 +22,7 @@ export const adminConfig = {
 };
 
 export const doctorPerConfig = {
-  title:"Doctor Performance",
+  title: "Doctor Performance",
   xKey: 'month',
   areas: [
     { key: 'patients', color: '#35a830' }
@@ -30,7 +30,7 @@ export const doctorPerConfig = {
 };
 
 export const doctorRevConfig = {
-  title:"Generated Revenue",
+  title: "Generated Revenue",
   xKey: 'month',
   areas: [
     { key: 'revenue', color: '#eb7831' }
@@ -38,7 +38,7 @@ export const doctorRevConfig = {
 };
 
 export const staffPerConfig = {
-  title:"Monthly Revenue",
+  title: "Monthly Revenue",
   xKey: 'month',
   areas: [
     { key: 'revenue', color: '#33b830' }
@@ -46,7 +46,7 @@ export const staffPerConfig = {
 };
 
 export const staffRevConfig = {
-  title:"Last week Revenue",
+  title: "Last week Revenue",
   xKey: 'day',
   areas: [
     { key: 'revenue', color: '#eb2631' }
@@ -55,7 +55,8 @@ export const staffRevConfig = {
 
 
 export const doctorStatusStyles: Record<doctorStatusType, string> = {
-  Completed: "text-green-600 ",
-  Ongoing: "text-sky-600 ",
-  Upcomming: "text-yellow-600 ",
+  approved: "bg-green-100 text-green-700",
+  upcomming: "bg-yellow-100 text-yellow-700",
+  completed: "bg-blue-100 text-blue-700",
+  ongoing: "bg-emerald-100 text-emerald-700",
 };

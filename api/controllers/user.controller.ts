@@ -97,7 +97,7 @@ export const getUsersBasedOnDoctor = async (req: Request, res: Response) => {
             {
                 $match: matchCondition
             },
-            {
+            { 
                 $group: {
                     _id: "$userId",
                     totalCompleted: { $sum: 1 }

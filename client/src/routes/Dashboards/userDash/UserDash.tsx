@@ -33,7 +33,7 @@ const UserDash = () => {
                 const res = await API.get(`/appointment/${currentUser._id}`)
                 setUpcomming(res.data.appointment);
             } catch (err) {
-                toast.error("Oops! Something went wrong");
+                console.error(err);
             }
         }
         Recent();
@@ -92,7 +92,7 @@ const UserDash = () => {
                     <UpComming data={upcomming} />
                 ) : (
                     <div className=" rounded-3xl border-2 border-dashed border-gray-200 bg-white py-16 px-8 text-center">
-                        <img src="/icons/calendar.png" alt="No Appointments" className="w-16 h-16 mx-auto mb-6 opacity-70" />
+                        <img src="/icons/empty.png" alt="No Appointments" className="w-16 h-16 mx-auto mb-6 opacity-70" />
                         <h2 className="text-xl font-bold text-[#2596be]">No Upcoming Appointments</h2>
                         <p className="text-gray-500 mt-3">Let's book your first appointment with Odora.</p>
 

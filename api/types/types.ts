@@ -51,7 +51,7 @@ export type appointmentModelType = {
 export type treatmentModelType = {
     userId: Types.ObjectId;
     appointmentId: Types.ObjectId;
-    sessionId:Types.ObjectId;
+    sessionId: Types.ObjectId;
     doctorId: Types.ObjectId;
     treatments: {
         name: string,
@@ -80,8 +80,13 @@ export type clinicModelType = {
     img: string;
     desc: string;
     mobileNumber: string;
-    managementId:Types.ObjectId;
+    managementId: Types.ObjectId;
     doctorList: [Types.ObjectId];
+    pendingDoctorRequests: {
+        doctorId: Types.ObjectId;
+        requestedAt: Date;
+        status : "pending" | "approved" | "rejected";
+    }[];
 }
 
 /* message model types */

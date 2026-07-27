@@ -16,6 +16,7 @@ const Bookappointment = () => {
     const clinic = location.state?.clinic;
     const user = JSON.parse(localStorage.getItem("user") || "null");
     const AC = 100;
+    const total = session?.fee + AC;
 
     console.log(session);
 
@@ -23,30 +24,31 @@ const Bookappointment = () => {
         setButtton(true);
     }
 
-const handleSubmit = async () => {
-    const dateTime = new Date(session.startDateTime); 
+    const handleSubmit = async () => {
+        const dateTime = new Date(session.startDateTime);
 
-    const data = {
-        userId: user._id,
-        doctorId: doctor._id,
-        clinicId: clinic._id,
-        sessionId: session._id,
-        dateTime: dateTime.toISOString(),   // ✅ FIXED
-        fee: session.fee + AC,
-        method: "visit",
-        status: "pending",
+
+        const data = {
+            userId: user._id,
+            doctorId: doctor._id,
+            clinicId: clinic._id,
+            sessionId: session._id,
+            dateTime: dateTime.toISOString(),
+            fee: total,
+            method: "visit",
+            status: "pending",
+        };
+
+        try {
+            const res = await API.post("/appointment", data);
+            setButtton(false);
+            toast.success(res.data.message);
+            navigate(`/my_appointment/${user._id}`);
+        } catch (err: any) {
+            setButtton(false);
+            toast.error(err.response?.data?.message || "Request failed");
+        }
     };
-
-    try {
-        const res = await API.post("/appointment", data);
-        setButtton(false);
-        toast.success(res.data.message);
-        navigate(`/my_appointment/${user._id}`);
-    } catch (err: any) {
-        setButtton(false);
-        toast.error(err.response?.data?.message || "Request failed");
-    }
-};
 
     return (
         <>
@@ -128,17 +130,17 @@ const handleSubmit = async () => {
                             <div className="flex justify-between mt-2">
                                 <span className="font-bold text-sm">Appointment Time</span>
                                 <span className="text-right text-sm">
-    {new Date(session.startDateTime).toLocaleDateString("en-GB")} <br />
-    {new Date(session.startDateTime).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-    })}{" "}
-    to{" "}
-    {new Date(session.endDateTime).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-    })}
-</span>
+                                    {new Date(session.startDateTime).toLocaleDateString("en-GB")} <br />
+                                    {new Date(session.startDateTime).toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    })}{" "}
+                                    to{" "}
+                                    {new Date(session.endDateTime).toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    })}
+                                </span>
                             </div>
                         </div>
 

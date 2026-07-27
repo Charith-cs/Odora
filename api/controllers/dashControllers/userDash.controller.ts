@@ -446,7 +446,7 @@ export const getChartDataForDocStaff = async (req: Request, res: Response) => {
     try {
         const id = req.params.id;
         if (!id || Array.isArray(id)) {
-            return res.status(404).json({ message: "Check yourID status" });
+            return res.status(404).json({ message: "Check your ID status" });
         }
         const user = await User.findById(id);
 

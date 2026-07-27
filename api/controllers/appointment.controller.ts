@@ -9,7 +9,7 @@ import Staff from "../models/staff.model";
 
 export const createAppointment = async (req: Request, res: Response) => {
     try {
-        const { userId, sessionId, dateTime, method } = req.body;
+        const { userId, sessionId, dateTime, method, fee } = req.body;
 
         const session = await Session.findById(sessionId);
 
@@ -84,7 +84,7 @@ export const createAppointment = async (req: Request, res: Response) => {
             clinicId: session.clinicId,
             sessionId,
             dateTime: bookingDate,
-            fee: session.fee,
+            fee: fee,
             method: method || "visit",
             status: "pending"
         });
@@ -277,7 +277,11 @@ export const deleteAppointment = async (req: Request, res: Response) => {
 export const getDetails = async (req: Request, res: Response) => {
     try {
         const id = req.params.id;
-        const appointment = await Appointment.findById(id).populate("doctorId", "firstName lastName").populate("clinicId", "clinicName").populate("userId", "firstName lastName email mobileNumber address");
+        const appointment = await Appointment.findById(id)
+            .populate("doctorId", "firstName lastName")
+            .populate("clinicId", "clinicName")
+            .populate("userId", "firstName lastName email mobileNumber address");
+
         if (!appointment) {
             return res.status(404).json({ message: "Appointment not found" });
         }

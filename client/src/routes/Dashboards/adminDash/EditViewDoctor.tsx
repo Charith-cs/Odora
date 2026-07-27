@@ -38,6 +38,8 @@ const EditViewDoctor = () => {
     }
   }
 
+
+
   useEffect(() => {
     fetchDoctordetails();
     fetchchartData();

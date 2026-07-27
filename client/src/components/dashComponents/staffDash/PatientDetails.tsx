@@ -54,6 +54,8 @@ const PatientDetails = ({ data }: PatientDetailsProps) => {
 
     const totalPages = Math.ceil(history.length / itemsPerPage);
 
+    console.log(patientData);
+
     return (
         <div className="mt-6 space-y-6">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
@@ -135,7 +137,7 @@ const PatientDetails = ({ data }: PatientDetailsProps) => {
                                 <th className="px-5 py-3">Doctor</th>
                                 <th className="px-5 py-3">Appointment Date</th>
                                 <th className="px-5 py-3">Treatment Details</th>
-                                <th className="px-5 py-3">Paid Amount</th>
+                                <th className="px-5 py-3">Status</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -154,7 +156,7 @@ const PatientDetails = ({ data }: PatientDetailsProps) => {
                                     >
                                         <td className="rounded-l-2xl px-5 py-5 font-semibold text-gray-800">
                                             {item?.doctorId?.firstName + " " + item?.doctorId?.lastName}</td>
-                                        <td className="px-5 py-5 text-gray-600">{item?.appointmentId?.dateTime}</td>
+                                        <td className="px-5 py-5 text-gray-600">{new Date(item?.appointmentId?.dateTime).toLocaleDateString("en-GB")}</td>
                                         <td className="px-5 py-5">
                                             <div className="space-y-2">
                                                 {item.treatments?.map((treat: any, i: number) => (
@@ -170,7 +172,7 @@ const PatientDetails = ({ data }: PatientDetailsProps) => {
                                             </div>
                                         </td>
                                         <td className="rounded-r-2xl px-5 py-5">
-                                            <span className="inline-flex rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700"> Rs. {item.amount} </span>
+                                            <span className="inline-flex rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">{item.appointmentId?.status ? item.appointmentId?.status : item.appointment?.status} </span>
                                         </td>
                                     </tr>
                                 ))
@@ -229,7 +231,7 @@ const PatientDetails = ({ data }: PatientDetailsProps) => {
                                         {item?.doctorId?.firstName}{" "}
                                         {item?.doctorId?.lastName}
                                     </h3>
-                                    <p className="mt-1 text-sm text-gray-500">{item?.appointmentId?.dateTime}</p>
+                                    <p className="mt-1 text-sm text-gray-500">{new Date(item?.appointmentId?.dateTime).toLocaleDateString("en-GB")}</p>
                                 </div>
 
                                 <div className="space-y-5 p-5">
@@ -248,8 +250,8 @@ const PatientDetails = ({ data }: PatientDetailsProps) => {
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between rounded-2xl bg-green-50 px-4 py-3">
-                                        <span className="font-medium text-gray-600">Paid Amount</span>
-                                        <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">Rs. {item.amount}</span>
+                                        <span className="font-medium text-gray-600">Status</span>
+                                        <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">{item?.appointmentId?.status}</span>
                                     </div>
                                 </div>
                             </div>

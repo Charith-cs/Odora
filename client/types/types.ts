@@ -137,7 +137,7 @@ export type doctorAppointmentType = {
   date: string;
   status: doctorStatusType;
 };
-export type doctorStatusType = "ongoing" | "approved" | "completed";
+export type doctorStatusType = "ongoing" | "approved" | "completed" | "upcomming";
 
 /* admin */
 
@@ -312,11 +312,12 @@ export type UserFormData = {
 };
 
 export type UpdateLabelType = {
-  key: keyof UserFormData;
-  label: string;
-  value: string;
-  placeholder: string;
+  key?: keyof UserFormData;
+  label?: string;
+  value?: string;
+  placeholder?: string;
   type?: string;
+  disabled?:boolean;
 };
 
 export type DoctorFormData = {
@@ -350,4 +351,24 @@ export interface DashNavType {
   name: string;
   path: string;
   image: string;
+}
+
+export type docPast = {
+  doctor:string;
+  birthDay:number;
+  appointmentDate:string;
+  treatments:[string];
+  note:string;
+}
+
+export type docJoin = {
+  name:string;
+  address:string;
+  contact:string;
+  registered:number;
+}
+export type docAdminJoin = {
+  name:string;
+  email:string;
+  contact:string;
 }

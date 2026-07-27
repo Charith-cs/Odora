@@ -40,7 +40,7 @@ const DashSideNav = () => {
                 image: "./userDash/doctor.png",
             },
             {
-                name: "Appointments",
+                name: "My Appointments",
                 path: `/my_appointment/${currentUser._id}`,
                 image: "./userDash/appointment.png",
             },
@@ -80,6 +80,11 @@ const DashSideNav = () => {
                 name: "My Performance",
                 path: "/my_performance",
                 image: "./userDash/line-chart.png",
+            },
+            {
+                name: "Join Request",
+                path: "/join",
+                image: "./userDash/meeting.png",
             },
             {
                 name: "Profile",

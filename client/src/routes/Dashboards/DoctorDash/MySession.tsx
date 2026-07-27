@@ -7,6 +7,7 @@ const MySession = () => {
 
     const currentUser = JSON.parse(localStorage.getItem("user") || "null");
     const [available, setAvailable] = useState<any>("");
+    const [editingTemplate, setEditingTemplate] = useState<any>(null);
 
     const initialFormData = {
         startDate: "",
@@ -73,8 +74,39 @@ const MySession = () => {
     }, [currentUser._id]);
 
     const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("en-GB");
-};
+        return new Date(date).toLocaleDateString("en-GB");
+    };
+
+    //update
+    const handleEdit = (template: any) => {
+        setEditingTemplate(template);
+        setFormData({
+            startDate: template.startDate.split("T")[0],
+            endDate: template.endDate.split("T")[0],
+            startTime: template.startTime,
+            endTime: template.endTime,
+            daysOfWeek: template.daysOfWeek,
+            maxPatients: template.maxPatients,
+            maxPatientsPerHour: template.maxPatientsPerHour,
+            fee: template.fee,
+        })
+    }
+
+    const handleUpdate = async () => {
+        try{
+            const data = {
+                doctorId : editingTemplate.doctorId,
+                clinicId : editingTemplate.clinicId,
+                ...formData
+            }
+            const res = await API.put(`/session/update/${editingTemplate._id}` , data);
+            toast.success("Template is updated successfully!")
+            //console.log(data)
+        }catch(err){
+            toast.error("Oops! Something went wrong");
+        }
+    }
+
 
     return (
         <div className="space-y-8">
@@ -93,7 +125,7 @@ const MySession = () => {
             <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
                 {/* Left */}
                 <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md">
-                    <h2 className="mb-8 text-2xl font-bold text-gray-800">Create Session Template</h2>
+                    <h2 className="mb-8 text-2xl font-bold text-gray-800">{editingTemplate ? "Update Session Template" : "Create Session Template"}</h2>
                     <div className="space-y-6">
                         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                             <div>
@@ -141,7 +173,6 @@ const MySession = () => {
                                 />
                             </div>
                         </div>
-
 
 
                         <div>
@@ -211,10 +242,10 @@ const MySession = () => {
                             </div>
                         </div>
 
-                        <button type="button" onClick={handleSubmit} className="w-full rounded-2xl bg-[#2596be] py-3 font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#2088af] hover:shadow-lg">
-                            Create Session Template
+                        <button type="button" onClick={editingTemplate ? handleUpdate : handleSubmit} className="w-full rounded-2xl bg-[#2596be] py-3 font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#2088af] hover:shadow-lg">
+                            {editingTemplate ? "Update Template" : "Create Template"}
                         </button>
-                        <button type="button" onClick={() => setFormData(initialFormData)} className="w-full rounded-2xl bg-white py-3 border border-red-500 font-semibold text-red-500 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-red-500 hover:shadow-lg hover:text-white">
+                        <button type="button" onClick={() => {setEditingTemplate(null) ; setFormData(initialFormData);}} className="w-full rounded-2xl bg-white py-3 border border-red-500 font-semibold text-red-500 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-red-500 hover:shadow-lg hover:text-white">
                             Reset
                         </button>
                     </div>
@@ -230,7 +261,7 @@ const MySession = () => {
                         {available ?
                             available.map((item: any) => (
 
-                                <div className="relative rounded-3xl border border-gray-100 bg-white p-5 shadow-sm cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                                <div key={item._id} className="relative rounded-3xl border border-gray-100 bg-white p-5 shadow-sm cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                                     <div className="grid grid-cols-2 gap-6">
                                         <div>
                                             <p className="text-xs uppercase text-gray-400">Start Date</p>
@@ -256,7 +287,6 @@ const MySession = () => {
                                     <div className="mt-5 flex flex-wrap gap-3">
                                         <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">Fee : Rs.{item.fee}.00</span>
                                         <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">Max : {item.maxPatients} Patients</span>
-                                        <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700">5 / Hour</span>
                                     </div>
 
                                     <div className="mt-5 flex flex-wrap gap-2">
@@ -273,7 +303,7 @@ const MySession = () => {
                                             );
                                         })}
                                     </div>
-                                    <button className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-xl bg-[#2596be] text-white shadow-lg transition hover:bg-[#2088af]">✎</button>
+                                    <button onClick={()=>handleEdit(item)} className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-xl bg-[#2596be] text-white shadow-lg transition hover:bg-[#2088af]">✎</button>
                                 </div>
 
                             )) :

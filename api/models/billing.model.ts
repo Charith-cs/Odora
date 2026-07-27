@@ -29,7 +29,7 @@ const billingSchema = new Schema<billingModelType>({
     },
     staffId: {
         type: Schema.Types.ObjectId,
-        ref: "user",
+        ref: "User",
         required: true
     },
     status: {

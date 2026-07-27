@@ -5,6 +5,11 @@ import User from "../models/user.model";
 import Billing from "../models/billing.model";
 import Doctor from "../models/doctor.model";
 import Staff from "../models/staff.model";
+import SessionTemplate from "../models/sessionTemplate.model";
+import Session from "../models/session.model";
+import Treatment from "../models/Treatment.model";
+
+
 
 export const getUsers = async (req: Request, res: Response) => {
     try {
@@ -56,66 +61,66 @@ export const getUsers = async (req: Request, res: Response) => {
             return res.status(200).json(doctorList);
         } else if (role === "staff") {
 
-    const now = new Date();
+            const now = new Date();
 
-    const startOfDay = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-        0, 0, 0, 0
-    );
+            const startOfDay = new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate(),
+                0, 0, 0, 0
+            );
 
-    const endOfDay = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-        23, 59, 59, 999
-    );
+            const endOfDay = new Date(
+                now.getFullYear(),
+                now.getMonth(),
+                now.getDate(),
+                23, 59, 59, 999
+            );
 
-    const staffData = await Staff.find({
-        clinic: clinic._id
-    })
-        .populate("userId", "firstName lastName mobileNumber")
-        .populate("clinic", "clinicName _id");
+            const staffData = await Staff.find({
+                clinic: clinic._id
+            })
+                .populate("userId", "firstName lastName mobileNumber")
+                .populate("clinic", "clinicName _id");
 
 
-    const billing = await Billing.aggregate([
-        {
-            $match: {
-                clinicId: clinic._id,
-                status: "paid",
-                createdAt: {
-                    $gte: startOfDay,
-                    $lte: endOfDay,
+            const billing = await Billing.aggregate([
+                {
+                    $match: {
+                        clinicId: clinic._id,
+                        status: "paid",
+                        createdAt: {
+                            $gte: startOfDay,
+                            $lte: endOfDay,
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalAmount: { $sum: { $toDouble: "$amount" } }
+                    }
                 }
-            }
-        },
-        {
-            $group: {
-                _id: null,
-                totalAmount: { $sum: { $toDouble: "$amount" } }
-            }
+            ]);
+
+            const totalBilling = billing[0]?.totalAmount || 0;
+
+
+            const response = staffData.map((staff: any) => ({
+                details: staff.userId,
+                staffName: `${staff?.userId?.firstName || ""} ${staff?.userId?.lastName || ""}`,
+                clinicName: staff?.clinic?.clinicName || "",
+                clinicId: staff?.clinic?._id || "",
+                mobileNum: staff?.userId?.mobileNumber || "",
+                createdAt: staff?.createdAt || staff?._id?.getTimestamp?.() || null,
+                totalBilling,
+            }));
+
+            return res.status(200).json(response);
         }
-    ]);
-
-    const totalBilling = billing[0]?.totalAmount || 0;
-
-  
-    const response = staffData.map((staff: any) => ({
-        details: staff.userId,
-        staffName: `${staff?.userId?.firstName || ""} ${staff?.userId?.lastName || ""}`,
-        clinicName: staff?.clinic?.clinicName || "",
-        clinicId: staff?.clinic?._id || "",
-        mobileNum: staff?.userId?.mobileNumber || "",
-        createdAt: staff?.createdAt || staff?._id?.getTimestamp?.() || null,
-        totalBilling,
-    }));
-
-    return res.status(200).json(response);
-}
 
     } catch (err) {
-        return res.status(500).json({ message: "Oops! Something went wrong" , err});
+        return res.status(500).json({ message: "Oops! Something went wrong", err });
     }
 };
 
@@ -151,21 +156,21 @@ export const ViewEditUserDetails = async (req: Request, res: Response) => {
                 .populate("appointmentId", "dateTime");
             return res.status(200).json({ doctorDetails, appointmentDetails });
 
-        }else if(role === "staff"){
+        } else if (role === "staff") {
 
-            const staffDetails = await Staff.find({userId : id})
-            .populate("userId" , "firstName lastName mobileNumber email address birthDay gender createdAt")
-            .populate("clinic" , "clinicName");
+            const staffDetails = await Staff.find({ userId: id })
+                .populate("userId", "firstName lastName mobileNumber email address birthDay gender createdAt")
+                .populate("clinic", "clinicName");
 
             const appointmentDetails = await Billing.find({
-                staffId : id
+                staffId: id
             })
-            .populate("appointmentId" , "_id dateTime")
-            .populate("doctorId" , "firstName lastName")
-            .populate("userId" , "firstName lastName")
-            .populate("treatmentId" , "treatments");
+                .populate("appointmentId", "_id dateTime")
+                .populate("doctorId", "firstName lastName")
+                .populate("userId", "firstName lastName")
+                .populate("treatmentId", "treatments");
 
-            return res.status(200).json({staffDetails ,  appointmentDetails});
+            return res.status(200).json({ staffDetails, appointmentDetails });
         }
 
     } catch (err) {
@@ -281,3 +286,110 @@ export const updateUserByAdmin = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const removeDoctorFromClinic = async (req: Request, res: Response) => {
+    try {
+        const clinic = await Clinic.findOne({
+            managementId: req.body.id,
+        });
+
+        if (!clinic) {
+            return res.status(404).json({ message: "Clinic not found", });
+        }
+
+        const doctorId = req.params.id;
+
+        if (!clinic.doctorList.includes(doctorId as any)) {
+            return res.status(404).json({ message: "Doctor not found in your clinic" });
+        }
+        await Clinic.findByIdAndUpdate(clinic._id, {
+            $pull: {
+                doctorList: doctorId,
+            },
+        });
+        return res.json({ message: "Doctor removed from clinic successfully.", });
+    } catch (err) {
+        return res.status(500).json({ message: "Oops! Something went wrong.", });
+    }
+};
+
+export const removeStaffFromClinic = async (req: Request, res: Response) => {
+    try {
+
+        const staffId = req.params.id;
+        if (!staffId || Array.isArray(staffId)) {
+            return res.status(403).json({ message: "Check id status" });
+        }
+
+        const clinic = await Clinic.findOne({
+            managementId: req.body.id,
+        });
+
+        if (!clinic) {
+            return res.status(404).json({ message: "Clinic not found!" });
+        }
+        const existingStaff = await Staff.findOne({ userId: staffId });
+        if (!existingStaff) {
+            return res.status(404).json({ message: "Staff not found!" });
+        }
+        if (!existingStaff.clinic.equals(clinic._id)) {
+            return res.status(403).json({ message: "This staff member does not belong to your clinic." });
+        }
+        await Staff.findOneAndDelete({
+            userId: staffId,
+        });
+        await User.findByIdAndDelete(staffId);
+
+        return res.json({ message: "Staff removed from clinic successfully." });
+    } catch (err) {
+        return res.status(500).json({
+            message: "Oops! Something went wrong",
+        });
+    }
+};
+
+export const removeUserfromClinic = async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id;
+        if (!id || Array.isArray(id)) {
+            return res.status(403).json("Check your Id status");
+        }
+        const clinic = await Clinic.findOne({
+            managementId: req.body.id,
+        });
+
+        if (!clinic) {
+            return res.status(404).json({ message: "Clinic not found!" });
+        }
+        const existingUser = await Appointment.find({
+            userId: id,
+            clinicId: clinic._id
+        });
+        if (existingUser.length === 0) {
+            return res.status(403).json({ message: "This user does not belong to your clinic." });
+        }
+        await Promise.all(
+            existingUser.map((item) =>
+                Treatment.deleteMany({
+                    appointmentId: item._id,
+                    userId: id,
+                })
+            )
+        );
+        await Appointment.deleteMany({
+            userId: id,
+            clinicId: clinic._id
+        });
+        await Session.deleteMany({
+            userId: id,
+            clinicId: clinic._id
+        });
+        await Billing.deleteMany({
+            userId: id,
+            clinicId: clinic._id
+        });
+        return res.status(200).json({ message: "User removed from clinic successfully.", });
+    } catch (err) {
+        return res.status(500).json({ message: "Oops! Something went wrong" });
+    }
+}

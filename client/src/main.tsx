@@ -44,6 +44,9 @@ import PatientDetails from './components/dashComponents/staffDash/PatientDetails
 import AppointmentComponent from './components/dashComponents/staffDash/AppointmentComponent.tsx';
 import AboutPage from './routes/AboutPage.tsx';
 import MySession from './routes/Dashboards/DoctorDash/MySession.tsx';
+import PastAppointments from './routes/Dashboards/DoctorDash/PastAppointments.tsx';
+import JoinReq from './routes/Dashboards/DoctorDash/JoinReq.tsx';
+import DoctorJoinReq from './routes/Dashboards/adminDash/DoctorJoinReq.tsx';
 
 
 const router = createBrowserRouter([
@@ -209,6 +212,20 @@ const router = createBrowserRouter([
           </ProtectedRoute>
       },
       {
+        path: "/past",
+        element:
+          <ProtectedRoute allowedRoles={["doctor"]}>
+            <PastAppointments />
+          </ProtectedRoute>
+      },
+      {
+        path: "/join",
+        element:
+          <ProtectedRoute allowedRoles={["doctor"]}>
+            <JoinReq />
+          </ProtectedRoute>
+      },
+      {
         path: "/doctor_appointments",
         element:
           <ProtectedRoute allowedRoles={["doctor"]}>
@@ -287,6 +304,13 @@ const router = createBrowserRouter([
         element:
           <ProtectedRoute allowedRoles={["admin"]}>
             <DoctorSetting />
+          </ProtectedRoute>
+      },
+      {
+        path: "/doctor_req",
+        element:
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <DoctorJoinReq/>
           </ProtectedRoute>
       },
       {

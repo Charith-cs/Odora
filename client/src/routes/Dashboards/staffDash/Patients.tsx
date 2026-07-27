@@ -19,7 +19,7 @@ const Patients = () => {
           if (clinic.status === 200) {
             let res = await API.get(`/user/my_patients/${clinic?.data.clinic}`);
             setUserDetails(res.data.usersDetails);
-          }else{
+          } else {
             toast.error("Oops! Something went wrong")
           }
         }
@@ -31,7 +31,6 @@ const Patients = () => {
     fetchedUserDetails();
   }, [currentUser._id]);
 
-  console.log(userDetails);
 
   return (
     <div className="">

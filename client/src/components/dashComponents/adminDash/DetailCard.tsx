@@ -127,7 +127,7 @@ const DetailCard = <T extends Record<string, any>>({
                 <div className="w-full">
 
                     {title && (
-                        <h2 className="mb-6 text-2xl font-bold text-gray-800 md:text-3xl">
+                        <h2 className="mb-6 text-2xl font-bold text-[#2596be] md:text-3xl">
                             {title}
                         </h2>
                     )}

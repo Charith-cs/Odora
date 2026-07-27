@@ -1,4 +1,4 @@
-import type { adminCardType, AdminchartData, AdminDoctor, AdminDoctorCard, AdminStaff, AdminstaffCard, AdminTableColumn, AdminUser, AdminUserCard, AppointmentDetailsType, AppointmentType, CardType, compoedChartType, doctorAppointmentType, DoctorListType, DoctorPerChartData, DoctorRevChartData, editViewDoctor, editViewStaff, editViewUser, MyData, PatientType, revenueChartType, RevenueModelDoctor, SessionType, staffAppointmentType, StaffCardType, StaffPerChartData, StaffRevChartData } from "./types/types";
+import type { adminCardType, AdminchartData, AdminDoctor, AdminDoctorCard, AdminStaff, AdminstaffCard, AdminTableColumn, AdminUser, AdminUserCard, AppointmentDetailsType, AppointmentType, CardType, compoedChartType, docAdminJoin, docJoin, docPast, doctorAppointmentType, DoctorListType, DoctorPerChartData, DoctorRevChartData, editViewDoctor, editViewStaff, editViewUser, MyData, PatientType, revenueChartType, RevenueModelDoctor, SessionType, staffAppointmentType, StaffCardType, StaffPerChartData, StaffRevChartData } from "./types/types";
 
 
 /* user data */
@@ -19,7 +19,7 @@ export const appointments: AppointmentType[] = [
     clinic: "Smile Hub",
     doctor: "Dr. Sarah Lee",
     date: "2026 Saturday March 06",
-    status: "Canceled", 
+    status: "Canceled",
   },
 ];
 
@@ -97,7 +97,7 @@ export const AppointmentDetails: AppointmentDetailsType[] = [
   {
     doctor: "Dr. Anya Jhones",
     date: "2026 Friday March 05",
-    treatment: ["Implant"], 
+    treatment: ["Implant"],
     amount: 1150,
   },
 ];
@@ -610,7 +610,7 @@ export const revenueChartData: revenueChartType[] = [
 export const DoctorRevenueColumns: AdminTableColumn<RevenueModelDoctor>[] = [
   { key: "name", label: "Name" },
   { key: "slmc", label: "SLMC" },
-  { key: "totalApp", label:"Total Appointments" },
+  { key: "totalApp", label: "Total Appointments" },
   { key: "revenue", label: "Generated Revenue(total)" },
 ];
 
@@ -654,16 +654,41 @@ export const DoctorListColumns: AdminTableColumn<DoctorListType>[] = [
 ];
 
 export const sessionTable = [
-    {
-      clinic: "Sakuki Dental Hospital",
-      date: "2026/03/26",
-      stime: "02/00 PM",
-      etime: "05.00PM",
-    },
-    {
-      clinic: "Shine Dental Hospital",
-      date: "2026/03/26",
-      stime: "02/00 PM",
-      etime: "05.00PM",
-    },
-  ];
+  {
+    clinic: "Sakuki Dental Hospital",
+    date: "2026/03/26",
+    stime: "02/00 PM",
+    etime: "05.00PM",
+  },
+  {
+    clinic: "Shine Dental Hospital",
+    date: "2026/03/26",
+    stime: "02/00 PM",
+    etime: "05.00PM",
+  },
+];
+
+/* table heading for past appointment doctor */
+export const PastappointmentColumns: AdminTableColumn<docPast>[] = [
+  { key: "doctor", label: "Doctor" },
+  { key: "appointmentDate", label: "Date" },
+  { key: "treatments", label: "Treatments" },
+  { key: "note", label: "Note" },
+];
+
+
+/* table heading for join request doctor */
+export const JoinColumns: AdminTableColumn<docJoin>[] = [
+  { key: "name", label: "Clinic Name" },
+  { key: "address", label: "Address" },
+  { key: "contact", label: "Contact" },
+  { key: "registered", label: "Registered Doctors" },
+];
+
+/* table heading for join request admin */
+export const JoinAdminColumns: AdminTableColumn<docAdminJoin>[] = [
+  { key: "name", label: "Doctor Name" },
+  { key: "email", label: "Email " },
+  { key: "contact", label: "Contact" },
+
+];

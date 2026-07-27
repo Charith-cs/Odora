@@ -44,7 +44,7 @@ const ComposeChart = () => {
     <div>
 
       <div className="flex justify-between items-center flex-wrap gap-3">
-        <h1 className="text-2xl md:text-3xl font-semibold my-5">
+        <h1 className="text-2xl md:text-3xl font-semibold my-5 text-[#2596be]">
           Total Appointments
         </h1>
 
@@ -91,7 +91,7 @@ const ComposeChart = () => {
             <Bar
               dataKey="total"
               barSize={20}
-              fill="#0615e4"
+              fill="#2596be"
             />
 
             <Line

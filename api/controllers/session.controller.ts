@@ -57,33 +57,157 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
             daysOfWeek,
             maxPatients,
             maxPatientsPerHour,
-            fee
+            fee,
         } = req.body;
 
         const clinic = await Clinic.findOne(
             { doctorList: doctorId },
             { _id: 1 }
         );
+
         if (!clinic) {
             return res.status(404).json({
-                message: "Clinic not found"
+                message: "Clinic not found",
             });
         }
 
-        // ✅ VALIDATIONS (VERY IMPORTANT)
-        if (!startTime || !endTime || !startTime.includes(":") || !endTime.includes(":")) {
+        // ============================
+        // REQUIRED FIELD VALIDATION
+        // ============================
+
+        if (
+            !doctorId ||
+            !startDate ||
+            !endDate ||
+            !startTime ||
+            !endTime
+        ) {
             return res.status(400).json({
-                message: "Invalid time format. Use HH:mm"
+                message: "Please fill all required fields.",
             });
         }
 
-        if (!maxPatientsPerHour) {
+        if (
+            !Array.isArray(daysOfWeek) ||
+            daysOfWeek.length === 0
+        ) {
             return res.status(400).json({
-                message: "maxPatientsPerHour is required"
+                message: "Please select at least one day.",
             });
         }
 
-        // ✅ CREATE TEMPLATE
+        if (
+            !startTime.includes(":") ||
+            !endTime.includes(":")
+        ) {
+            return res.status(400).json({
+                message: "Invalid time format. Use HH:mm",
+            });
+        }
+
+        // ============================
+        // DATE VALIDATION
+        // ============================
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(endDate);
+        end.setHours(0, 0, 0, 0);
+
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return res.status(400).json({
+                message: "Invalid date.",
+            });
+        }
+
+        if (start < today) {
+            return res.status(400).json({
+                message: "Start date cannot be in the past.",
+            });
+        }
+
+        if (end < start) {
+            return res.status(400).json({
+                message: "End date cannot be before the start date.",
+            });
+        }
+
+        // ============================
+        // TIME VALIDATION
+        // ============================
+
+        const [sh, sm] = startTime.split(":").map(Number);
+        const [eh, em] = endTime.split(":").map(Number);
+
+        const startMinutes = sh * 60 + sm;
+        const endMinutes = eh * 60 + em;
+
+        if (endMinutes <= startMinutes) {
+            return res.status(400).json({
+                message: "End time must be later than the start time.",
+            });
+        }
+
+        // If session starts today, don't allow past time
+
+        const now = new Date();
+
+        if (start.toDateString() === now.toDateString()) {
+            const currentMinutes =
+                now.getHours() * 60 + now.getMinutes();
+
+            if (startMinutes <= currentMinutes) {
+                return res.status(400).json({
+                    message: "Start time cannot be in the past.",
+                });
+            }
+        }
+
+        // ============================
+        // NUMBER VALIDATION
+        // ============================
+
+        if (
+            Number(maxPatients) <= 0
+        ) {
+            return res.status(400).json({
+                message: "Maximum patients must be greater than zero.",
+            });
+        }
+
+        if (
+            Number(maxPatientsPerHour) <= 0
+        ) {
+            return res.status(400).json({
+                message:
+                    "Maximum patients per hour must be greater than zero.",
+            });
+        }
+
+        if (
+            Number(maxPatientsPerHour) >
+            Number(maxPatients)
+        ) {
+            return res.status(400).json({
+                message:
+                    "Maximum patients per hour cannot exceed maximum patients.",
+            });
+        }
+
+        if (Number(fee) < 0) {
+            return res.status(400).json({
+                message: "Fee cannot be negative.",
+            });
+        }
+
+        // ============================
+        // CREATE TEMPLATE
+        // ============================
+
         const template = await SessionTemplate.create({
             doctorId,
             clinicId: clinic._id,
@@ -94,35 +218,36 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
             daysOfWeek,
             maxPatients,
             maxPatientsPerHour,
-            fee
+            fee,
         });
 
-        // 🔥 GENERATE SESSIONS
+        // ============================
+        // GENERATE SESSIONS
+        // ============================
+
         const sessions: any[] = [];
 
         let current = new Date(startDate);
-        const end = new Date(endDate);
+        const templateEnd = new Date(endDate);
 
-        while (current <= end) {
+        while (current <= templateEnd) {
 
             const day = current.getDay();
 
             if (daysOfWeek.includes(day)) {
 
-                const [sh, sm] = startTime.split(":").map(Number);
-                const [eh, em] = endTime.split(":").map(Number);
-
-                // ✅ SAFE DATE CREATION
                 const startDT = new Date(current);
                 startDT.setHours(sh, sm, 0, 0);
 
                 const endDT = new Date(current);
                 endDT.setHours(eh, em, 0, 0);
 
-                // ❗ extra safety
-                if (isNaN(startDT.getTime()) || isNaN(endDT.getTime())) {
+                if (
+                    isNaN(startDT.getTime()) ||
+                    isNaN(endDT.getTime())
+                ) {
                     return res.status(400).json({
-                        message: "Invalid date or time values"
+                        message: "Invalid date or time values.",
                     });
                 }
 
@@ -130,40 +255,43 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
                     doctorId,
                     clinicId: clinic._id,
                     templateId: template._id,
+
                     date: new Date(current),
+
                     startDateTime: startDT,
                     endDateTime: endDT,
 
                     maxPatients,
-                    maxPatientsPerHour, // ✅ FIXED
+                    maxPatientsPerHour,
                     bookedPatients: 0,
 
                     fee,
-                    status: "active"
+
+                    status: "active",
                 });
             }
 
-            // ✅ IMPORTANT: avoid mutation bug
             current = new Date(current);
             current.setDate(current.getDate() + 1);
         }
 
-        // ✅ INSERT ONLY IF EXISTS
         if (sessions.length > 0) {
             await Session.insertMany(sessions);
         }
 
         return res.status(201).json({
-            message: "Session template created & sessions generated",
+            message: "Session template created & sessions generated.",
             template,
-            totalSessions: sessions.length
+            totalSessions: sessions.length,
         });
 
     } catch (err: any) {
+
         return res.status(500).json({
-            message: "Oops! Something went wrong",
-            error: err.message
+            message: "Oops! Something went wrong.",
+            error: err.message,
         });
+
     }
 };
 
@@ -171,33 +299,258 @@ export const updateSessionTemplate = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
+        const {
+            doctorId,
+            startDate,
+            endDate,
+            startTime,
+            endTime,
+            daysOfWeek,
+            maxPatients,
+            maxPatientsPerHour,
+            fee,
+        } = req.body;
+
         const template = await SessionTemplate.findById(id);
+
         if (!template) {
-            return res.status(404).json({ message: "Template not found" });
+            return res.status(404).json({
+                message: "Session template not found.",
+            });
         }
 
-        // update template
+        const clinic = await Clinic.findOne(
+            { doctorList: doctorId },
+            { _id: 1 }
+        );
+
+        if (!clinic) {
+            return res.status(404).json({
+                message: "Clinic not found.",
+            });
+        }
+
+        // ============================
+        // REQUIRED VALIDATION
+        // ============================
+
+        if (
+            !doctorId ||
+            !startDate ||
+            !endDate ||
+            !startTime ||
+            !endTime
+        ) {
+            return res.status(400).json({
+                message: "Please fill all required fields.",
+            });
+        }
+
+        if (!Array.isArray(daysOfWeek) || daysOfWeek.length === 0) {
+            return res.status(400).json({
+                message: "Please select at least one day.",
+            });
+        }
+
+        if (
+            !startTime.includes(":") ||
+            !endTime.includes(":")
+        ) {
+            return res.status(400).json({
+                message: "Invalid time format. Use HH:mm",
+            });
+        }
+
+        // ============================
+        // DATE VALIDATION
+        // ============================
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(endDate);
+        end.setHours(0, 0, 0, 0);
+
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            return res.status(400).json({
+                message: "Invalid date.",
+            });
+        }
+
+        if (start < today) {
+            return res.status(400).json({
+                message: "Start date cannot be in the past.",
+            });
+        }
+
+        if (end < start) {
+            return res.status(400).json({
+                message: "End date cannot be before the start date.",
+            });
+        }
+
+        // ============================
+        // TIME VALIDATION
+        // ============================
+
+        const [sh, sm] = startTime.split(":").map(Number);
+        const [eh, em] = endTime.split(":").map(Number);
+
+        const startMinutes = sh * 60 + sm;
+        const endMinutes = eh * 60 + em;
+
+        if (endMinutes <= startMinutes) {
+            return res.status(400).json({
+                message: "End time must be later than the start time.",
+            });
+        }
+
+        const now = new Date();
+
+        if (start.toDateString() === now.toDateString()) {
+
+            const currentMinutes =
+                now.getHours() * 60 + now.getMinutes();
+
+            if (startMinutes <= currentMinutes) {
+                return res.status(400).json({
+                    message: "Start time cannot be in the past.",
+                });
+            }
+        }
+
+        // ============================
+        // NUMBER VALIDATION
+        // ============================
+
+        if (Number(maxPatients) <= 0) {
+            return res.status(400).json({
+                message: "Maximum patients must be greater than zero.",
+            });
+        }
+
+        if (Number(maxPatientsPerHour) <= 0) {
+            return res.status(400).json({
+                message: "Maximum patients per hour must be greater than zero.",
+            });
+        }
+
+        if (Number(maxPatientsPerHour) > Number(maxPatients)) {
+            return res.status(400).json({
+                message: "Maximum patients per hour cannot exceed maximum patients.",
+            });
+        }
+
+        if (Number(fee) < 0) {
+            return res.status(400).json({
+                message: "Fee cannot be negative.",
+            });
+        }
+
+        // ============================
+        // UPDATE TEMPLATE
+        // ============================
+
         const updatedTemplate = await SessionTemplate.findByIdAndUpdate(
             id,
-            req.body,
+            {
+                doctorId,
+                clinicId: clinic._id,
+                startDate,
+                endDate,
+                startTime,
+                endTime,
+                daysOfWeek,
+                maxPatients,
+                maxPatientsPerHour,
+                fee,
+            },
             { new: true }
         );
 
-        // 🔥 delete future sessions
+        // ============================
+        // REMOVE FUTURE SESSIONS
+        // ============================
+
         await Session.deleteMany({
-            templateId: id as string,
-            date: { $gte: new Date() }
+            templateId: template._id,
+            date: { $gte: new Date() },
         });
 
-        // 👉 you can regenerate here again (same logic as create)
+        // ============================
+        // REGENERATE SESSIONS
+        // ============================
+
+        const sessions: any[] = [];
+
+        let current = new Date(startDate);
+        const templateEnd = new Date(endDate);
+
+        while (current <= templateEnd) {
+
+            const day = current.getDay();
+
+            if (daysOfWeek.includes(day)) {
+
+                const startDT = new Date(current);
+                startDT.setHours(sh, sm, 0, 0);
+
+                const endDT = new Date(current);
+                endDT.setHours(eh, em, 0, 0);
+
+                if (
+                    isNaN(startDT.getTime()) ||
+                    isNaN(endDT.getTime())
+                ) {
+                    return res.status(400).json({
+                        message: "Invalid date or time values.",
+                    });
+                }
+
+                sessions.push({
+                    doctorId,
+                    clinicId: clinic._id,
+                    templateId: updatedTemplate!._id,
+
+                    date: new Date(current),
+
+                    startDateTime: startDT,
+                    endDateTime: endDT,
+
+                    maxPatients,
+                    maxPatientsPerHour,
+                    bookedPatients: 0,
+
+                    fee,
+
+                    status: "active",
+                });
+            }
+
+            current = new Date(current);
+            current.setDate(current.getDate() + 1);
+        }
+
+        if (sessions.length > 0) {
+            await Session.insertMany(sessions);
+        }
 
         return res.status(200).json({
-            message: "Template updated (future sessions cleared)",
-            updatedTemplate
+            message: "Session template updated successfully.",
+            updatedTemplate,
+            totalSessions: sessions.length,
         });
 
-    } catch (err) {
-        return res.status(500).json({ message: "Oops! Something went wrong" });
+    } catch (err: any) {
+
+        return res.status(500).json({
+            message: "Oops! Something went wrong.",
+            error: err.message,
+        });
+
     }
 };
 
@@ -213,7 +566,7 @@ export const getAllSessionTemplates = async (req: Request, res: Response) => {
         }
         const getSesssionTempdetails = await SessionTemplate.find({
             doctorId: id,
-            isActive : true
+            isActive: true
         });
         if (getSesssionTempdetails.length === 0) {
             return res.status(404).json("No available session templates")

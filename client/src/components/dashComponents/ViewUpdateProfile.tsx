@@ -250,10 +250,8 @@ const ViewUpdateProfile = () => {
                         </div>
                         <div className="flex justify-end mt-10">
                             <button
-                                className="px-8 py-3 rounded-2xl bg-[#2596be] text-white font-semibold shadow-md hover:bg-[#1f84a8] hover:shadow-xl transition-all duration-300"
-                                onClick={() => {
-                                    setIsUpdateProfile(!isUpdateProfile);
-                                }}
+                                className={`px-8 py-3 rounded-2xl ${currentUser.role === "admin" ? " cursor-not-allowed bg-gray-200 border border-gray-700 hover:border-red-700 hover:text-red-500" : "bg-[#2596be] text-white font-semibold shadow-md hover:bg-[#1f84a8] hover:shadow-xl transition-all duration-300"}`}
+                                onClick={() => { currentUser.role === "admin" ? toast("Contact your System Admin to Update your Profile", { icon: "⚠️" }) : setIsUpdateProfile(!isUpdateProfile); }}
                             >
                                 Update Profile
                             </button>

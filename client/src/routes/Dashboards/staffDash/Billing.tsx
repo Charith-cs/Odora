@@ -1,24 +1,21 @@
 import { useEffect, useState } from "react";
-import PatientDetails from "../../../components/dashComponents/staffDash/PatientDetails";
 import API from "../../../../api/axios";
 import { toast } from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
+import { exportBillingInvoice } from "../../../../utils/reports/BillingReport";
 
 const Billing = () => {
 
     const currentUser = JSON.parse(localStorage.getItem("user") || "null");
-
     const [fetchedData, setFetchedData] = useState<any>(null);
-
     const { id } = useParams();
-
     const now = new Date();
 
     const [treatmentDetails, setTreatmentDetails] = useState<any[]>([]);
     const [treatment, setTreatment] = useState("");
     const [value, setValue] = useState("");
     const [special, setSpecial] = useState("");
-    const [treatmentId , setTreatmentId] = useState("");
+    const [treatmentId, setTreatmentId] = useState("");
 
     const navigate = useNavigate();
 
@@ -29,9 +26,9 @@ const Billing = () => {
     );
 
     const currentTreatment = fetchedData?.history?.find(
-    (item: any) =>
-        item?.appointmentId?._id === fetchedData?.appointment?._id
-);
+        (item: any) =>
+            item?.appointmentId?._id === fetchedData?.appointment?._id
+    );
 
     // existing treatment total
     const existingTreatmentTotal =
@@ -67,6 +64,7 @@ const Billing = () => {
             setTreatmentDetails((prev) => [...prev, newItem]);
             setTreatment("");
             setValue("");
+            setSpecial("");
         } else {
             toast.error("Please input a valid price");
         }
@@ -100,17 +98,17 @@ const Billing = () => {
                 appointmentId: fetchedData?.appointment?._id,
                 sessionId: fetchedData?.appointment?.sessionId,
                 doctorId: fetchedData?.appointment?.doctorId?._id,
-                staffId : currentUser._id,
+                staffId: currentUser._id,
                 treatments: treatmentDetails.map((t) => ({
                     name: t.name,
                     price: t.price,
                 })),
                 specialNotes: special,
             };
-
+            ///////////////////////////////////////////////////////////////need to check
             if (treatmentDetails.length > 0) {
                 const res = await API.post("/treatment", treatmentPayload);
-                  finalTreatmentId = res.data.data._id;
+                finalTreatmentId = res.data.data._id;
                 setTreatmentId(res.data.data._id);
             }
 
@@ -120,14 +118,20 @@ const Billing = () => {
                 clinicId: fetchedData?.appointment?.clinicId?._id,
                 doctorId: fetchedData?.appointment?.doctorId?._id,
                 amount: grandTotal,
-                treatmentId : finalTreatmentId,
+                treatmentId: finalTreatmentId,
                 status: "paid",
-                createdBy: currentUser?._id,
+                staffId: currentUser?._id,
             };
 
-            await API.post("/billing/payment", billingPayload);
+            const res = await API.post("/billing/payment", billingPayload);
             toast.success("Billing created successfully");
-            navigate("/payment_list");
+            try {
+                const invoice = await API.get(`/billing/invoice/${res.data.billId}`);
+                exportBillingInvoice(invoice.data.invoice);
+            } catch (err) {
+                console.log(err);
+            }
+            navigate("/payment_list"); 
 
         } catch (err: any) {
 
@@ -142,252 +146,244 @@ const Billing = () => {
         return <div className="mt-6">Loading...</div>;
     }
 
+
+
     return (
-        <div className=" mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-5">
-
-            {/* left side */}
-            <div className=" flex flex-col">
-
-                <PatientDetails data={fetchedData} />
-
-                {/* treatment history */}
-                <div className="mt-5 border border-gray-200 rounded-xl p-5 shadow-md">
-
-                    <h1 className="text-xl font-semibold mb-5">
-                        Current Appointment Treatments
-                    </h1>
-
-                    {currentAppointmentHistory ? (
-
-                        <div
-                            className="p-4 rounded-xl shadow-md hover:shadow-xl transition"
-                        >
-
-                            <div className="flex justify-between">
-
-                                <div>
-
-                                    <h1 className="font-semibold">
-                                        Dr.{" "}
-                                        {currentAppointmentHistory?.doctorId?.firstName +
-                                            " " +
-                                            currentAppointmentHistory?.doctorId?.lastName}
-                                    </h1>
-
-                                    <p className="text-sm text-gray-500">
-                                        {new Date(
-                                            currentAppointmentHistory?.appointmentId?.dateTime
-                                        ).toDateString()}
-                                    </p>
-
-                                </div>
-
-                                <div className="font-semibold text-green-600">
-                                    Rs. {existingTreatmentTotal}.00
-                                </div>
-
+        <div className=" grid grid-cols-1 gap-8 xl:grid-cols-2 ">
+            {/* LEFT PANEL */}
+            <div className="flex flex-col gap-5">
+                <div className="space-y-8">
+                    <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md">
+                        <div className="mb-6 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-800">Current Appointment Treatment</h2>
+                                <p className="mt-1 text-sm text-gray-500">Treatments already recorded for this appointment.</p>
                             </div>
 
-                            <div className="mt-4 flex flex-col gap-2">
+                            <div className="rounded-2xl bg-[#21a262]/10 px-5 py-3 text-center">
+                                <p className="text-xs uppercase tracking-wide text-gray-500">Total</p>
+                                <p className="text-xl font-bold text-[#21a262]">Rs. {existingTreatmentTotal.toFixed(2)}</p>
+                            </div>
+                        </div>
 
-                                {currentAppointmentHistory?.treatments?.map((t: any) => (
+                        {
+                            currentAppointmentHistory ? (
 
-                                    <div
-                                        key={t._id}
-                                        className="flex justify-between text-sm border-b pb-1"
-                                    >
-                                        <span>{t.name}</span>
-                                        <span>Rs. {t.price}.00</span>
+                                <div className="space-y-6">
+                                    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
+                                        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                            <div>
+                                                <h3 className="text-lg font-bold text-gray-800">
+                                                    Dr.{" "}{currentAppointmentHistory?.doctorId?.firstName}{" "}{currentAppointmentHistory?.doctorId?.lastName}
+                                                </h3>
+                                                <p className="mt-1 text-sm text-gray-500">
+                                                    {new Date(currentAppointmentHistory?.appointmentId?.dateTime).toDateString()}
+                                                </p>
+                                            </div>
+
+                                            <div className="rounded-xl bg-[#2596be]/10 px-4 py-2 font-semibold text-[#2596be]">
+                                                {currentAppointmentHistory?.treatments?.length} Treatment(s)
+                                            </div>
+                                        </div>
                                     </div>
 
-                                ))}
-
-                            </div>
-
-                        </div>
-
-                    ) : (
-
-                        <div className="text-gray-500 text-sm">
-                            No treatment history found for this appointment
-                        </div>
-
-                    )}
-
+                                    <div className="space-y-3">
+                                        {currentAppointmentHistory?.treatments?.map((t: any) => (
+                                            <div
+                                                key={t._id}
+                                                className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 transition-all duration-300 hover:border-[#2596be]/20 hover:shadow-md">
+                                                <div>
+                                                    <h4 className="font-semibold text-gray-800">{t.name}</h4>
+                                                    <p className="mt-1 text-sm text-gray-500">Completed Treatment</p>
+                                                </div>
+                                                <div className="font-bold text-[#21a262]">Rs. {Number(t.price).toFixed(2)}</div>
+                                            </div>
+                                        ))
+                                        }
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 py-12 text-center">
+                                    <h3 className="text-lg font-semibold text-gray-700">No Treatments Found</h3>
+                                    <p className="mt-2 text-sm text-gray-500">There are no treatments recorded for this appointment.</p>
+                                </div>
+                            )
+                        }
+                    </div>
                 </div>
 
+                {/* Billing Summary */}
+
+                <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md">
+                    <h2 className="mb-6 text-2xl font-bold text-gray-800">Billing Summary</h2>
+                    <div className="space-y-5">
+                        <div className="flex items-center justify-between rounded-2xl bg-gray-50 p-4">
+                            <span className="font-medium text-gray-600">Existing Treatments </span>
+                            <span className="font-bold text-gray-800">Rs. {existingTreatmentTotal.toFixed(2)}</span>
+                        </div>
+
+                        <div className="flex items-center justify-between rounded-2xl bg-gray-50 p-4">
+                            <span className="font-medium text-gray-600">Newly Added</span>
+                            <span className="font-bold text-[#2596be]">Rs. {newTreatmentTotal.toFixed(2)}</span>
+                        </div>
+
+                        <div className="rounded-2xl border border-[#21a262]/20 bg-[#21a262]/5 p-5">
+                            <div className="flex items-center justify-between">
+                                <span className="text-lg font-semibold text-gray-700">Grand Total</span>
+                                <span className="text-3xl font-bold text-[#21a262]"> Rs. {grandTotal.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Actions */}
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <button
+                        onClick={handleProceedPayment}
+                        className="rounded-2xl bg-[#2596be] py-3 font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#2088af]">
+                        Proceed to Payment
+                    </button>
+
+                    <button
+                        onClick={() => navigate("/staff_dash")}
+                        className="rounded-2xl border border-red-400 bg-white py-3 font-semibold text-red-500 shadow-md transition-all duration-300 hover:bg-red-500 hover:text-white">
+                        Cancel
+                    </button>
+                </div>
             </div>
 
-            {/* right side */}
-            <div className="flex flex-col border border-gray-200 rounded-xl p-8 shadow-md">
 
-                <div>
+            {/* RIGHT PANEL */}
 
-                    <div className="grid grid-cols-2 gap-y-1 gap-x-4 items-center text-sm">
+            <div className="space-y-8">
+                {/* Add treatment Details */}
 
-                        <div className="font-semibold">Doctor :</div>
-
-                        <span>
-                            Dr.{" "}
-                            {fetchedData?.appointment?.doctorId?.firstName +
-                                " " +
-                                fetchedData?.appointment?.doctorId?.lastName}
-                        </span>
-
-                        <div className="font-semibold">Clinic :</div>
-
-                        <span>
-                            {fetchedData?.appointment?.clinicId?.clinicName}
-                        </span>
-
-                        <div className="font-semibold">Date :</div>
-
-                        <span>{now.toDateString()}</span>
-
-                    </div>
-
-                </div>
-
-                <div className="mt-10">
-
-                    <h1 className="mb-5 text-xl font-semibold">
-                        Billing Details
-                    </h1>
-
-                    <div className="grid grid-cols-2 gap-y-4 gap-x-4 items-center">
-
-                        <div className="font-semibold">
-                            Treatment Name :
+                <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md">
+                    <h2 className="mb-8 text-2xl font-bold text-gray-800">Add Treatments</h2>
+                    <div className="space-y-6">
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-gray-700">Treatment Name</label>
+                            <input
+                                type="text"
+                                value={treatment}
+                                onChange={(e) => setTreatment(e.target.value)}
+                                placeholder="Composite Filling"
+                                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 focus:border-[#2596be] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#2596be]/10"
+                            />
                         </div>
 
-                        <input
-                            type="text"
-                            value={treatment}
-                            onChange={(e) => setTreatment(e.target.value)}
-                            placeholder="Composite filling"
-                            className="mt-2 shadow-md rounded-xl p-2 border-none focus:outline-none focus:ring-2 focus:ring-sky-500"
-                        />
-
-                        <div className="font-semibold">
-                            Treatment Amount (Rs):
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-gray-700">Treatment Amount (Rs.)</label>
+                            <input
+                                type="text"
+                                value={value}
+                                onChange={(e) => setValue(e.target.value)}
+                                placeholder="5000.00"
+                                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 focus:border-[#2596be] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#2596be]/10"
+                            />
                         </div>
 
-                        <input
-                            type="text"
-                            value={value}
-                            onChange={(e) => setValue(e.target.value)}
-                            placeholder="5000.00"
-                            className="mt-2 shadow-md rounded-xl p-2 border-none focus:outline-none focus:ring-2 focus:ring-sky-500"
-                        />
+                        <div>
 
-                        <div className="font-semibold">Special Note:</div>
-
-                        <textarea
-                            placeholder="Add special note (Optional)"
-                            value={special}
-                            onChange={(e) => setSpecial(e.target.value)}
-                            className="mt-2 shadow-md rounded-xl p-2 border-none focus:outline-none focus:ring-2 focus:ring-sky-500"
-                        />
-
-                        {/* totals */}
-
-                        <div className="font-semibold mt-2">
-                            Existing Treatments :
+                            <label className="mb-2 block text-sm font-semibold text-gray-700">Special Notes</label>
+                            <textarea
+                                rows={4}
+                                value={special}
+                                onChange={(e) => setSpecial(e.target.value)}
+                                placeholder="Add special note (Optional)"
+                                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 focus:border-[#2596be] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#2596be]/10"
+                            />
                         </div>
-
-                        <span className="font-semibold mt-2">
-                            Rs. {existingTreatmentTotal.toFixed(2)}
-                        </span>
-
-                        <div className="font-semibold mt-2">
-                            Newly Added :
-                        </div>
-
-                        <span className="font-semibold mt-2">
-                            Rs. {newTreatmentTotal.toFixed(2)}
-                        </span>
-
-                        <div className="font-semibold mt-5 text-lg">
-                            Final Total :
-                        </div>
-
-                        <span className="font-semibold mt-5 text-lg text-green-600">
-                            Rs. {grandTotal.toFixed(2)}
-                        </span>
 
                         <button
                             onClick={handleAdd}
-                            className=" col-span-2 px-3 py-1 mt-6 rounded-lg border border-green-500 text-green-500 hover:text-white hover:bg-green-500 transition"
+                            className="w-full rounded-2xl bg-[#21a262] py-3 font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#1b8d55]"
                         >
-                            Add Treatment +
+                            + Add Treatment
                         </button>
+                    </div>
+                </div>
+                {/* Newly Added Treatments */}
+                <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md">
 
-                        <button
-                            onClick={handleProceedPayment}
-                            className="px-3 py-1 mt-6 rounded-lg border border-green-500 text-green-500 hover:text-white hover:bg-green-500 transition"
-                        >
-                            Proceed to Payment
-                        </button>
+                    <div className="mb-6 flex items-center justify-between">
 
-                        <button
-                            onClick={() => navigate("/staff_dash")}
-                            className="px-3 py-1 mt-6 rounded-lg border border-red-500 text-red-500 hover:text-white hover:bg-red-500 transition"
-                        >
-                            Cancel
-                        </button>
+                        <h2 className="text-2xl font-bold text-gray-800">
+                            Newly Added Treatments
+                        </h2>
+
+                        <span className="rounded-full bg-[#2596be]/10 px-4 py-2 text-sm font-semibold text-[#2596be]">
+                            {treatmentDetails.length}
+                        </span>
 
                     </div>
 
-                </div>
+                    {
 
-                {/* added treatments */}
+                        treatmentDetails.length === 0 ? (
 
-                <div className="mt-10">
+                            <div className="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50 py-10 text-center">
 
-                    <h1 className="mb-5 text-xl font-semibold">
-                        Newly Added Treatments
-                    </h1>
+                                <p className="text-gray-500">
+                                    No new treatments added.
+                                </p>
 
-                    <div className="flex flex-col gap-4">
-
-                        {treatmentDetails.length === 0 ? (
-
-                            <div className="text-sm text-gray-500">
-                                No new treatments added
                             </div>
 
                         ) : (
 
-                            treatmentDetails.map((t) => (
+                            <div className="space-y-4">
 
-                                <div
-                                    key={t.id}
-                                    className="flex justify-between items-center p-2 shadow-md rounded-xl hover:shadow-xl transition"
-                                >
+                                {
 
-                                    <div className="font-semibold">
-                                        {t.name} - Rs.{t.price}.00
-                                    </div>
+                                    treatmentDetails.map((t) => (
 
-                                    <img
-                                        src="/userDash/close.png"
-                                        alt="remove"
-                                        className="w-5 h-5 cursor-pointer"
-                                        onClick={() => handleRemove(t.id)}
-                                    />
+                                        <div
+                                            key={t.id}
+                                            className="flex items-center justify-between rounded-2xl border border-gray-100 bg-gray-50 p-5 transition-all duration-300 hover:border-[#2596be]/20 hover:bg-white hover:shadow-md"
+                                        >
 
-                                </div>
+                                            <div>
 
-                            ))
+                                                <h4 className="font-semibold text-gray-800">
+                                                    {t.name}
+                                                </h4>
 
-                        )}
+                                                <p className="mt-1 text-sm text-[#21a262]">
+                                                    Rs. {Number(t.price).toFixed(2)}
+                                                </p>
 
-                    </div>
+                                            </div>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemove(t.id)}
+                                                className="flex h-11 w-11 items-center justify-center rounded-xl border border-red-200 bg-red-50 transition-all duration-300 hover:bg-red-500 hover:text-white"
+                                            >
+
+                                                <img
+                                                    src="/userDash/close.png"
+                                                    alt="remove"
+                                                    className="h-5 w-5"
+                                                />
+
+                                            </button>
+
+                                        </div>
+
+                                    ))
+
+                                }
+
+                            </div>
+
+                        )
+
+                    }
 
                 </div>
-
             </div>
-
         </div>
     );
 };

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import type { StatusType } from '../../../../types/types';
-import { Staffappointments } from '../../../../data';
 import { statusStyles } from '../../../../types/constants';
 import { Link } from 'react-router-dom';
 import API from '../../../../api/axios';
@@ -144,16 +143,25 @@ const PaymentTable = () => {
                                             <Link
                                                 to={item.status === "paid" ? "#" : `/billing/${item._id}`}
                                                 onClick={(e) => {
-                                                    if (item.status === "paid") e.preventDefault();
+                                                    if (item.status === "paid") {
+                                                        e.preventDefault();
+                                                    }
                                                 }}
-                                                className={`px-3 py-1 rounded-lg border transition${item.status === "paid"
-                                                        ? "text-green-500 border-green-500 cursor-not-allowed pointer-events-none"
-                                                        : "text-gray-600 hover:text-green-500 hover:border-green-500"
+                                                className={`px-3 py-1 rounded-lg border text-center transition-all duration-200 ${item.status === "paid"
+                                                        ? "bg-green-50 text-green-600 border-green-500 cursor-not-allowed pointer-events-none"
+                                                        : "text-gray-600 border-gray-300 hover:bg-green-50 hover:text-green-600 hover:border-green-500"
                                                     }`}
                                             >
                                                 {item.status === "paid" ? "Completed" : "Proceed"}
                                             </Link>
-                                            <button className="px-3 py-1 rounded-lg border text-gray-600 hover:text-red-500 hover:border-red-500 transition">
+
+                                            <button
+                                                disabled={item.status === "paid"}
+                                                className={`px-3 py-1 rounded-lg border transition-all duration-200 ${item.status === "paid"
+                                                        ? "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
+                                                        : "text-gray-600 border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-500"
+                                                    }`}
+                                            >
                                                 Cancel
                                             </button>
                                         </div>
@@ -210,10 +218,28 @@ const PaymentTable = () => {
                             <p className="text-gray-500 text-sm">{item.dateTime}</p>
 
                             <div className="flex gap-2">
-                                <Link to={`/billing/${item._id}`} className="flex-1 px-3 py-1 rounded-lg border text-gray-600 hover:text-green-500 transition">
-                                    Approve
+                                <Link
+                                    to={item.status === "paid" ? "#" : `/billing/${item._id}`}
+                                    onClick={(e) => {
+                                        if (item.status === "paid") {
+                                            e.preventDefault();
+                                        }
+                                    }}
+                                    className={`flex-1 text-center px-3 py-1 rounded-lg border transition-all duration-200 ${item.status === "paid"
+                                        ? "bg-green-50 text-green-600 border-green-500 cursor-not-allowed pointer-events-none"
+                                        : "text-gray-600 border-gray-300 hover:bg-green-50 hover:text-green-600 hover:border-green-500"
+                                        }`}
+                                >
+                                    {item.status === "paid" ? "Completed" : "Proceed"}
                                 </Link>
-                                <button className="flex-1 px-3 py-1 rounded-lg border text-gray-600 hover:text-red-500 transition">
+
+                                <button
+                                    disabled={item.status === "paid"}
+                                    className={`flex-1 px-3 py-1 rounded-lg border transition-all duration-200 ${item.status === "paid"
+                                        ? "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
+                                        : "text-gray-600 border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-500"
+                                        }`}
+                                >
                                     Cancel
                                 </button>
                             </div>

@@ -202,7 +202,7 @@ const Reports = () => {
 
 
   return (
-    <div className="mt-6 space-y-8">
+    <div className=" space-y-8 pb-5">
 
       {/* Dashboard Cards */}
       <section className="flex flex-wrap justify-center gap-6">
@@ -227,7 +227,7 @@ const Reports = () => {
 
           <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
 
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+            <h2 className="text-2xl md:text-3xl font-bold text-[#2596be]">
               Doctor Performance
             </h2>
 
@@ -275,7 +275,7 @@ const Reports = () => {
         {/* User Statistics */}
         <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
 
-          <h2 className="mb-6 text-2xl md:text-3xl font-bold text-gray-800">
+          <h2 className="mb-6 text-2xl md:text-3xl font-bold text-[#2596be]">
             User Registration and Others
           </h2>
 
@@ -288,7 +288,7 @@ const Reports = () => {
         {/* Reports */}
         <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
 
-          <h2 className="mb-6 text-2xl md:text-3xl font-bold text-gray-800">
+          <h2 className="mb-6 text-2xl md:text-3xl font-bold text-[#2596be]">
             Download Reports
           </h2>
 
@@ -383,7 +383,7 @@ const Reports = () => {
             </select>
 
             {/* Action Buttons */}
-            <div className="flex flex-col gap-4 pt-4 sm:flex-row">
+            <div className="flex flex-col gap-4 pt-4 sm:flex-row ">
 
               <button
                 onClick={handleDownload}

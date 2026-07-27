@@ -4,6 +4,7 @@ import { clinicModelType } from "../types/types";
 import Staff from "../models/staff.model";
 import Session from "../models/session.model";
 import User from "../models/user.model";
+import mongoose from "mongoose";
 
 
 export const registerClinic = async (req: Request, res: Response) => {
@@ -157,3 +158,154 @@ export const getRegisteredDoctors = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const requestJoinClinic = async (req: any, res: any) => {
+    try {
+        const { clinicId } = req.params;
+        const doctorId = req.user.id;
+
+        const clinic = await Clinic.findById(clinicId);
+
+        if (!clinic) {
+            return res.status(404).json({ message: "Clinic not found." });
+        }
+
+        const alreadyMember = clinic.doctorList.some(
+            (id: any) => id.toString() === doctorId
+        );
+
+        if (alreadyMember) {
+            return res.status(400).json({ message: "You already belong to this clinic." });
+        }
+
+        const alreadyRequested = clinic.pendingDoctorRequests.some(
+            (item: any) => item.doctorId.toString() === doctorId
+        );
+
+        if (alreadyRequested) {
+            return res.status(400).json({ message: "You have already sent a request." });
+        }
+
+        clinic.pendingDoctorRequests.push({
+            doctorId,
+            requestedAt: new Date(),
+            status: "pending"
+        });
+        await clinic.save();
+
+        return res.status(200).json({ message: "Join request sent successfully." });
+
+    } catch (err) {
+        return res.status(500).json({ message: "Oops! something went wrong" });
+    }
+};
+
+export const getMyPendingRequests = async (req: any, res: any) => {
+    try {
+        const clinic = await Clinic.findOne({
+            managementId: req.params.id
+        })
+            .populate(
+                "pendingDoctorRequests.doctorId",
+                "firstName lastName email mobileNumber img"
+            );
+        if (!clinic) { return res.status(404).json({ message: "Clinic not found." }); }
+        return res.status(200).json(clinic.pendingDoctorRequests);
+    } catch (err) {
+
+        return res.status(500).json({ message: "Oops! Something went wrong" });
+    }
+};
+
+export const approveDoctorRequest = async (req: any, res: any) => {
+    try {
+        const { doctorId } = req.params;
+
+        const clinic = await Clinic.findOne({
+            managementId: req.user.id
+        });
+
+        if (!clinic) { return res.status(404).json({ message: "Clinic not found." }); }
+
+        const existingClinic = await Clinic.findOne({
+            doctorList: doctorId,
+            _id: { $ne: clinic._id }
+        });
+
+        if (existingClinic) {
+            return res.status(400).json({ message: `Doctor is already assigned to ${existingClinic.clinicName}.` });
+        }
+
+        const request = clinic.pendingDoctorRequests?.find(
+            (item: any) => item.doctorId.toString() === doctorId
+        );
+
+        if (!request) { return res.status(404).json({ message: "Request not found." }); }
+        const alreadyAdded = clinic.doctorList.some((id: any) => id.toString() === doctorId);
+
+        if (!alreadyAdded) {
+            clinic.doctorList.push(doctorId);
+        }
+
+        clinic.pendingDoctorRequests = clinic.pendingDoctorRequests.filter(
+            (item: any) => item.doctorId.toString() !== doctorId
+        );
+        await clinic.save();
+        return res.status(200).json({ message: "Doctor request approved successfully." });
+    } catch (err) {
+        return res.status(500).json({ message: "Oops! Something went wrong." });
+    }
+};
+
+export const rejectDoctorRequest = async (req: any, res: any) => {
+    try {
+        const { doctorId } = req.params;
+
+        const clinic = await Clinic.findOne({
+            managementId: req.user.id
+        });
+
+        if (!clinic) { return res.status(404).json({ message: "Clinic not found." }); }
+        const request = clinic.pendingDoctorRequests?.find(
+            (item: any) => item.doctorId.toString() === doctorId
+        );
+        if (!request) { return res.status(404).json({ message: "Request not found." }); }
+        clinic.pendingDoctorRequests = clinic.pendingDoctorRequests.filter(
+            (item: any) => item.doctorId.toString() !== doctorId
+        );
+
+        await clinic.save();
+        return res.status(200).json({ message: "Doctor request rejected." });
+    } catch (err) {
+        return res.status(500).json({ message: "Internal server error." });
+    }
+};
+
+export const addDoctorToClinicList = async (req:Request, res: Response) => {
+    try {
+        const  {id:doctorId}  = req.params;
+        if (!doctorId || Array.isArray(doctorId)) {return res.status(404).json({ message: "Check Id status"});}
+
+        const clinic = await Clinic.findOne({
+            managementId: req.body.id
+        });
+        if (!clinic) { return res.status(404).json("Clinic not found. Please try again later") };
+
+        const alreadyAdded = clinic.doctorList.some(
+            (id: any) => id.toString() === doctorId
+        );
+
+        if (alreadyAdded) {
+            return res.status(400).json({
+                success: false,
+                message: "Doctor is already assigned to this clinic."
+            });
+        }
+
+        clinic.doctorList.push(new mongoose.Types.ObjectId(doctorId));
+        await clinic.save();
+        return res.status(200).json("Doctor added successfully");
+    } catch (err) {
+        return res.status(500).json("Oops! Something went Wrong");
+    }
+} 

@@ -10,7 +10,7 @@ const DashCard = ({ cardDetails }: DashCardProps) => {
     <div className="w-full">
       <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {cardDetails.map((card, index) => (
-          <Link key={index} to="/" className="group">
+          <Link key={index} to="#" className="group">
             <div className={`${card.color} h-full rounded-3xl p-6 border border-white/20 shadow-md hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col items-center justify-center text-center overflow-hidden relative`}>
               <div className=" absolute -top-10 -right-10 w-28 h-28 rounded-full bg-white/10" />
               <div className=" w-20 h-20 rounded-3xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-5 group-hover:scale-110 transition-all duration-300 ">
