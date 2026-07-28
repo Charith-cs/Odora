@@ -1,5 +1,5 @@
 import express from "express";
-import { dashCard , imgUpload , imgRemove,getChartDataForAdmin ,getChartDataForDocDash , getChartDataForDocStaff , reportDashCard, getAppointmentAnalytics, getRevenueTrend, docPerformanceReport, userPieChart , patientReport, revenueReport, appointmentReport} from "../controllers/dashControllers/userDash.controller";
+import { dashCard , imgUpload , imgRemove,getChartDataForAdmin ,getChartDataForDocDash , getChartDataForDocStaff , reportDashCard, getAppointmentAnalytics, getRevenueTrend, docPerformanceReport, userPieChart , patientReport, revenueReport, appointmentReport, patientDemographicReport} from "../controllers/dashControllers/userDash.controller";
 import { verifyToken } from "../middleware/auth.middleware";
 import { upload } from "../utility/multer";
 
@@ -22,5 +22,6 @@ router.get("/doctor_performance/:id" , verifyToken , docPerformanceReport);
 router.get("/patient_report/:id" , verifyToken , patientReport);
 router.get("/revenue_report/:id" , verifyToken , revenueReport);
 router.get("/appointment_report/:id" , verifyToken , appointmentReport);
+router.get("/demographic_report" , verifyToken , patientDemographicReport);
 
 export default router;

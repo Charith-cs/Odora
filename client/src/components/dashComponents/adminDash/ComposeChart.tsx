@@ -20,25 +20,21 @@ const ComposeChart = () => {
   const [filter, setFilter] = useState<FilterType>("Monthly");
   const [chartData, setChartData] = useState<ChartDataType[]>([]);
 
-
   useEffect(() => {
 
     const fetchAnalytics = async () => {
       try {
-
-        const res = await API.get(
-          `/dash/appointments?filter=${filter}`
-        );
+        const res = await API.get(`/dash/appointments?filter=${filter}`);
+        console.log(res.data);
         setChartData(res.data);
-
       } catch (error) {
         console.log(error);
       }
     };
-
     fetchAnalytics();
-
   }, [filter]);
+
+
 
   return (
     <div>
@@ -73,7 +69,7 @@ const ComposeChart = () => {
           <ComposedChart data={chartData}>
             <CartesianGrid stroke="#f5f5f5" />
 
-            <XAxis dataKey="month" />
+            <XAxis dataKey="label" />
 
             <YAxis />
 
@@ -107,9 +103,11 @@ const ComposeChart = () => {
             />
 
 
-            <Scatter
+            <Line
+              type="monotone"
               dataKey="canceled"
-              fill="red"
+              stroke="#ef4444"
+              strokeWidth={2}
             />
           </ComposedChart>
         </ResponsiveContainer>

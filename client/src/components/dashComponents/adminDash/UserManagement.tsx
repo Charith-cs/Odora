@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import Add from "./Add";
 import type { UpdateLabelType } from "../../../../types/types";
 import { toast } from "react-hot-toast";
+import API from "../../../../api/axios";
 
 type Props = {
     data: any[];
@@ -23,18 +24,21 @@ const UserManagement = ({
 
     const [showForm, setShowForm] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
+    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const currentUser = JSON.parse(localStorage.getItem("user") || "null");
 
     const handleDelete = async () => {
-        if (!selectedDoctorId) return;
+        if (!selectedUserId) return;
 
         try {
-            // await API.delete(`/doctor/${selectedDoctorId}`);
-
+            await API.delete(`/management/remove_user/${selectedUserId}`, {
+                data: {
+                    id: currentUser._id
+                }
+            });
             await refresh();
-
             setShowDeleteModal(false);
-            setSelectedDoctorId(null);
+            setSelectedUserId(null);
 
             toast.success("User deleted successfully.");
         } catch (err: any) {
@@ -97,15 +101,15 @@ const UserManagement = ({
                                 </div>
                             </div>
 
-                            <h2 className="mt-5 text-center text-xl font-bold text-gray-800"> Delete User</h2>
-                            <p className="mt-3 text-center text-gray-500">Are you sure you want to delete this user?</p>
+                            <h2 className="mt-5 text-center text-xl font-bold text-gray-800"> Delete Appointments</h2>
+                            <p className="mt-3 text-center text-gray-500">Are you sure you want to delete future appointments to this clinic from this user?</p>
                             <p className="mt-2 text-center text-sm text-red-500"> This action cannot be undone.</p>
 
                             <div className="mt-8 flex gap-3">
                                 <button
                                     onClick={() => {
                                         setShowDeleteModal(false);
-                                        setSelectedDoctorId(null);
+                                        setSelectedUserId(null);
                                     }}
                                     className="flex-1 rounded-xl border border-gray-300 py-3 font-semibold text-gray-600 transition hover:bg-gray-100"
                                 >
@@ -116,7 +120,7 @@ const UserManagement = ({
                                     onClick={handleDelete}
                                     className="flex-1 rounded-xl bg-red-500 py-3 font-semibold text-white transition hover:bg-red-600"
                                 >
-                                    Delete
+                                    Remove
                                 </button>
 
                             </div>
@@ -136,12 +140,12 @@ const UserManagement = ({
                         <Link to={`/view_edit/${_row._id}`} className="px-3 py-1 rounded-lg border text-gray-600 hover:text-sky-500 hover:border-sky-500 transition">View</Link>
                         <button
                             onClick={() => {
-                                setSelectedDoctorId(_row._id);
+                                setSelectedUserId(_row._id);
                                 setShowDeleteModal(true);
                             }}
                             className="px-3 py-1 rounded-lg border text-gray-600 hover:text-red-500 hover:border-red-500 transition"
                         >
-                            Delete
+                            Remove
                         </button>
                     </div>
                 )}

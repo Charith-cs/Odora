@@ -65,7 +65,7 @@ const RevenueAreaChart = () => {
 
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
+            <XAxis dataKey="label" />
             <YAxis />
             <Tooltip />
 

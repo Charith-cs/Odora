@@ -53,33 +53,36 @@ const Bookappointment = () => {
     return (
         <>
             {button && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white w-[90%] md:w-[400px] rounded-2xl shadow-xl p-6 animate-fadeIn">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="w-[420px] rounded-2xl bg-white p-6 shadow-2xl">
 
-                        <h1 className="text-lg font-semibold text-center">
-                            Confirm Appointment
-                        </h1>
+                        <div className="flex justify-center">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                                <span className="text-3xl">✔️</span>
+                            </div>
+                        </div>
 
-                        <p className="text-sm text-gray-500 text-center mt-2">
-                            Are you sure you want to book this appointment?
-                        </p>
+                        <h2 className="mt-5 text-center text-xl font-bold text-gray-800"> Confirm Appointment</h2>
+                        <p className="mt-3 text-center text-gray-500">Are you sure you want to book this appointment?</p>
+                        <p className="mt-2 text-center text-sm text-red-500"> This action cannot be undone.</p>
 
-                        <div className="flex justify-between gap-4 mt-6">
+                        <div className="mt-8 flex gap-3">
                             <button
                                 onClick={handleSubmit}
-                                className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-xl font-semibold transition"
+                                className="flex-1 rounded-xl border bg-green-500 py-3 font-semibold text-white transition hover:bg-green-600"
                             >
                                 Confirm
                             </button>
 
                             <button
+
                                 onClick={() => setButtton(false)}
-                                className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl font-semibold transition"
+                                className="flex-1 rounded-xl bg-red-500 py-3 font-semibold text-white transition hover:bg-red-600"
                             >
                                 Cancel
                             </button>
-                        </div>
 
+                        </div>
                     </div>
                 </div>
             )}

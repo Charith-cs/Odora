@@ -8,6 +8,7 @@ import Staff from "../models/staff.model";
 import SessionTemplate from "../models/sessionTemplate.model";
 import Session from "../models/session.model";
 import Treatment from "../models/Treatment.model";
+import mongoose from "mongoose";
 
 
 
@@ -349,47 +350,61 @@ export const removeStaffFromClinic = async (req: Request, res: Response) => {
 };
 
 export const removeUserfromClinic = async (req: Request, res: Response) => {
+
+    const session = await mongoose.startSession();
+
     try {
         const id = req.params.id;
-        if (!id || Array.isArray(id)) {
-            return res.status(403).json("Check your Id status");
-        }
+
+        if (!id || Array.isArray(id)) { return res.status(403).json("Check your Id status"); }
+
         const clinic = await Clinic.findOne({
             managementId: req.body.id,
         });
 
-        if (!clinic) {
-            return res.status(404).json({ message: "Clinic not found!" });
-        }
+        if (!clinic) { return res.status(404).json({ message: "Clinic not found!" }); }
+
         const existingUser = await Appointment.find({
             userId: id,
             clinicId: clinic._id
         });
-        if (existingUser.length === 0) {
-            return res.status(403).json({ message: "This user does not belong to your clinic." });
-        }
-        await Promise.all(
-            existingUser.map((item) =>
-                Treatment.deleteMany({
-                    appointmentId: item._id,
+
+        if (existingUser.length === 0) { return res.status(403).json({ message: "This user does not belong to your clinic." }); }
+
+        session.startTransaction();
+        /*         await Promise.all(
+                    existingUser.map((item) =>
+                        Treatment.deleteMany({
+                            appointmentId: item._id,
+                            userId: id,
+                        })
+                    )
+                );
+                await Billing.deleteMany({
                     userId: id,
-                })
-            )
-        );
+                    clinicId: clinic._id
+                });
+                await Appointment.deleteMany({
+                    userId: id,
+                    clinicId: clinic._id
+                });
+                await Session.deleteMany({
+                    userId: id,
+                    clinicId: clinic._id
+                }); */
         await Appointment.deleteMany({
             userId: id,
-            clinicId: clinic._id
+            clinicId: clinic._id,
+            status: { $in: ["pending", "confirmed"] },
         });
-        await Session.deleteMany({
-            userId: id,
-            clinicId: clinic._id
-        });
-        await Billing.deleteMany({
-            userId: id,
-            clinicId: clinic._id
-        });
+
+        await session.commitTransaction();
+
         return res.status(200).json({ message: "User removed from clinic successfully.", });
     } catch (err) {
+        await session.abortTransaction();
         return res.status(500).json({ message: "Oops! Something went wrong" });
+    } finally {
+        session.endSession();
     }
 }

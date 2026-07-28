@@ -15,6 +15,7 @@ const MyAppointment = () => {
     const [currentPage, setCurrentPage] = useState(1);
 
     const [button, setButtton] = useState(false);
+    const [cancel, setCancel] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
 
     const navigate = useNavigate();
@@ -56,16 +57,26 @@ const MyAppointment = () => {
         return <div className="mt-6 w-full">Loading...</div>;
     }
 
+    const openCancel = (id: string) => {
+        setSelectedId(id);
+        setCancel(true);
+    }
 
-    const handleCancel = async (id: string) => {
+    const handleCancel = async () => {
+        if (!selectedId) return;
+        console.log(selectedId)
         try {
-            const res = await API.delete(`/appointment/${id}`);
+            const res = await API.delete(`/appointment/${selectedId}`);
+            setCancel(false);
+            setSelectedId(null);
             toast.success(res.data.message);
             fetchAppointment();
+
         } catch (err: any) {
             toast.error(err?.response?.data?.message || "Cancel failed");
         }
     };
+
 
     const openReschedule = (id: string) => {
         setSelectedId(id);
@@ -88,25 +99,75 @@ const MyAppointment = () => {
             toast.error(err?.response?.data?.message);
         }
     };
-
+    console.log(currentRecords);
     return (
         <div className="mt-6 w-full">
 
 
             {button && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white w-[90%] md:w-[400px] rounded-2xl shadow-xl p-6">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="w-[420px] rounded-2xl bg-white p-6 shadow-2xl">
 
-                        <h1 className="text-lg font-semibold text-center">Confirm Reschedule </h1>
-                        <p className="text-sm text-gray-500 text-center mt-2">This will delete your current appointment and allow you to book again.</p>
-                        <div className="flex justify-between gap-4 mt-6">
-                            <button onClick={handleReschedule} className="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-xl font-semibold">
+                        <div className="flex justify-center">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100">
+                                <span className="text-3xl">↻</span>
+                            </div>
+                        </div>
+
+                        <h2 className="mt-5 text-center text-xl font-bold text-gray-800"> Confirm Reschedule</h2>
+                        <p className="mt-3 text-center text-gray-500">This will delete your current appointment and allow you to book again.</p>
+                        <p className="mt-2 text-center text-sm text-red-500"> This action cannot be undone.</p>
+
+                        <div className="mt-8 flex gap-3">
+                            <button
+                                onClick={handleReschedule}
+                                className="flex-1 rounded-xl border bg-green-500 py-3 font-semibold text-white transition hover:bg-green-600"
+                            >
                                 Confirm
                             </button>
 
-                            <button onClick={() => { setButtton(false); setSelectedId(null); }} className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-xl font-semibold">
+                            <button
+                                onClick={() => { setButtton(false); setSelectedId(null); }}
+                                className="flex-1 rounded-xl bg-red-500 py-3 font-semibold text-white transition hover:bg-red-600"
+                            >
                                 Cancel
                             </button>
+
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {cancel && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="w-[420px] rounded-2xl bg-white p-6 shadow-2xl">
+
+                        <div className="flex justify-center">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+                                <span className="text-3xl">🗑️</span>
+                            </div>
+                        </div>
+
+                        <h2 className="mt-5 text-center text-xl font-bold text-gray-800"> Delete Appointment</h2>
+                        <p className="mt-3 text-center text-gray-500">Are you sure you want to delete this appointment ?</p>
+                        <p className="mt-2 text-center text-sm text-red-500"> This action cannot be undone.</p>
+
+                        <div className="mt-8 flex gap-3">
+                            <button
+
+                                onClick={() => { setCancel(false); setSelectedId(null); }}
+                                className="flex-1 rounded-xl border border-gray-300 py-3 font-semibold text-gray-600 transition hover:bg-gray-100"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={handleCancel}
+                                className="flex-1 rounded-xl bg-red-500 py-3 font-semibold text-white transition hover:bg-red-600"
+                            >
+                                Remove
+                            </button>
+
                         </div>
                     </div>
                 </div>
@@ -196,7 +257,7 @@ const MyAppointment = () => {
                                             </button>
 
                                             <button
-                                                onClick={() => handleCancel(item._id)}
+                                                onClick={() => item && openCancel(item._id)}
                                                 disabled={item.status === "paid" || item.status === "approved" || item.status === "completed"}
                                                 className={`px-4 py-2 rounded-xl border ${item.status === "paid" || item.status === "approved" || item.status === "completed" ? "cursor-not-allowed text-gray-600 border-gray-600" : "border-red-500 text-red-500 text-sm font-medium hover:bg-red-500 hover:text-white transition"}`}
                                             >
@@ -264,7 +325,7 @@ const MyAppointment = () => {
                                 </button>
 
                                 <button
-                                    onClick={() => handleCancel(item._id)}
+                                    onClick={() => openCancel(item._id)}
                                     disabled={item.status === "paid" || item.status === "approved" || item.status === "completed"}
                                     className={`py-2.5 rounded-xl border ${item.status === "paid" || item.status === "approved" || item.status === "completed" ? "cursor-not-allowed text-gray-600 border-gray-600" : "border-red-500 text-red-500 font-medium hover:bg-red-500 hover:text-white transition"}`}
                                 >

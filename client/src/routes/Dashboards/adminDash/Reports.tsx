@@ -13,6 +13,8 @@ import { exportDoctorPerformanceReport } from "../../../../utils/reports/doctorP
 import { exportPatientReport } from "../../../../utils/reports/patientReport";
 import { exportRevenueReport } from "../../../../utils/reports/revenueReport";
 import { exportAppointmentReport } from "../../../../utils/reports/appointmentReport";
+import { exportPatientDemographicReport } from "../../../../utils/reports/demographicReport";
+
 
 const Reports = () => {
 
@@ -120,6 +122,26 @@ const Reports = () => {
           endDate
         );
         toast.success("Appointment report downloaded", { id: "report" });
+      } else if (selectedReport === "demographic") {
+
+        toast.loading("Generating report...", { id: "report" });
+        const res = await API.get(
+          `/dash/demographic_report`,
+          {
+            params: {
+              filterReport,
+              from: startDate,
+              to: endDate
+            }
+          }
+        );
+        exportPatientDemographicReport(
+          res.data,
+          filterReport,
+          startDate,
+          endDate
+        );
+        toast.success("Patient demographic report downloaded", { id: "report" });
       }
 
     } catch (err) {
@@ -140,22 +162,16 @@ const Reports = () => {
   }
 
   const fetchDoctorPerformance = async () => {
-
     try {
-
-      const res = await API.get(
-        `/dash/doctor_performance/${currentUser._id}`,
-        {
-          params: {
-            filter,
-            from: startDate,
-            to: endDate
-          }
+      const res = await API.get(`/dash/doctor_performance/${currentUser._id}`, {
+        params: {
+          filter,
+          from: startDate,
+          to: endDate
         }
+      }
       );
-
       setPerformance(res.data);
-
     } catch (err) {
       console.log(err);
     }
@@ -260,12 +276,6 @@ const Reports = () => {
                 >
                   View
                 </Link>
-
-                <button
-                  className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-all duration-300 hover:border-red-500 hover:text-red-500"
-                >
-                  Delete
-                </button>
               </div>
             )}
           />
@@ -378,6 +388,10 @@ const Reports = () => {
 
               <option value="appointment">
                 Appointment Report
+              </option>
+
+              <option value="demographic">
+                Patient Demographics Report
               </option>
 
             </select>

@@ -635,49 +635,109 @@ export const reportDashCard = async (req: Request, res: Response) => {
     }
 }
 
-export const getAppointmentAnalytics = async (req: Request, res: Response) => {
+export const getAppointmentAnalytics = async (req: any, res: any) => {
     try {
+        const { filter = "Monthly" } = req.query;
 
-        const { filter } = req.query;
+        const clinic = await Clinic.findOne({
+            managementId: req.user.id,
+        });
+
+        if (!clinic) {
+            return res.status(404).json({
+                message: "Clinic not found!",
+            });
+        }
+
         const now = new Date();
-        let matchStage = {};
 
+        let matchStage: any = {
+            clinicId: clinic._id,
+        };
+
+        let groupId: any;
+        let sortStage: any;
+
+        // TODAY
         if (filter === "Today") {
-            const start = new Date(now.setHours(0, 0, 0, 0));
-            const end = new Date(now.setHours(23, 59, 59, 999));
 
-            matchStage = {
-                createdAt: {
-                    $gte: start,
-                    $lte: end,
+            const start = new Date();
+            start.setHours(0, 0, 0, 0);
+
+            const end = new Date();
+            end.setHours(23, 59, 59, 999);
+
+            matchStage.createdAt = {
+                $gte: start,
+                $lte: end,
+            };
+
+            groupId = {
+                hour: {
+                    $hour: "$createdAt",
                 },
+            };
+
+            sortStage = {
+                "_id.hour": 1,
             };
         }
 
+        // WEEKLY
         else if (filter === "Weekly") {
+
             const weekAgo = new Date();
-            weekAgo.setDate(now.getDate() - 7);
+            weekAgo.setDate(now.getDate() - 6);
+            weekAgo.setHours(0, 0, 0, 0);
 
-            matchStage = {
-                createdAt: {
-                    $gte: weekAgo,
+            matchStage.createdAt = {
+                $gte: weekAgo,
+            };
+
+            groupId = {
+                day: {
+                    $dayOfWeek: "$createdAt",
                 },
+            };
+
+            sortStage = {
+                "_id.day": 1,
             };
         }
 
+        // MONTHLY
         else if (filter === "Monthly") {
-            matchStage = {
-                createdAt: {
-                    $gte: new Date(now.getFullYear(), 0, 1),
+
+            matchStage.createdAt = {
+                $gte: new Date(now.getFullYear(), now.getMonth(), 1),
+            };
+
+            groupId = {
+                day: {
+                    $dayOfMonth: "$createdAt",
                 },
+            };
+
+            sortStage = {
+                "_id.day": 1,
             };
         }
 
-        else if (filter === "Yearly") {
-            matchStage = {
-                createdAt: {
-                    $gte: new Date(now.getFullYear(), 0, 1),
+        // YEARLY
+        else {
+
+            matchStage.createdAt = {
+                $gte: new Date(now.getFullYear(), 0, 1),
+            };
+
+            groupId = {
+                month: {
+                    $month: "$createdAt",
                 },
+            };
+
+            sortStage = {
+                "_id.month": 1,
             };
         }
 
@@ -685,121 +745,418 @@ export const getAppointmentAnalytics = async (req: Request, res: Response) => {
             {
                 $match: matchStage,
             },
-
             {
                 $group: {
-                    _id: {
-                        month: { $month: "$createdAt" },
-                    },
+                    _id: groupId,
 
-                    total: { $sum: 1 },
+                    total: {
+                        $sum: 1,
+                    },
 
                     approved: {
                         $sum: {
-                            $cond: [{ $eq: ["$status", "approved"] }, 1, 0],
+                            $cond: [
+                                { $eq: ["$status", "approved"] },
+                                1,
+                                0,
+                            ],
                         },
                     },
 
                     completed: {
                         $sum: {
-                            $cond: [{ $eq: ["$status", "completed"] }, 1, 0],
+                            $cond: [
+                                { $eq: ["$status", "completed"] },
+                                1,
+                                0,
+                            ],
                         },
                     },
 
                     canceled: {
                         $sum: {
-                            $cond: [{ $eq: ["$status", "canceled"] }, 1, 0],
+                            $cond: [
+                                { $eq: ["$status", "canceled"] },
+                                1,
+                                0,
+                            ],
                         },
                     },
+
                     paid: {
                         $sum: {
-                            $cond: [{ $eq: ['$status', "paid"] }, 1, 0],
-                        }
-                    }
+                            $cond: [
+                                { $eq: ["$status", "paid"] },
+                                1,
+                                0,
+                            ],
+                        },
+                    },
                 },
             },
-
             {
-                $sort: {
-                    "_id.month": 1,
-                },
+                $sort: sortStage,
             },
         ]);
 
-        const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",];
+        const months = [
+            "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+            "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
+        ];
 
-        const formattedData = analytics.map((item) => ({
-            month: months[item._id.month - 1],
-            total: item.total,
-            approved: item.approved,
-            completed: item.completed,
-            canceled: item.canceled,
-            paid: item.paid
-        }));
+        const days = [
+            "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"
+        ];
 
-        res.status(200).json(formattedData);
-    } catch (err) {
-        return res.status(500).json({ message: "Oops! Something went wrong" });
-    }
-}
+        // Convert aggregation result into a lookup map
+        const analyticsMap = new Map();
 
-export const getRevenueTrend = async (req: Request, res: Response) => {
-    try {
-        const { filter } = req.query;
-        const now = new Date();
-        let matchStage: any = {};
+        analytics.forEach((item: any) => {
+
+            let key: number;
+
+            if (filter === "Today") {
+                key = item._id.hour;
+            }
+
+            else if (filter === "Weekly") {
+                key = item._id.day;
+            }
+
+            else if (filter === "Monthly") {
+                key = item._id.day;
+            }
+
+            else {
+                key = item._id.month;
+            }
+
+            analyticsMap.set(key, item);
+        });
+
+        let formattedData: any[] = [];
 
         if (filter === "Today") {
-            const start = new Date(now);
-            start.setHours(0, 0, 0, 0);
 
-            const end = new Date(now);
-            end.setHours(23, 59, 59, 999);
+            for (let hour = 0; hour < 24; hour++) {
 
-            matchStage.createdAt = { $gte: start, $lte: end };
+                const item = analyticsMap.get(hour);
+
+                formattedData.push({
+                    label: `${hour}:00`,
+                    total: item?.total ?? 0,
+                    approved: item?.approved ?? 0,
+                    completed: item?.completed ?? 0,
+                    canceled: item?.canceled ?? 0,
+                    paid: item?.paid ?? 0,
+                });
+            }
         }
 
         else if (filter === "Weekly") {
-            const weekAgo = new Date(now);
-            weekAgo.setDate(now.getDate() - 7);
 
-            matchStage.createdAt = { $gte: weekAgo };
+            for (let day = 1; day <= 7; day++) {
+
+                const item = analyticsMap.get(day);
+
+                formattedData.push({
+                    label: days[day - 1],
+                    total: item?.total ?? 0,
+                    approved: item?.approved ?? 0,
+                    completed: item?.completed ?? 0,
+                    canceled: item?.canceled ?? 0,
+                    paid: item?.paid ?? 0,
+                });
+            }
         }
 
         else if (filter === "Monthly") {
-            const monthStart = new Date(now.getFullYear(), 0, 1);
-            matchStage.createdAt = { $gte: monthStart };
+
+            const lastDay = new Date(
+                now.getFullYear(),
+                now.getMonth() + 1,
+                0
+            ).getDate();
+
+            for (let day = 1; day <= lastDay; day++) {
+
+                const item = analyticsMap.get(day);
+
+                formattedData.push({
+                    label: day.toString(),
+                    total: item?.total ?? 0,
+                    approved: item?.approved ?? 0,
+                    completed: item?.completed ?? 0,
+                    canceled: item?.canceled ?? 0,
+                    paid: item?.paid ?? 0,
+                });
+            }
         }
 
-        else if (filter === "Yearly") {
-            const yearStart = new Date(now.getFullYear(), 0, 1);
-            matchStage.createdAt = { $gte: yearStart };
+        else {
+
+            for (let month = 1; month <= 12; month++) {
+
+                const item = analyticsMap.get(month);
+
+                formattedData.push({
+                    label: months[month - 1],
+                    total: item?.total ?? 0,
+                    approved: item?.approved ?? 0,
+                    completed: item?.completed ?? 0,
+                    canceled: item?.canceled ?? 0,
+                    paid: item?.paid ?? 0,
+                });
+            }
+        }
+
+        return res.status(200).json(formattedData);
+
+    } catch (err: any) {
+        return res.status(500).json({ message: "Oops! Something went wrong" });
+    }
+};
+
+export const getRevenueTrend = async (req: any, res: any) => {
+    try {
+
+        const { filter = "Monthly" } = req.query;
+
+        const clinic = await Clinic.findOne({
+            managementId: req.user.id,
+        });
+
+        if (!clinic) {
+            return res.status(404).json({
+                message: "Clinic not found!",
+            });
+        }
+
+        const now = new Date();
+
+        let matchStage: any = {
+            clinicId: clinic._id,
+        };
+
+        let groupId: any;
+        let sortStage: any;
+
+        // TODAY
+        if (filter === "Today") {
+
+            const start = new Date();
+            start.setHours(0, 0, 0, 0);
+
+            const end = new Date();
+            end.setHours(23, 59, 59, 999);
+
+            matchStage.createdAt = {
+                $gte: start,
+                $lte: end,
+            };
+
+            groupId = {
+                hour: {
+                    $hour: "$createdAt",
+                },
+            };
+
+            sortStage = {
+                "_id.hour": 1,
+            };
+        }
+
+        // WEEKLY
+        else if (filter === "Weekly") {
+
+            const weekAgo = new Date();
+            weekAgo.setDate(now.getDate() - 6);
+            weekAgo.setHours(0, 0, 0, 0);
+
+            matchStage.createdAt = {
+                $gte: weekAgo,
+            };
+
+            groupId = {
+                day: {
+                    $dayOfWeek: "$createdAt",
+                },
+            };
+
+            sortStage = {
+                "_id.day": 1,
+            };
+        }
+
+        // MONTHLY
+        else if (filter === "Monthly") {
+
+            matchStage.createdAt = {
+                $gte: new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    1
+                ),
+            };
+
+            groupId = {
+                day: {
+                    $dayOfMonth: "$createdAt",
+                },
+            };
+
+            sortStage = {
+                "_id.day": 1,
+            };
+        }
+
+        // YEARLY
+        else {
+
+            matchStage.createdAt = {
+                $gte: new Date(
+                    now.getFullYear(),
+                    0,
+                    1
+                ),
+            };
+
+            groupId = {
+                month: {
+                    $month: "$createdAt",
+                },
+            };
+
+            sortStage = {
+                "_id.month": 1,
+            };
         }
 
         const revenue = await Billing.aggregate([
-            { $match: matchStage },
+            {
+                $match: matchStage,
+            },
             {
                 $group: {
-                    _id: {
-                        month: { $month: "$createdAt" }
+                    _id: groupId,
+                    revenue: {
+                        $sum: "$amount",
                     },
-                    total: { $sum: "$amount" }
-                }
+                },
             },
-            { $sort: { "_id.month": 1 } }
+            {
+                $sort: sortStage,
+            },
         ]);
 
-        const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        const months = [
+            "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+            "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
+        ];
 
-        const formattedData = revenue.map(item => ({
-            month: months[item._id.month - 1],
-            revenue: item.total
-        }));
+        const days = [
+            "SUN",
+            "MON",
+            "TUE",
+            "WED",
+            "THU",
+            "FRI",
+            "SAT"
+        ];
+
+        const revenueMap = new Map();
+
+        revenue.forEach((item: any) => {
+
+            let key: number;
+
+            if (filter === "Today") {
+                key = item._id.hour;
+            }
+
+            else if (filter === "Weekly") {
+                key = item._id.day;
+            }
+
+            else if (filter === "Monthly") {
+                key = item._id.day;
+            }
+
+            else {
+                key = item._id.month;
+            }
+
+            revenueMap.set(key, item);
+        });
+
+        let formattedData: any[] = [];
+
+        if (filter === "Today") {
+
+            for (let hour = 0; hour < 24; hour++) {
+
+                const item = revenueMap.get(hour);
+
+                formattedData.push({
+                    label: `${hour}:00`,
+                    revenue: item?.revenue ?? 0,
+                });
+            }
+        }
+
+        else if (filter === "Weekly") {
+
+            for (let day = 1; day <= 7; day++) {
+
+                const item = revenueMap.get(day);
+
+                formattedData.push({
+                    label: days[day - 1],
+                    revenue: item?.revenue ?? 0,
+                });
+            }
+        }
+
+        else if (filter === "Monthly") {
+
+            const lastDay = new Date(
+                now.getFullYear(),
+                now.getMonth() + 1,
+                0
+            ).getDate();
+
+            for (let day = 1; day <= lastDay; day++) {
+
+                const item = revenueMap.get(day);
+
+                formattedData.push({
+                    label: day.toString(),
+                    revenue: item?.revenue ?? 0,
+                });
+            }
+        }
+
+        else {
+
+            for (let month = 1; month <= 12; month++) {
+
+                const item = revenueMap.get(month);
+
+                formattedData.push({
+                    label: months[month - 1],
+                    revenue: item?.revenue ?? 0,
+                });
+            }
+        }
 
         return res.status(200).json(formattedData);
 
     } catch (err) {
-        return res.status(500).json({ message: "Oops! Something went wrong" });
+        console.log(err);
+
+        return res.status(500).json({
+            message: "Oops! Something went wrong",
+        });
     }
 };
 
@@ -867,37 +1224,26 @@ export const userPieChart = async (req: Request, res: Response) => {
 
 //report controllers
 
-export const docPerformanceReport = async (req: Request, res: Response) => {
-
+export const docPerformanceReport = async (req: any, res: any) => {
     try {
 
-        const id = req.params.id;
-
         const {
-            filter,
+            filter = "Monthly",
             from,
             to
         } = req.query;
 
-        if (!id || Array.isArray(id)) {
-            return res.status(404).json({
-                message: "Invalid ID status"
-            });
-        }
-
-        const checkStatus = await Clinic.findOne({
-            managementId: id
+        const clinic = await Clinic.findOne({
+            managementId: req.user.id
         });
 
-        if (!checkStatus) {
-            return res.status(403).json({
-                message: "Forbidden"
+        if (!clinic) {
+            return res.status(404).json({
+                message: "Clinic not found"
             });
         }
 
-        // DATE FILTER
         let dateFilter: any = {};
-
         const now = new Date();
 
         // TODAY
@@ -921,7 +1267,8 @@ export const docPerformanceReport = async (req: Request, res: Response) => {
         else if (filter === "Weekly") {
 
             const start = new Date();
-            start.setDate(now.getDate() - 7);
+            start.setDate(now.getDate() - 6);
+            start.setHours(0, 0, 0, 0);
 
             dateFilter = {
                 createdAt: {
@@ -946,7 +1293,8 @@ export const docPerformanceReport = async (req: Request, res: Response) => {
                 0,
                 23,
                 59,
-                59
+                59,
+                999
             );
 
             dateFilter = {
@@ -972,7 +1320,8 @@ export const docPerformanceReport = async (req: Request, res: Response) => {
                 31,
                 23,
                 59,
-                59
+                59,
+                999
             );
 
             dateFilter = {
@@ -983,23 +1332,27 @@ export const docPerformanceReport = async (req: Request, res: Response) => {
             };
         }
 
-        // CUSTOM DATE RANGE
+        // CUSTOM RANGE
         if (from && to) {
+
+            const fromDate = new Date(from as string);
+
+            const toDate = new Date(to as string);
+            toDate.setHours(23, 59, 59, 999);
 
             dateFilter = {
                 createdAt: {
-                    $gte: new Date(from as string),
-                    $lte: new Date(to as string)
+                    $gte: fromDate,
+                    $lte: toDate
                 }
             };
         }
 
-        // AGGREGATION
         const doctorPerformance = await Billing.aggregate([
 
             {
                 $match: {
-                    clinicId: checkStatus._id,
+                    clinicId: clinic._id,
                     status: "paid",
                     ...dateFilter
                 }
@@ -1015,7 +1368,10 @@ export const docPerformanceReport = async (req: Request, res: Response) => {
             },
 
             {
-                $unwind: "$doctor"
+                $unwind: {
+                    path: "$doctor",
+                    preserveNullAndEmptyArrays: true
+                }
             },
 
             {
@@ -1028,7 +1384,10 @@ export const docPerformanceReport = async (req: Request, res: Response) => {
             },
 
             {
-                $unwind: "$docDetails"
+                $unwind: {
+                    path: "$docDetails",
+                    preserveNullAndEmptyArrays: true
+                }
             },
 
             {
@@ -1038,16 +1397,35 @@ export const docPerformanceReport = async (req: Request, res: Response) => {
 
                     doctorName: {
                         $first: {
-                            $concat: [
-                                "$doctor.firstName",
-                                " ",
-                                "$doctor.lastName"
-                            ]
+                            $trim: {
+                                input: {
+                                    $concat: [
+                                        {
+                                            $ifNull: [
+                                                "$doctor.firstName",
+                                                ""
+                                            ]
+                                        },
+                                        " ",
+                                        {
+                                            $ifNull: [
+                                                "$doctor.lastName",
+                                                ""
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
                         }
                     },
 
                     slmc: {
-                        $first: "$docDetails.slmcReg"
+                        $first: {
+                            $ifNull: [
+                                "$docDetails.slmcReg",
+                                "-"
+                            ]
+                        }
                     },
 
                     totalAppointments: {
@@ -1056,7 +1434,33 @@ export const docPerformanceReport = async (req: Request, res: Response) => {
 
                     totalRevenue: {
                         $sum: "$amount"
+                    },
+
+                    averageRevenue: {
+                        $avg: "$amount"
                     }
+
+                }
+            },
+
+            {
+                $project: {
+
+                    doctorName: 1,
+
+                    slmc: 1,
+
+                    totalAppointments: 1,
+
+                    totalRevenue: 1,
+
+                    averageRevenue: {
+                        $round: [
+                            "$averageRevenue",
+                            2
+                        ]
+                    }
+
                 }
             },
 
@@ -1065,11 +1469,15 @@ export const docPerformanceReport = async (req: Request, res: Response) => {
                     totalRevenue: -1
                 }
             }
+
         ]);
 
-        return res.status(200).json(
-            doctorPerformance
-        );
+        const rankedDoctors = doctorPerformance.map((doctor, index) => ({
+            rank: index + 1,
+            ...doctor
+        }));
+
+        return res.status(200).json(rankedDoctors);
 
     } catch (err) {
 
@@ -1078,30 +1486,29 @@ export const docPerformanceReport = async (req: Request, res: Response) => {
         return res.status(500).json({
             message: "Oops! Something went wrong"
         });
+
     }
 };
 
-export const patientReport = async (req: Request, res: Response) => {
+export const patientReport = async (req: any, res: any) => {
     try {
-        const id = req.params.id;
 
         const {
-            filter,
+            filter = "Monthly",
             from,
             to
         } = req.query;
 
-        if (!id || Array.isArray(id)) {
-            return res.status(404).json({ message: "Invalid ID status" });
+        const clinic = await Clinic.findOne({
+            managementId: req.user.id
+        });
+
+        if (!clinic) {
+            return res.status(404).json({
+                message: "Clinic not found"
+            });
         }
 
-        const checkStatus = await Clinic.findOne({ managementId: id });
-
-        if (!checkStatus) {
-            return res.status(403).json({ message: "Forbidden" });
-        }
-
-        // DATE FILTER
         let dateFilter: any = {};
         const now = new Date();
 
@@ -1126,7 +1533,8 @@ export const patientReport = async (req: Request, res: Response) => {
         else if (filter === "Weekly") {
 
             const start = new Date();
-            start.setDate(now.getDate() - 7);
+            start.setDate(now.getDate() - 6);
+            start.setHours(0, 0, 0, 0);
 
             dateFilter = {
                 createdAt: {
@@ -1151,7 +1559,8 @@ export const patientReport = async (req: Request, res: Response) => {
                 0,
                 23,
                 59,
-                59
+                59,
+                999
             );
 
             dateFilter = {
@@ -1177,7 +1586,8 @@ export const patientReport = async (req: Request, res: Response) => {
                 31,
                 23,
                 59,
-                59
+                59,
+                999
             );
 
             dateFilter = {
@@ -1188,121 +1598,216 @@ export const patientReport = async (req: Request, res: Response) => {
             };
         }
 
-        // CUSTOM DATE RANGE
+        // CUSTOM RANGE
         if (from && to) {
+
+            const fromDate = new Date(from as string);
+
+            const toDate = new Date(to as string);
+            toDate.setHours(23, 59, 59, 999);
 
             dateFilter = {
                 createdAt: {
-                    $gte: new Date(from as string),
-                    $lte: new Date(to as string)
+                    $gte: fromDate,
+                    $lte: toDate
                 }
             };
         }
 
-        const patientReposrtDetails = await Billing.aggregate([
+        const patientReportDetails = await Billing.aggregate([
+
             {
                 $match: {
-                    clinicId: checkStatus._id,
+                    clinicId: clinic._id,
                     status: "paid",
                     ...dateFilter
                 }
             },
+
             {
                 $lookup: {
                     from: "users",
                     localField: "userId",
                     foreignField: "_id",
                     as: "user"
-                },
+                }
             },
+
             {
-                $unwind: "$user"
+                $unwind: {
+                    path: "$user",
+                    preserveNullAndEmptyArrays: true
+                }
             },
+
             {
                 $lookup: {
                     from: "appointments",
-                    localField: "userId",
-                    foreignField: "userId",
+                    let: {
+                        patientId: "$userId"
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        {
+                                            $eq: [
+                                                "$userId",
+                                                "$$patientId"
+                                            ]
+                                        },
+                                        {
+                                            $eq: [
+                                                "$clinicId",
+                                                clinic._id
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
                     as: "appointments"
                 }
             },
-            {
-                $unwind: {
-                    path: "$appointments",
-                    preserveNullAndEmptyArrays: true,
-                }
-            },
+
             {
                 $group: {
-                    _id: "$user._id",
+
+                    _id: "$userId",
+
                     fullName: {
                         $first: {
-                            $concat: [
-                                "$user.firstName", " ", "$user.lastName"
-                            ]
-                        }
-                    },
-                    address: {
-                        $first: "$user.address",
-                    },
-                    contact: {
-                        $first: "$user.mobileNumber",
-                    },
-                    appointments: {
-                        $sum: 1
-                    },
-                    lastVisitedRaw: {
-                        $max: "$appointments.dateTime"
-                    }
-                }
-            },
-            {
-                $project: {
-                    _id: 0,
-                    patientId: "$_id",
-                    fullName: 1,
-                    address: 1,
-                    contact: 1,
-                    appointments: 1,
-                    lastVisited: {
-                        $dateToString: {
-                            format: "%Y-%m-%d",
-                            date: {
-                                $max: "$lastVisitedRaw"
+                            $trim: {
+                                input: {
+                                    $concat: [
+                                        {
+                                            $ifNull: [
+                                                "$user.firstName",
+                                                ""
+                                            ]
+                                        },
+                                        " ",
+                                        {
+                                            $ifNull: [
+                                                "$user.lastName",
+                                                ""
+                                            ]
+                                        }
+                                    ]
+                                }
                             }
                         }
                     },
-                },
-            }
-        ]);
-        return res.status(200).json(patientReposrtDetails);
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Oops! Something went wrong" });
-    }
-}
 
-export const revenueReport = async (req: Request, res: Response) => {
+                    address: {
+                        $first: {
+                            $ifNull: [
+                                "$user.address",
+                                "-"
+                            ]
+                        }
+                    },
+
+                    contact: {
+                        $first: {
+                            $ifNull: [
+                                "$user.mobileNumber",
+                                "-"
+                            ]
+                        }
+                    },
+
+                    appointments: {
+                        $sum: 1
+                    },
+
+                    lastVisitedRaw: {
+                        $max: {
+                            $max: "$appointments.dateTime"
+                        }
+                    }
+
+                }
+            },
+
+            {
+                $project: {
+
+                    _id: 0,
+
+                    patientId: "$_id",
+
+                    fullName: 1,
+
+                    address: 1,
+
+                    contact: 1,
+
+                    appointments: 1,
+
+                    lastVisited: {
+                        $cond: [
+                            {
+                                $ifNull: [
+                                    "$lastVisitedRaw",
+                                    false
+                                ]
+                            },
+                            {
+                                $dateToString: {
+                                    format: "%Y-%m-%d",
+                                    date: "$lastVisitedRaw"
+                                }
+                            },
+                            "-"
+                        ]
+                    }
+
+                }
+            },
+
+            {
+                $sort: {
+                    lastVisited: -1
+                }
+            }
+
+        ]);
+
+        return res.status(200).json(patientReportDetails);
+
+    } catch (err) {
+
+        console.error(err);
+
+        return res.status(500).json({
+            message: "Oops! Something went wrong"
+        });
+
+    }
+};
+
+export const revenueReport = async (req: any, res: any) => {
     try {
-        const id = req.params.id;
 
         const {
-            filter,
+            filter = "Monthly",
             from,
             to
         } = req.query;
 
-        if (!id || Array.isArray(id)) {
-            return res.status(404).json({ message: "Invalid ID status" });
+        const clinic = await Clinic.findOne({
+            managementId: req.user.id
+        });
+
+        if (!clinic) {
+            return res.status(404).json({
+                message: "Clinic not found"
+            });
         }
 
-        const checkStatus = await Clinic.findOne({ managementId: id });
-
-        if (!checkStatus) {
-            return res.status(403).json({ message: "Forbidden" });
-        }
-
-        // DATE FILTER
         let dateFilter: any = {};
         const now = new Date();
 
@@ -1327,7 +1832,8 @@ export const revenueReport = async (req: Request, res: Response) => {
         else if (filter === "Weekly") {
 
             const start = new Date();
-            start.setDate(now.getDate() - 7);
+            start.setDate(now.getDate() - 6);
+            start.setHours(0, 0, 0, 0);
 
             dateFilter = {
                 createdAt: {
@@ -1352,7 +1858,8 @@ export const revenueReport = async (req: Request, res: Response) => {
                 0,
                 23,
                 59,
-                59
+                59,
+                999
             );
 
             dateFilter = {
@@ -1378,7 +1885,8 @@ export const revenueReport = async (req: Request, res: Response) => {
                 31,
                 23,
                 59,
-                59
+                59,
+                999
             );
 
             dateFilter = {
@@ -1389,25 +1897,32 @@ export const revenueReport = async (req: Request, res: Response) => {
             };
         }
 
-        // CUSTOM DATE RANGE
+        // CUSTOM RANGE
         if (from && to) {
+
+            const fromDate = new Date(from as string);
+
+            const toDate = new Date(to as string);
+            toDate.setHours(23, 59, 59, 999);
 
             dateFilter = {
                 createdAt: {
-                    $gte: new Date(from as string),
-                    $lte: new Date(to as string)
+                    $gte: fromDate,
+                    $lte: toDate
                 }
             };
         }
 
         const revenueReportDetails = await Billing.aggregate([
+
             {
                 $match: {
-                    clinicId: checkStatus._id,
+                    clinicId: clinic._id,
                     status: "paid",
                     ...dateFilter
                 }
             },
+
             {
                 $lookup: {
                     from: "appointments",
@@ -1416,9 +1931,14 @@ export const revenueReport = async (req: Request, res: Response) => {
                     as: "appointments"
                 }
             },
+
             {
-                $unwind: "$appointments"
+                $unwind: {
+                    path: "$appointments",
+                    preserveNullAndEmptyArrays: true
+                }
             },
+
             {
                 $lookup: {
                     from: "users",
@@ -1427,9 +1947,14 @@ export const revenueReport = async (req: Request, res: Response) => {
                     as: "users"
                 }
             },
+
             {
-                $unwind: "$users"
+                $unwind: {
+                    path: "$users",
+                    preserveNullAndEmptyArrays: true
+                }
             },
+
             {
                 $lookup: {
                     from: "treatments",
@@ -1438,9 +1963,14 @@ export const revenueReport = async (req: Request, res: Response) => {
                     as: "treatments"
                 }
             },
+
             {
-                $unwind: "$treatments"
+                $unwind: {
+                    path: "$treatments",
+                    preserveNullAndEmptyArrays: true
+                }
             },
+
             {
                 $lookup: {
                     from: "users",
@@ -1449,9 +1979,14 @@ export const revenueReport = async (req: Request, res: Response) => {
                     as: "doctors"
                 }
             },
+
             {
-                $unwind: "$doctors"
+                $unwind: {
+                    path: "$doctors",
+                    preserveNullAndEmptyArrays: true
+                }
             },
+
             {
                 $lookup: {
                     from: "users",
@@ -1460,27 +1995,53 @@ export const revenueReport = async (req: Request, res: Response) => {
                     as: "staff"
                 }
             },
+
             {
-                $unwind: "$staff"
+                $unwind: {
+                    path: "$staff",
+                    preserveNullAndEmptyArrays: true
+                }
             },
+
             {
                 $project: {
+
+                    _id: 0,
+
                     invoiceNo: "$_id",
+
                     patient: {
-                        $concat: [
-                            "$users.firstName", " ", "$users.lastName"
-                        ]
+                        $trim: {
+                            input: {
+                                $concat: [
+                                    { $ifNull: ["$users.firstName", ""] },
+                                    " ",
+                                    { $ifNull: ["$users.lastName", ""] }
+                                ]
+                            }
+                        }
                     },
+
                     service: {
                         $reduce: {
-                            input: { $ifNull: ["$treatments.treatments", []] },
+                            input: {
+                                $ifNull: [
+                                    "$treatments.treatments",
+                                    []
+                                ]
+                            },
                             initialValue: "",
                             in: {
                                 $concat: [
                                     "$$value",
                                     {
                                         $cond: [
-                                            { $eq: ["$$value", ""] },
+                                            {
+                                                $eq: [
+                                                    "$$value",
+                                                    ""
+                                                ]
+                                            },
                                             "",
                                             ", "
                                         ]
@@ -1490,19 +2051,43 @@ export const revenueReport = async (req: Request, res: Response) => {
                             }
                         }
                     },
+
                     doctor: {
-                        $concat: [
-                            "Dr.", " ", "$doctors.firstName", " ", "$doctors.lastName"
-                        ]
+                        $trim: {
+                            input: {
+                                $concat: [
+                                    "Dr. ",
+                                    { $ifNull: ["$doctors.firstName", ""] },
+                                    " ",
+                                    { $ifNull: ["$doctors.lastName", ""] }
+                                ]
+                            }
+                        }
                     },
+
                     amount: "$amount",
-                    method: "$appointments.method",
-                    status: "$status",
-                    BilledBy: {
-                        $concat :[
-                            "$staff.firstName"," ","$staff.lastName"
+
+                    method: {
+                        $ifNull: [
+                            "$appointments.method",
+                            "-"
                         ]
                     },
+
+                    status: "$status",
+
+                    billedBy: {
+                        $trim: {
+                            input: {
+                                $concat: [
+                                    { $ifNull: ["$staff.firstName", ""] },
+                                    " ",
+                                    { $ifNull: ["$staff.lastName", ""] }
+                                ]
+                            }
+                        }
+                    },
+
                     date: {
                         $dateToString: {
                             format: "%Y-%m-%d",
@@ -1510,36 +2095,48 @@ export const revenueReport = async (req: Request, res: Response) => {
                         }
                     }
                 }
+            },
+
+            {
+                $sort: {
+                    date: -1
+                }
             }
+
         ]);
+
         return res.status(200).json(revenueReportDetails);
 
     } catch (err) {
-        return res.status(500).json({ message: "Oops! Something went wrong", err });
-    }
-}
 
-export const appointmentReport = async (req: Request, res: Response) => {
+        console.error(err);
+
+        return res.status(500).json({
+            message: "Oops! Something went wrong"
+        });
+
+    }
+};
+
+export const appointmentReport = async (req: any, res: any) => {
     try {
-        const id = req.params.id;
 
         const {
-            filter,
+            filter = "Monthly",
             from,
             to
         } = req.query;
 
-        if (!id || Array.isArray(id)) {
-            return res.status(404).json({ message: "Invalid ID status" });
+        const clinic = await Clinic.findOne({
+            managementId: req.user.id
+        });
+
+        if (!clinic) {
+            return res.status(404).json({
+                message: "Clinic not found"
+            });
         }
 
-        const checkStatus = await Clinic.findOne({ managementId: id });
-
-        if (!checkStatus) {
-            return res.status(403).json({ message: "Forbidden" });
-        }
-
-        // DATE FILTER
         let dateFilter: any = {};
         const now = new Date();
 
@@ -1564,7 +2161,8 @@ export const appointmentReport = async (req: Request, res: Response) => {
         else if (filter === "Weekly") {
 
             const start = new Date();
-            start.setDate(now.getDate() - 7);
+            start.setDate(now.getDate() - 6);
+            start.setHours(0, 0, 0, 0);
 
             dateFilter = {
                 createdAt: {
@@ -1589,7 +2187,8 @@ export const appointmentReport = async (req: Request, res: Response) => {
                 0,
                 23,
                 59,
-                59
+                59,
+                999
             );
 
             dateFilter = {
@@ -1615,7 +2214,8 @@ export const appointmentReport = async (req: Request, res: Response) => {
                 31,
                 23,
                 59,
-                59
+                59,
+                999
             );
 
             dateFilter = {
@@ -1626,25 +2226,31 @@ export const appointmentReport = async (req: Request, res: Response) => {
             };
         }
 
-        // CUSTOM DATE RANGE
+        // CUSTOM RANGE
         if (from && to) {
+
+            const fromDate = new Date(from as string);
+
+            const toDate = new Date(to as string);
+            toDate.setHours(23, 59, 59, 999);
 
             dateFilter = {
                 createdAt: {
-                    $gte: new Date(from as string),
-                    $lte: new Date(to as string)
+                    $gte: fromDate,
+                    $lte: toDate
                 }
             };
         }
 
         const appointmentReportDetails = await Appointment.aggregate([
+
             {
                 $match: {
-                    clinicId: checkStatus._id,
-                    status: "paid",
+                    clinicId: clinic._id,
                     ...dateFilter
                 }
             },
+
             {
                 $lookup: {
                     from: "users",
@@ -1653,9 +2259,14 @@ export const appointmentReport = async (req: Request, res: Response) => {
                     as: "users"
                 }
             },
+
             {
-                $unwind: "$users"
+                $unwind: {
+                    path: "$users",
+                    preserveNullAndEmptyArrays: true
+                }
             },
+
             {
                 $lookup: {
                     from: "users",
@@ -1664,9 +2275,14 @@ export const appointmentReport = async (req: Request, res: Response) => {
                     as: "doctors"
                 }
             },
+
             {
-                $unwind: "$doctors"
+                $unwind: {
+                    path: "$doctors",
+                    preserveNullAndEmptyArrays: true
+                }
             },
+
             {
                 $lookup: {
                     from: "sessions",
@@ -1675,40 +2291,385 @@ export const appointmentReport = async (req: Request, res: Response) => {
                     as: "sessions"
                 }
             },
+
             {
-                $unwind: "$sessions"
+                $unwind: {
+                    path: "$sessions",
+                    preserveNullAndEmptyArrays: true
+                }
             },
+
             {
                 $project: {
-                    id: "$_id",
+
+                    _id: 0,
+
+                    appointmentId: "$_id",
+
                     userName: {
-                        $concat: [
-                            "$users.firstName", " ", "$users.lastName"
-                        ]
-                    },
-                    doctorName: {
-                        $concat: [
-                            "Dr.", "$doctors.firstName", " ", "$doctors.lastName"
-                        ]
-                    },
-                    sessionDateTime: {
-                        $dateToString: {
-                            format: "%Y-%m-%d %H:%M",
-                            date: "$sessions.startDateTime"
+                        $trim: {
+                            input: {
+                                $concat: [
+                                    {
+                                        $ifNull: [
+                                            "$users.firstName",
+                                            ""
+                                        ]
+                                    },
+                                    " ",
+                                    {
+                                        $ifNull: [
+                                            "$users.lastName",
+                                            ""
+                                        ]
+                                    }
+                                ]
+                            }
                         }
                     },
-                    status: "$status",
+
+                    doctorName: {
+                        $trim: {
+                            input: {
+                                $concat: [
+                                    "Dr. ",
+                                    {
+                                        $ifNull: [
+                                            "$doctors.firstName",
+                                            ""
+                                        ]
+                                    },
+                                    " ",
+                                    {
+                                        $ifNull: [
+                                            "$doctors.lastName",
+                                            ""
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+
+                    sessionDateTime: {
+                        $cond: [
+                            {
+                                $ifNull: [
+                                    "$sessions.startDateTime",
+                                    false
+                                ]
+                            },
+                            {
+                                $dateToString: {
+                                    format: "%Y-%m-%d %H:%M",
+                                    date: "$sessions.startDateTime"
+                                }
+                            },
+                            "-"
+                        ]
+                    },
+
+                    status: 1,
+
                     createdAt: {
                         $dateToString: {
                             format: "%Y-%m-%d",
                             date: "$createdAt"
                         }
                     }
+
+                }
+            },
+
+            {
+                $sort: {
+                    createdAt: -1
                 }
             }
+
         ]);
+
         return res.status(200).json(appointmentReportDetails);
+
     } catch (err) {
-        return res.status(500).json({ message: "Oops! Something went wrong" });
+
+        console.error(err);
+
+        return res.status(500).json({
+            message: "Oops! Something went wrong"
+        });
+
     }
-}
+};
+
+export const patientDemographicReport = async (req: any, res: any) => {
+    try {
+        const { filter = "Monthly", from, to } = req.query;
+
+        const clinic = await Clinic.findOne({
+            managementId: req.user.id,
+        });
+
+        if (!clinic) {
+            return res.status(404).json({ message: "Clinic not found" });
+        }
+        const now = new Date();
+        let dateFilter: any = {};
+
+        // TODAY
+        if (filter === "Today") {
+            const start = new Date();
+            start.setHours(0, 0, 0, 0);
+
+            const end = new Date();
+            end.setHours(23, 59, 59, 999);
+
+            dateFilter.createdAt = {
+                $gte: start,
+                $lte: end,
+            };
+        }
+
+        // WEEKLY
+        else if (filter === "Weekly") {
+            const start = new Date();
+            start.setDate(now.getDate() - 6);
+            start.setHours(0, 0, 0, 0);
+
+            dateFilter.createdAt = {
+                $gte: start,
+                $lte: now,
+            };
+        }
+
+        // MONTHLY
+        else if (filter === "Monthly") {
+            dateFilter.createdAt = {
+                $gte: new Date(now.getFullYear(), now.getMonth(), 1),
+                $lte: new Date(
+                    now.getFullYear(),
+                    now.getMonth() + 1,
+                    0,
+                    23,
+                    59,
+                    59,
+                    999
+                ),
+            };
+        }
+
+        // YEARLY
+        else if (filter === "Yearly") {
+            dateFilter.createdAt = {
+                $gte: new Date(now.getFullYear(), 0, 1),
+                $lte: new Date(
+                    now.getFullYear(),
+                    11,
+                    31,
+                    23,
+                    59,
+                    59,
+                    999
+                ),
+            };
+        }
+
+        // CUSTOM
+        if (from && to) {
+            const fromDate = new Date(from as string);
+            const toDate = new Date(to as string);
+            toDate.setHours(23, 59, 59, 999);
+
+            dateFilter.createdAt = {
+                $gte: fromDate,
+                $lte: toDate,
+            };
+        }
+
+        const patients = await Appointment.aggregate([
+            {
+                $match: {
+                    clinicId: clinic._id,
+                    ...dateFilter,
+                },
+            },
+            {
+                $group: {
+                    _id: "$userId",
+                    visits: {
+                        $sum: 1,
+                    },
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "patient",
+                },
+            },
+            {
+                $unwind: "$patient",
+            },
+        ]);
+
+        //return res.status(200).json(patients)
+
+        let male = 0;
+        let female = 0;
+
+        let ageTotal = 0;
+        let ageCount = 0;
+
+        let newPatients = 0;
+        let returningPatients = 0;
+        let oneTimePatients = 0;
+
+        const ageGroups = {
+            "0-17": 0,
+            "18-30": 0,
+            "31-45": 0,
+            "46-60": 0,
+            "60+": 0,
+        };
+
+        const topPatients: any[] = [];
+        const allPatients: any[] = [];
+
+        patients.forEach((patient: any) => {
+            if (patient.patient.gender === "male") male++;
+            else female++;
+
+            const birth = new Date(patient.patient.birthDay);
+
+            if (!isNaN(birth.getTime())) {
+                const age = Math.floor(
+                    (Date.now() - birth.getTime()) /
+                    (365.25 * 24 * 60 * 60 * 1000)
+                );
+
+                ageTotal += age;
+                ageCount++;
+
+                if (age <= 17) ageGroups["0-17"]++;
+                else if (age <= 30) ageGroups["18-30"]++;
+                else if (age <= 45) ageGroups["31-45"]++;
+                else if (age <= 60) ageGroups["46-60"]++;
+                else ageGroups["60+"]++;
+            }
+
+            if (patient.visits === 1)
+                oneTimePatients++;
+            else
+                returningPatients++;
+
+            if (dateFilter.createdAt) {
+                if (
+                    patient.patient.createdAt >= dateFilter.createdAt.$gte &&
+                    patient.patient.createdAt <= dateFilter.createdAt.$lte
+                ) {
+                    newPatients++;
+                }
+            } else {
+                newPatients++;
+            }
+
+            topPatients.push({
+                name:
+                    patient.patient.firstName +
+                    " " +
+                    patient.patient.lastName,
+                visits: patient.visits,
+            });
+
+            allPatients.push({
+                name: patient.patient.firstName +
+                    " " +
+                    patient.patient.lastName,
+                birthDay: patient.patient.birthDay,
+                address: patient.patient.address,
+                mobileNumber: patient.patient.mobileNumber
+            });
+        });
+
+        topPatients.sort(
+            (a: any, b: any) => b.visits - a.visits
+        );
+
+        const totalPatients = patients.length;
+
+        const totalVisits = patients.reduce(
+            (sum: number, patient: any) => sum + patient.visits,
+            0
+        );
+
+        return res.status(200).json({
+            summary: {
+                totalPatients,
+                malePatients: male,
+                femalePatients: female,
+
+                averageAge:
+                    ageCount > 0
+                        ? Number((ageTotal / ageCount).toFixed(1))
+                        : 0,
+
+                newPatients,
+                returningPatients,
+                oneTimePatients,
+
+                averageVisits:
+                    totalPatients > 0
+                        ? Number((totalVisits / totalPatients).toFixed(2))
+                        : 0,
+            },
+
+            PatientsDetals: allPatients,
+
+            genderDistribution: [
+                {
+                    gender: "Male",
+                    count: male,
+                    percentage:
+                        totalPatients > 0
+                            ? Number(
+                                ((male * 100) / totalPatients).toFixed(2)
+                            )
+                            : 0,
+                },
+                {
+                    gender: "Female",
+                    count: female,
+                    percentage:
+                        totalPatients > 0
+                            ? Number(
+                                ((female * 100) / totalPatients).toFixed(2)
+                            )
+                            : 0,
+                },
+            ],
+
+            ageDistribution: Object.entries(ageGroups).map(
+                ([ageGroup, count]) => ({
+                    ageGroup,
+                    count,
+                    percentage:
+                        totalPatients > 0
+                            ? Number(
+                                ((count * 100) / totalPatients).toFixed(2)
+                            )
+                            : 0,
+                })
+            ),
+
+            topPatients: topPatients.slice(0, 10),
+        });
+    } catch (err) {
+        console.error(err);
+
+        return res.status(500).json({
+            message: "Oops! Something went wrong",
+        });
+    }
+};
