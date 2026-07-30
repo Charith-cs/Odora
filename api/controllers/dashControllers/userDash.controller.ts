@@ -460,7 +460,7 @@ export const getChartDataForDocStaff = async (req: Request, res: Response) => {
 
 
         if (user?.role === "doctor") {
-            const performance = await Appointment.aggregate([
+            const performance = await Billing.aggregate([
                 {
                     $match: {
                         doctorId: new mongoose.Types.ObjectId(id),
@@ -613,7 +613,7 @@ export const reportDashCard = async (req: Request, res: Response) => {
             {
                 $match: {
                     clinicId: clinic._id,
-                    status: "completed",
+                    status: "paid",
                     createdAt: {
                         $gte: startOfMonth,
                         $lte: endOfMonth
@@ -629,7 +629,8 @@ export const reportDashCard = async (req: Request, res: Response) => {
                 }
             }
         ]);
-        return res.status(200).json({ totalPatients, totalDoctors, totalAppointments, totalRevenue });
+        const formattedRevenue = totalRevenue[0].revenue
+        return res.status(200).json({ totalPatients, totalDoctors, totalAppointments, formattedRevenue });
     } catch (err) {
         return res.status(500).json({ message: "Oops! Something went wrong" });
     }

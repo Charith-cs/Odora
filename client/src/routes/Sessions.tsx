@@ -46,6 +46,8 @@ const Sessions = () => {
         return <div className="mt-6 w-full">Loading...</div>;
     }
 
+    console.log({"current record":session})
+
     return (
         <div>
             <Table

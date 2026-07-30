@@ -1,8 +1,7 @@
-import React, { useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../../context/AuthContext';
 import type { DashNavType } from "../../../types/types.ts";
-import { userCard } from '../../../data';
 import { toast } from 'react-hot-toast';
 
 const DashSideNav = () => {
@@ -27,138 +26,138 @@ const DashSideNav = () => {
             {
                 name: "Dashboard",
                 path: "/user_dash",
-                image: "./userDash/home.png",
+                image: "../../../public/userDash/home.png",
             },
             {
                 name: "Clinics",
                 path: "/search?q=clinic",
-                image: "./userDash/clinic.png",
+                image: "../../../public/userDash/clinic.png",
             },
             {
                 name: "Doctors",
                 path: "/search?q=doctor",
-                image: "./userDash/doctor.png",
+                image: "../../../public/userDash/doctor.png",
             },
             {
                 name: "My Appointments",
                 path: `/my_appointment/${currentUser._id}`,
-                image: "./userDash/appointment.png",
+                image: "../../../public/userDash/appointment.png",
             },
             {
                 name: "Profile",
                 path: "/my_profile",
-                image: "./userDash/profile.png",
+                image: "../../../public/userDash/profile.png",
             },
             {
                 name: "Back to the Home",
                 path: "/",
-                image: "./userDash/left-arrow.png",
+                image: "../../../public/userDash/left-arrow.png",
             },
         ],
         doctor: [
             {
                 name: "Dashboard",
                 path: "/doctor_dash",
-                image: "./userDash/home.png",
+                image: "../../../public/userDash/home.png",
             },
             {
                 name: "My Appointments",
                 path: "/doctor_appointments",
-                image: "./userDash/appointment.png",
+                image: "../../../public/userDash/appointment.png",
             },
             {
                 name: "My Sessions",
                 path: "/my_session",
-                image: "./userDash/training.png",
+                image: "../../../public/userDash/training.png",
             },
             {
                 name: "Patients",
                 path: "/patients",
-                image: "./userDash/patient.png",
+                image: "../../../public/userDash/patient.png",
             },
             {
                 name: "My Performance",
                 path: "/my_performance",
-                image: "./userDash/line-chart.png",
+                image: "../../../public/userDash/line-chart.png",
             },
             {
                 name: "Join Request",
                 path: "/join",
-                image: "./userDash/meeting.png",
+                image: "../../../public/userDash/meeting.png",
             },
             {
                 name: "Profile",
                 path: "/my_profile",
-                image: "./userDash/profile.png",
+                image: "../../../public/userDash/profile.png",
             },
             {
                 name: "Back to the Home",
                 path: "/",
-                image: "./userDash/left-arrow.png",
+                image: "../../../public/userDash/left-arrow.png",
             },
         ],
         staff: [
             {
                 name: "Dashboard",
                 path: "/staff_dash",
-                image: "./userDash/home.png",
+                image: "../../../public/userDash/home.png",
             },
             {
                 name: "Appointments",
                 path: "/appointments",
-                image: "./userDash/appointment.png",
+                image: "../../../public/userDash/appointment.png",
             },
             {
                 name: "Patients",
                 path: "/patients",
-                image: "./userDash/patient.png",
+                image: "../../../public/userDash/patient.png",
             },
             {
                 name: "Billing and Payments",
                 path: "/payment_list",
-                image: "./userDash/invoice.png",
+                image: "../../../public/userDash/invoice.png",
             },
             {
                 name: "Back to the Home",
                 path: "/",
-                image: "./userDash/left-arrow.png",
+                image: "../../../public/userDash/left-arrow.png",
             },
         ],
         admin: [
             {
                 name: "Dashboard",
                 path: "/admin_dash",
-                image: "./userDash/home.png",
+                image: "../../../public/userDash/home.png",
             },
             {
                 name: "Users",
                 path: "/user_setting",
-                image: "./userDash/profile.png",
+                image: "../../../public/userDash/profile.png",
             },
             {
                 name: "Doctors",
                 path: "/doctor_setting",
-                image: "./userDash/doctors.png",
+                image: "../../../public/userDash/doctors.png",
             },
             {
                 name: "Staff",
                 path: "/staff_setting",
-                image: "./userDash/optimization.png",
+                image: "../../../public/userDash/optimization.png",
             },
             {
                 name: "Analysis & Reports",
                 path: "/reports",
-                image: "./userDash/profit-report.png",
+                image: "../../../public/userDash/profit-report.png",
             },
             {
                 name: "Profile",
                 path: "/my_profile",
-                image: "./userDash/profile.png",
+                image: "../../../public/userDash/profile.png",
             },
             {
                 name: "Back to the Home",
                 path: "/",
-                image: "./userDash/left-arrow.png",
+                image: "../../../public/userDash/left-arrow.png",
             },
         ]
     };
@@ -193,7 +192,7 @@ const DashSideNav = () => {
                                 <button
                                     onClick={() => { toast("Please contact your Administrator to update your account!", { icon: '🚫' }) }}
                                     className=" flex items-center gap-4 p-4 rounded-2xl hover:bg-red-500 hover:text-white transition-all text-left ">
-                                    <img src="./userDash/profile.png" className="w-5 h-5" />
+                                    <img src="../../../public/userDash/profile.png" className="w-5 h-5" />
                                     Profile
                                 </button>
                             }
@@ -205,7 +204,7 @@ const DashSideNav = () => {
                                     handleLogout();
                                 }}
                                 className=" flex items-center gap-4 p-4 rounded-2xl hover:bg-red-500 hover:text-white transition-all text-left ">
-                                <img src="./userDash/logout.png" className="w-5 h-5" />
+                                <img src="../../../public/userDash/logout.png" className="w-5 h-5" />
                                 Logout
                             </button>
 
@@ -236,9 +235,9 @@ const DashSideNav = () => {
                     <div
                         onClick={() => { toast("Please contact your Administrator to update your account!", { icon: '🚫' }) }}
                         className=" flex items-center gap-5 rounded-2xl px-5 py-4 font-medium text-gray-700 border border-gray-100 hover:bg-red-500 hover:text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
-                        <img src="./userDash/profile.png" alt="dashimg" className=" w-6 h-6" />Profile</div>
+                        <img src="../../../public/userDash/profile.png" alt="dashimg" className=" w-6 h-6" />Profile</div>
                 }
-                <div onClick={handleLogout} className=" flex items-center gap-5 rounded-2xl px-5 py-4 font-medium text-gray-700 border border-gray-100 hover:bg-red-500 hover:text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"><img src="./userDash/logout.png" alt="dashimg" className=" w-6 h-6" />Logout</div>
+                <div onClick={handleLogout} className=" flex items-center gap-5 rounded-2xl px-5 py-4 font-medium text-gray-700 border border-gray-100 hover:bg-red-500 hover:text-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer"><img src="../../../public/userDash/logout.png" alt="dashimg" className=" w-6 h-6" />Logout</div>
             </div>
         </div>
     )

@@ -47,6 +47,7 @@ import MySession from './routes/Dashboards/DoctorDash/MySession.tsx';
 import PastAppointments from './routes/Dashboards/DoctorDash/PastAppointments.tsx';
 import JoinReq from './routes/Dashboards/DoctorDash/JoinReq.tsx';
 import DoctorJoinReq from './routes/Dashboards/adminDash/DoctorJoinReq.tsx';
+import ClinicSetting from './routes/Dashboards/adminDash/ClinicSetting.tsx';
 
 
 const router = createBrowserRouter([
@@ -282,6 +283,20 @@ const router = createBrowserRouter([
         element:
           <ProtectedRoute allowedRoles={["admin"]}>
             <Reports />
+          </ProtectedRoute>
+      },
+      {
+        path: "/my_clinic/:slug",
+        element:
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <ClinicSetting />
+          </ProtectedRoute>
+      },
+            {
+        path: "/my_clinic",
+        element:
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <ClinicSetting />
           </ProtectedRoute>
       },
       {

@@ -1,40 +1,53 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { revenueChartData } from '../../../../data';
 import { useEffect, useState } from 'react';
 import type { FilterType } from '../../../../types/types';
 import API from '../../../../api/axios';
 
 const RevenueAreaChart = () => {
 
-  const [filter, setFilter] = useState<FilterType>('Monthly');
+  const [filter, setFilter] = useState<FilterType>('Yearly');
   const [chartData, setChartData] = useState<any[]>([]);
 
      useEffect(() => {
 
     const fetchRevenue = async () => {
       try {
-
         const res = await API.get(
           `/dash/revenue?filter=${filter}`
         );
         setChartData(res.data);
-
       } catch (error) {
         console.log(error);
       }
     };
-
     fetchRevenue();
-
   }, [filter]);
+
+    const hasData = chartData.some((item:any) => item.value > 0);
+
+  if (!hasData) {
+    return (
+
+      <div className="flex h-full w-full flex-col items-center justify-center text-gray-400">
+        <div className="mb-3 text-5xl">📊</div>
+
+        <h3 className="text-lg font-semibold">
+          No Revenue Data
+        </h3>
+
+        <p className="mt-1 text-sm text-center">
+          No revenue data
+          were found for the selected period.
+        </p>
+      </div>
+    );
+  }
 
 
   return (
     <div className="">
       <div className=" flex flex-col items-start md:justify-between ">
-        <h1 className="text-2xl md:text-3xl font-semibold my-5 text-[#2596be]">
-          Revenue Trend
-        </h1>
+
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex gap-2">
             {['Today', 'Weekly', 'Monthly', 'Yearly'].map((item) => (

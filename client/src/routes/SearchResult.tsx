@@ -25,7 +25,6 @@ const SearchResult = () => {
                 toast.error("Oops! Something went wrong");
             }
         };
-
         fetchedResults();
     }, [query]);
 
@@ -57,7 +56,7 @@ const SearchResult = () => {
                                 className=" group bg-white border border-gray-100 rounded-3xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-5 flex items-center justify-between">
 
                                 <div className="flex items-center flex-1">
-                                    <img src={c.img} alt="clinic" className=" w-16 h-16 rounded-2xl object-cover border border-gray-100" />
+                                    <img src={c.img ? c.img : "/userDash/user.png"} alt="clinic" className=" w-16 h-16 rounded-2xl object-cover border border-gray-100" />
 
                                     <div className="ml-5 flex-1">
                                         <h3 className="text-lg font-semibold text-gray-800">{c.clinicName}</h3>
@@ -102,7 +101,7 @@ const SearchResult = () => {
 
                                     <div className="flex items-center flex-1">
                                         <img
-                                            src={d.img}
+                                            src={d.userId?.img ? d.userId.img : "/userDash/user.png"}
                                             alt="doctor"
                                             className=" w-16 h-16 rounded-2xl object-cover border border-gray-100" />
                                         <div className="ml-5 flex-1">

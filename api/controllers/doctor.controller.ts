@@ -8,7 +8,7 @@ export const doctorDetails = async (req: Request, res: Response) => {
     try {
         const doctor = await User.findOne({ _id: req.params.id }).select("-password");
         if (!doctor) {
-            const clinic = await Clinic.findOne({ _id: req.params.id }).populate("doctorList", "firstName  lastName");
+            const clinic = await Clinic.findOne({ _id: req.params.id }).populate("doctorList", "firstName  lastName img");
             if (!clinic) { return res.status(404).json({ message: "Not found!" }) };
             return res.status(200).json({ clinic });
         } else {

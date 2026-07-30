@@ -9,17 +9,79 @@ import { useState } from "react";
 
 
 const userSchema = z.object({
-    firstName: z.string().min(1, "First name is required").regex(/^[A-Za-z\s]+$/, "Only letters allowed"),
-    lastName: z.string().min(1, "Last name is required").regex(/^[A-Za-z\s]+$/, "Only letters allowed"),
-    email: z.string().min(1, "Email is required").email("Invalid email format"),
-    gender: z.string().min(1, "Gender is required"),
-    mobileNumber: z.string().min(1, "Mobile number is required").regex(/^07[0-9]{8}$/, "Invalid Sri Lankan number"),
-    birthDay: z.string().min(1, "Birth date is required").refine(
-        (date) => new Date(date) <= new Date(),
-        { message: "Birth date cannot be in future" }
-    ),
-    address: z.string().min(1, "Address is required"),
-    password: z.string().min(6, "Minimum 6 characters required"),
+    firstName: z
+        .string()
+        .trim()
+        .min(1, "First name is required")
+        .max(50, "Maximum 50 characters")
+        .regex(/^[A-Za-z\s'-]+$/, "Only letters are allowed"),
+
+    lastName: z
+        .string()
+        .trim()
+        .min(1, "Last name is required")
+        .max(50, "Maximum 50 characters")
+        .regex(/^[A-Za-z\s'-]+$/, "Only letters are allowed"),
+
+    email: z
+        .string()
+        .trim()
+        .toLowerCase()
+        .max(100)
+        .email("Invalid email format"),
+
+    gender: z.enum(["male", "female"], {
+        errorMap: () => ({
+            message: "Gender is required",
+        }),
+    }),
+
+    mobileNumber: z
+        .string()
+        .trim()
+        .regex(/^07\d{8}$/, "Invalid Sri Lankan mobile number"),
+
+    birthDay: z
+        .string()
+        .min(1, "Birth date is required")
+        .refine((value) => {
+            const birth = new Date(value);
+
+            if (Number.isNaN(birth.getTime())) {
+                return false;
+            }
+
+            const today = new Date();
+
+            if (birth > today) {
+                return false;
+            }
+
+            const age = Math.floor(
+                (today.getTime() - birth.getTime()) /
+                (365.25 * 24 * 60 * 60 * 1000)
+            );
+
+            return age >= 0 && age <= 120;
+        }, {
+            message: "Invalid birth date",
+        }),
+
+    address: z
+        .string()
+        .trim()
+        .min(1, "Address is required")
+        .max(255, "Maximum 255 characters"),
+
+    password: z
+        .string()
+        .min(8, "Minimum 8 characters")
+        .max(16, "Maximum 16 characters")
+        .regex(/[A-Z]/, "Must contain an uppercase letter")
+        .regex(/[a-z]/, "Must contain a lowercase letter")
+        .regex(/[0-9]/, "Must contain a number")
+        .regex(/[!@#$%^&*(),.?":{}|<>]/, "Must contain a special character"),
+
     role: z.literal("user"),
 });
 
@@ -46,6 +108,7 @@ const Register = () => {
             toast.success(res.message);
             navigate("/auth");
         } catch (err) {
+            console.error(err);
             toast.error("Oops! Something went wrong");
         }
     };

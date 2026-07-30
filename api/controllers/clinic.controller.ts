@@ -9,20 +9,39 @@ import mongoose from "mongoose";
 
 export const registerClinic = async (req: Request, res: Response) => {
     try {
-        const clinicData: clinicModelType = req.body;
-        const existingClinic = await Clinic.findOne({
-            $or: [{ email: clinicData.email }, { clinicName: clinicData.clinicName }]
+        const clinicData: clinicModelType = {
+            ...req.body,
+            clinicName: req.body.clinicName.trim(),
+            email: req.body.email.trim().toLowerCase(),
+            address: req.body.address.trim(),
+            mobileNumber: req.body.mobileNumber.trim(),
+            desc: req.body.desc?.trim(),
+            managementId: req.body.managementId
+        };
+
+        const existingAdminClinic = await Clinic.findOne({
+            managementId: req.body.id
         });
-        if (existingClinic) {
-            return res.status(400).json({ message: "Clinic already registed" })
-        }
-        const newClinic = new Clinic(clinicData);
-        const savedClinic = await newClinic.save();
-        return res.status(201).json({ message: "Clinic registed successfully", savedClinic });
+
+        if (existingAdminClinic) { return res.status(409).json({ message: "You already have a clinic." }); }
+
+        const existingClinic = await Clinic.findOne({
+            $or: [
+                { clinicName: clinicData.clinicName },
+                { email: clinicData.email },
+                { mobileNumber: clinicData.mobileNumber }
+            ]
+        });
+
+        if (existingClinic) { return res.status(409).json({ message: "Clinic already exists." }) }
+
+        const clinic = await Clinic.create(clinicData);
+        return res.status(201).json({ message: "Clinic registered successfully.", clinic });
+
     } catch (error) {
-        return res.status(500).json({ message: "Oops! Something went wrong.", error })
+        return res.status(500).json({ message: "Oops! Something went wrong." });
     }
-}
+};
 
 export const getClinic = async (req: Request, res: Response) => {
     try {
@@ -57,7 +76,61 @@ export const getAllClinics = async (req: Request, res: Response) => {
     }
 }
 
-export const updateClinic = async (req: Request, res: Response) => {
+export const updateClinic = async ( req: Request, res: Response) => {
+    try {
+        const  {id}  = req.params;
+        if (!id || Array.isArray(id)) {
+            return res.status(400).json({message: "Invalid clinic ID."});
+        }
+
+        const clinic = await Clinic.findOne({
+            _id: id,
+            managementId: req.body.managementId
+        });
+
+        if (!clinic) {
+            return res.status(404).json({message: "Clinic not found." });
+        }
+
+        const updateData = {
+            clinicName: req.body.clinicName?.trim(),
+            email: req.body.email?.trim().toLowerCase(),
+            mobileNumber: req.body.mobileNumber?.trim(),
+            address: req.body.address?.trim(),
+            desc: req.body.desc?.trim(),
+            img: req.body.img
+        };
+
+        const duplicateClinic = await Clinic.findOne({
+            _id: { $ne: clinic._id },
+            $or: [
+                { clinicName: updateData.clinicName },
+                { email: updateData.email },
+                { mobileNumber: updateData.mobileNumber }
+            ]
+        });
+
+        if (duplicateClinic) {
+            return res.status(409).json({message: "Clinic name, email or mobile number already exists."});
+        }
+
+        const updatedClinic = await Clinic.findByIdAndUpdate(
+            clinic._id,
+            updateData,
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        return res.status(200).json({ message: "Clinic updated successfully.",clinic: updatedClinic});
+
+    } catch (error) {
+        return res.status(500).json({error : error , message: "Oops! Something went wrong."});
+    }
+};
+
+/* export const updateClinic = async (req: Request, res: Response) => {
     try {
         const clinic = await Clinic.findOne({ _id: req.params.id });
         if (!clinic) { return res.status(404).json({ message: "Please check your clinic status" }) }
@@ -68,9 +141,9 @@ export const updateClinic = async (req: Request, res: Response) => {
     } catch (error) {
         return res.status(500).json({ message: "Oops! Something went wrong." })
     }
-}
+} */
 
-export const deleteClinic = async (req: Request, res: Response) => {
+/* export const deleteClinic = async (req: Request, res: Response) => {
     try {
         const clinic = await Clinic.findOne({ _id: req.params.id });
         if (!clinic) { return res.status(404).json({ message: "Please check your clinic status" }) }
@@ -80,7 +153,7 @@ export const deleteClinic = async (req: Request, res: Response) => {
     } catch (error) {
         return res.status(500).json({ message: "Oops! Something went wrong." })
     }
-}
+} */
 
 export const addDoctors = async (req: Request, res: Response) => {
     try {
@@ -281,10 +354,10 @@ export const rejectDoctorRequest = async (req: any, res: any) => {
     }
 };
 
-export const addDoctorToClinicList = async (req:Request, res: Response) => {
+export const addDoctorToClinicList = async (req: Request, res: Response) => {
     try {
-        const  {id:doctorId}  = req.params;
-        if (!doctorId || Array.isArray(doctorId)) {return res.status(404).json({ message: "Check Id status"});}
+        const { id: doctorId } = req.params;
+        if (!doctorId || Array.isArray(doctorId)) { return res.status(404).json({ message: "Check Id status" }); }
 
         const clinic = await Clinic.findOne({
             managementId: req.body.id
@@ -308,4 +381,25 @@ export const addDoctorToClinicList = async (req:Request, res: Response) => {
     } catch (err) {
         return res.status(500).json("Oops! Something went Wrong");
     }
-} 
+}
+
+export const getClinicForAdmin = async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id;
+        if (!id || Array.isArray(id)) {
+            return res.status(400).json({ message: "Check your Id status" });
+        }
+        const clinicDetails = await Clinic.findOne({
+            managementId: id
+        });
+        if (!clinicDetails) {
+            return res.status(404).json({ message: "Not found" });
+        }
+        const staffCount = await Staff.countDocuments({
+            clinic: clinicDetails._id
+        });
+        return res.status(200).json({ clinicDetails, staffCount });
+    } catch (err) {
+        return res.status(500).json({ error: err, message: "Oops! Something went wrong" });
+    }
+}

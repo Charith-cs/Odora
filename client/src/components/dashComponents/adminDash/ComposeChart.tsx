@@ -8,7 +8,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  Scatter,
+
   ResponsiveContainer
 } from 'recharts';
 import { useEffect, useState } from 'react';
@@ -17,7 +17,7 @@ import API from '../../../../api/axios';
 
 const ComposeChart = () => {
 
-  const [filter, setFilter] = useState<FilterType>("Monthly");
+  const [filter, setFilter] = useState<FilterType>("Yearly");
   const [chartData, setChartData] = useState<ChartDataType[]>([]);
 
   useEffect(() => {
@@ -25,7 +25,6 @@ const ComposeChart = () => {
     const fetchAnalytics = async () => {
       try {
         const res = await API.get(`/dash/appointments?filter=${filter}`);
-        console.log(res.data);
         setChartData(res.data);
       } catch (error) {
         console.log(error);
@@ -34,15 +33,31 @@ const ComposeChart = () => {
     fetchAnalytics();
   }, [filter]);
 
+  const hasData = chartData.some((item:any) => item.value > 0);
 
+  if (!hasData) {
+    return (
+
+      <div className="flex h-full w-full flex-col items-center justify-center text-gray-400">
+        <div className="mb-3 text-5xl">📊</div>
+
+        <h3 className="text-lg font-semibold">
+          No Appointment Data
+        </h3>
+
+        <p className="mt-1 text-sm text-center">
+          No new appointment data
+          were found for the selected period.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>
 
       <div className="flex justify-between items-center flex-wrap gap-3">
-        <h1 className="text-2xl md:text-3xl font-semibold my-5 text-[#2596be]">
-          Total Appointments
-        </h1>
+
 
         <div className="flex items-center gap-3 flex-wrap">
 
@@ -63,18 +78,13 @@ const ComposeChart = () => {
         </div>
       </div>
 
-
       <div style={{ width: '100%', height: '400px' }}>
         <ResponsiveContainer>
           <ComposedChart data={chartData}>
             <CartesianGrid stroke="#f5f5f5" />
-
             <XAxis dataKey="label" />
-
             <YAxis />
-
             <Tooltip />
-
             <Legend />
 
             <Area
@@ -101,7 +111,6 @@ const ComposeChart = () => {
               dataKey="paid"
               stroke="#208003"
             />
-
 
             <Line
               type="monotone"

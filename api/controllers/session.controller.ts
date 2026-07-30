@@ -34,6 +34,7 @@ export const getDoctorSessions = async (req: Request, res: Response) => {
             status: "active"
         })
             .populate("clinicId", "clinicName address")
+            .populate("doctorId" , "firstName lastName")
             .sort({ date: 1 });
 
         return res.status(200).json({

@@ -38,7 +38,7 @@ const DocClinic = () => {
           <div className=" bg-white rounded-3xl border border-gray-100 shadow-md p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               <img
-                src="./cardIcons/dentist.png"
+                src={ details.doctor.img ? details.doctor.img : "/userDash/user.png"}
                 alt="Doctor"
                 className=" w-28 h-28 rounded-3xl object-cover border border-gray-100" />
 

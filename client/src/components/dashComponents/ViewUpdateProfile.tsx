@@ -50,6 +50,7 @@ const ViewUpdateProfile = () => {
     const [currentUser, setCurrentUser] = useState<any>(() => {
         return JSON.parse(localStorage.getItem("user") || "null");
     });
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
 
     const onSubmit = async (data: FormData) => {
@@ -140,6 +141,15 @@ const ViewUpdateProfile = () => {
 
         initData();
     }, [currentUser, reset]);
+
+    const handleDelete = async () => {
+        try{
+            await API.delete(`/auth/delete/${currentUser._id}`)
+            toast.success("Your Odora account has been deleted!");
+        }catch(err:any){
+            toast.error(err?.message || "Oops! Something went wrong");
+        }
+    }
 
     return (
         <>
@@ -248,15 +258,58 @@ const ViewUpdateProfile = () => {
                                 </p>
                             </div>
                         </div>
-                        <div className="flex justify-end mt-10">
+                        <div className="flex justify-end mt-10 gap-5">
                             <button
                                 className={`px-8 py-3 rounded-2xl ${currentUser.role === "admin" ? " cursor-not-allowed bg-gray-200 border border-gray-700 hover:border-red-700 hover:text-red-500" : "bg-[#2596be] text-white font-semibold shadow-md hover:bg-[#1f84a8] hover:shadow-xl transition-all duration-300"}`}
                                 onClick={() => { currentUser.role === "admin" ? toast("Contact your System Admin to Update your Profile", { icon: "⚠️" }) : setIsUpdateProfile(!isUpdateProfile); }}
                             >
                                 Update Profile
                             </button>
+                            <button
+                                className={`px-8 py-3 rounded-2xl ${currentUser.role === "admin" ? " cursor-not-allowed bg-gray-200 border border-gray-700 hover:border-red-700 hover:text-red-500" : "bg-red-500 text-white font-semibold shadow-md hover:bg-red-600 hover:shadow-xl transition-all duration-300"}`}
+                                onClick={() => { currentUser.role === "admin" ? toast("Contact your System Admin to Delete your Profile", { icon: "⚠️" }) : setShowDeleteModal(true) }}
+                            >
+                                Delete Profile
+                            </button>
+
                         </div>
                     </div>
+                    {showDeleteModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                            <div className="w-[420px] rounded-2xl bg-white p-6 shadow-2xl">
+
+                                <div className="flex justify-center">
+                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+                                        <span className="text-3xl">🗑️</span>
+                                    </div>
+                                </div>
+
+                                <h2 className="mt-5 text-center text-xl font-bold text-gray-800"> Delete Account</h2>
+                                <p className="mt-3 text-center text-gray-500">Are you sure you want to delete your Odora account?</p>
+                                <p className="mt-2 text-center text-sm text-red-500"> This action cannot be undone.</p>
+
+                                <div className="mt-8 flex gap-3">
+                                    <button
+                                        onClick={() => {
+                                            setShowDeleteModal(false);
+
+                                        }}
+                                        className="flex-1 rounded-xl border border-gray-300 py-3 font-semibold text-gray-600 transition hover:bg-gray-100"
+                                    >
+                                        Cancel
+                                    </button>
+
+                                    <button
+                                        onClick={handleDelete}
+                                        className="flex-1 rounded-xl bg-red-500 py-3 font-semibold text-white transition hover:bg-red-600"
+                                    >
+                                        Delete
+                                    </button>
+
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 :
                 <div className="mt-8 max-w-6xl mx-auto">

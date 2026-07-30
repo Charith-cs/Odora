@@ -120,8 +120,8 @@ const DoctorManagement = ({
                                 </div>
                             </div>
 
-                            <h2 className="mt-5 text-center text-xl font-bold text-gray-800"> Delete Doctor</h2>
-                            <p className="mt-3 text-center text-gray-500">Are you sure you want to delete this doctor?</p>
+                            <h2 className="mt-5 text-center text-xl font-bold text-gray-800"> Remove Doctor</h2>
+                            <p className="mt-3 text-center text-gray-500">Are you sure you want to remove this doctor from clinic?</p>
                             <p className="mt-2 text-center text-sm text-red-500"> This action cannot be undone.</p>
 
                             <div className="mt-8 flex gap-3">
@@ -139,7 +139,7 @@ const DoctorManagement = ({
                                     onClick={handleDelete}
                                     className="flex-1 rounded-xl bg-red-500 py-3 font-semibold text-white transition hover:bg-red-600"
                                 >
-                                    Delete
+                                    Remove
                                 </button>
 
                             </div>
@@ -164,7 +164,7 @@ const DoctorManagement = ({
                             }}
                             className="px-3 py-1 rounded-lg border text-gray-600 hover:text-red-500 hover:border-red-500 transition"
                         >
-                            Delete
+                            Remove
                         </button>
                     </div>
                 )}

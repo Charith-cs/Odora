@@ -36,7 +36,7 @@ const Clinic = () => {
                     <div className=" bg-white rounded-3xl border border-gray-100 shadow-md p-6 sm:p-8">
                         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
 
-                            <img src={details.clinic.img} alt={details.clinic.clinicName} className=" w-28 h-28 rounded-3xl object-cover border border-gray-100" />
+                            <img src={details.clinic.img ? details.clinic.img : "/userDash/user.png"} alt={details.clinic.clinicName} className=" w-28 h-28 rounded-3xl object-cover border border-gray-100" />
                             <div className="flex-1 text-center sm:text-left">
                                 <h1 className="text-2xl sm:text-3xl font-bold text-[#2596be]">
                                     {details.clinic.clinicName}
@@ -84,7 +84,7 @@ const Clinic = () => {
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-4">
                                                 <img
-                                                    src="./cardIcons/dentist.png"
+                                                    src={d.img ? d.img : "/userDash/user.png"}
                                                     alt="Doctor"
                                                     className=" w-14 h-14 rounded-2xl object-cover border border-gray-100" />
                                                 <div>

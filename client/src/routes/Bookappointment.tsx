@@ -18,7 +18,7 @@ const Bookappointment = () => {
     const AC = 100;
     const total = session?.fee + AC;
 
-    console.log(session);
+    console.log(doctor);
 
     const handleBook = () => {
         setButtton(true);

@@ -1,53 +1,113 @@
-import { Pie, PieChart, Tooltip, type TooltipIndex } from 'recharts';
-import { RechartsDevtools } from '@recharts/devtools';
+import { useMemo } from "react";
+import {
+    PieChart,
+    Pie,
+    Tooltip,
+    Legend,
+    Cell,
+    ResponsiveContainer,
+    type TooltipIndex,
+} from "recharts";
+import { RechartsDevtools } from "@recharts/devtools";
 
+type UserChartData = {
+    returningPatients: number;
+    newPatients: number;
+};
 
-type chartType = {
+type ChartProps = {
     isAnimationActive?: boolean;
     defaultIndex?: TooltipIndex;
-    data: any
-}
+    data?: UserChartData;
+};
 
-const UserChart = ({ isAnimationActive, defaultIndex, data }: chartType) => {
+const COLORS = ["#3B82F6", "#10B981"];
 
-    const data02 = [
-        { name: 'Returning patients', value: data?.returningPatients },
-        { name: 'New registration', value: data?.newPatients },
-    ];
+const UserChart = ({
+    isAnimationActive = true,
+    defaultIndex,
+    data,
+}: ChartProps) => {
 
-    const hasData =
-        data &&
-        (data.returningPatients > 0 || data.newPatients > 0);
+    const chartData = useMemo(
+        () => [
+            {
+                name: "Returning Patients",
+                value: data?.returningPatients ?? 0,
+            },
+            {
+                name: "New Registration",
+                value: data?.newPatients ?? 0,
+            },
+        ],
+        [data]
+    );
+
+    const hasData = chartData.some((item:any) => item.value > 0);
+
+    if (!hasData) {
+        return (
+            <div className="flex h-full w-full flex-col items-center justify-center text-gray-400">
+                <div className="mb-3 text-5xl">📊</div>
+
+                <h3 className="text-lg font-semibold">
+                    No Patient Data
+                </h3>
+
+                <p className="mt-1 text-sm text-center">
+                    No new registrations or returning patients
+                    were found for the selected period.
+                </p>
+            </div>
+        );
+    }
 
     return (
-        <>
-            {!hasData ? (
-                <div className="flex flex-col h-full items-center justify-center ">
-                    <span className="">📄</span>
-                   <h2 className="text-gray-400"> No Data Found</h2>
-                </div>)
-                :
-                (<PieChart
-                    style={{ width: '100%', height: '100%', maxWidth: '500px', maxHeight: '80vh', aspectRatio: 1, display: "flex", justifyContent: "center", alignItems: "center" }}
-                    responsive
-                >
+        <div className="h-full w-full">
+            <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+
                     <Pie
-                        data={data02}
+                        data={chartData}
                         dataKey="value"
+                        nameKey="name"
                         cx="50%"
                         cy="50%"
-                        innerRadius="60%"
+                        innerRadius="55%"
                         outerRadius="80%"
-                        fill="#5f88d4"
-                        label
+                        paddingAngle={3}
+                        label={({ name, percent }) =>
+                            `${name} ${(percent * 100).toFixed(0)}%`
+                        }
                         isAnimationActive={isAnimationActive}
-                    />
-                    <Tooltip defaultIndex={defaultIndex} />
-                    <RechartsDevtools />
-                </PieChart>)
-            }
-        </>
-    )
-}
+                    >
+                        {chartData.map((_, index) => (
+                            <Cell
+                                key={index}
+                                fill={COLORS[index % COLORS.length]}
+                            />
+                        ))}
+                    </Pie>
 
-export default UserChart
+                    <Tooltip
+                        defaultIndex={defaultIndex}
+                        formatter={(value: number) => [
+                            value,
+                            "Patients",
+                        ]}
+                    />
+
+                    <Legend
+                        verticalAlign="bottom"
+                        align="center"
+                    />
+
+                    <RechartsDevtools />
+
+                </PieChart>
+            </ResponsiveContainer>
+        </div>
+    );
+};
+
+export default UserChart;

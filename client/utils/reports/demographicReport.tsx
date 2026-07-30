@@ -114,14 +114,10 @@ export const exportPatientDemographicReport = async (
     doc.setFont("helvetica", "normal");
 
     if (from && to) {
-
         doc.text(`From : ${from}`, 15, 42);
         doc.text(`To : ${to}`, 15, 48);
-
     } else {
-
         doc.text(`Filter : ${filter}`, 15, 42);
-
     }
 
     doc.text(
@@ -138,7 +134,6 @@ export const exportPatientDemographicReport = async (
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-
     doc.text(
         "Executive Summary",
         15,
@@ -146,101 +141,45 @@ export const exportPatientDemographicReport = async (
     );
 
     currentY += 4;
-
     autoTable(doc, {
-
         startY: currentY,
-
         head: [[
             "Metric",
             "Value"
         ]],
-
         body: [
-
-            [
-                "Total Patients",
-                report.summary.totalPatients
-            ],
-
-            [
-                "Male Patients",
-                report.summary.malePatients
-            ],
-
-            [
-                "Female Patients",
-                report.summary.femalePatients
-            ],
-
-            [
-                "Average Age",
-                `${report.summary.averageAge} Years`
-            ],
-
-            [
-                "New Patients",
-                report.summary.newPatients
-            ],
-
-            [
-                "Returning Patients",
-                report.summary.returningPatients
-            ],
-
-            [
-                "One-Time Patients",
-                report.summary.oneTimePatients
-            ],
-
-            [
-                "Average Visits",
-                report.summary.averageVisits
-            ]
-
+            ["Total Patients", report.summary.totalPatients],
+            ["Male Patients", report.summary.malePatients],
+            ["Female Patients", report.summary.femalePatients],
+            ["Average Age", `${report.summary.averageAge} Years`],
+            ["New Patients", report.summary.newPatients],
+            ["Returning Patients", report.summary.returningPatients],
+            ["One-Time Patients", report.summary.oneTimePatients],
+            ["Average Visits", report.summary.averageVisits]
         ],
 
         theme: "grid",
-
         headStyles: {
-
             fillColor: PRIMARY,
-
             textColor: 255,
-
             halign: "center",
-
             fontStyle: "bold"
-
         },
-
         styles: {
-
             fontSize: 10,
-
             cellPadding: 3,
-
             valign: "middle"
-
         },
-
         columnStyles: {
-
             0: {
                 fontStyle: "bold",
                 cellWidth: 90
             },
-
             1: {
                 halign: "center"
             }
-
         }
-
     });
-
-    // Move cursor below summary table
-
     currentY =
         (doc as any).lastAutoTable.finalY + 10;
 
@@ -256,87 +195,47 @@ export const exportPatientDemographicReport = async (
         15,
         currentY
     );
-
     currentY += 4;
-
     autoTable(doc, {
-
         startY: currentY,
-
         head: [[
             "Gender",
             "Patient Count",
             "Percentage"
         ]],
-
         body: report.genderDistribution.map((item) => [
-
             item.gender,
-
             item.count,
-
             `${item.percentage}%`
-
         ]),
-
         theme: "grid",
-
         headStyles: {
-
             fillColor: SUCCESS,
-
             textColor: 255,
-
             halign: "center",
-
             fontStyle: "bold"
-
         },
-
         styles: {
-
             fontSize: 10,
-
             cellPadding: 3,
-
             valign: "middle"
-
         },
-
         columnStyles: {
-
             0: {
-
                 fontStyle: "bold",
-
                 cellWidth: 70
-
             },
-
             1: {
-
                 halign: "center"
-
             },
-
             2: {
-
                 halign: "center"
-
             }
-
         },
-
         alternateRowStyles: {
-
             fillColor: [245, 245, 245]
-
         }
-
     });
-
-    // Move cursor below table
-
     currentY =
         (doc as any).lastAutoTable.finalY + 10;
 
@@ -354,85 +253,47 @@ export const exportPatientDemographicReport = async (
     );
 
     currentY += 4;
-
     autoTable(doc, {
-
         startY: currentY,
-
         head: [[
             "Age Group",
             "Patient Count",
             "Percentage"
         ]],
-
         body: report.ageDistribution.map((item) => [
-
             item.ageGroup,
-
             item.count,
-
             `${item.percentage}%`
-
         ]),
-
         theme: "grid",
-
         headStyles: {
-
             fillColor: WARNING,
-
             textColor: 255,
-
             halign: "center",
-
             fontStyle: "bold"
-
         },
-
         styles: {
-
             fontSize: 10,
-
             cellPadding: 3,
-
             valign: "middle"
-
         },
-
         columnStyles: {
-
             0: {
-
                 fontStyle: "bold",
-
                 cellWidth: 70
-
             },
-
             1: {
-
                 halign: "center"
-
             },
-
             2: {
 
                 halign: "center"
-
             }
-
         },
-
         alternateRowStyles: {
-
             fillColor: [248, 250, 252]
-
         }
-
     });
-
-    // Move cursor below table
-
     currentY =
         (doc as any).lastAutoTable.finalY + 10;
 
@@ -442,124 +303,71 @@ export const exportPatientDemographicReport = async (
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-
     doc.text(
         "Top Frequent Patients",
         15,
         currentY
     );
-
     currentY += 4;
-
     autoTable(doc, {
-
         startY: currentY,
-
         head: [[
             "Rank",
             "Patient Name",
             "Visits"
         ]],
-
         body: report.topPatients.map((patient, index) => [
-
             index + 1,
-
             patient.name,
-
             patient.visits
-
         ]),
 
         theme: "grid",
-
         headStyles: {
-
             fillColor: PURPLE,
-
             textColor: 255,
-
             halign: "center",
-
             fontStyle: "bold"
-
         },
-
         styles: {
-
             fontSize: 10,
-
             cellPadding: 3,
-
             valign: "middle"
-
         },
-
         columnStyles: {
-
             0: {
-
                 halign: "center",
-
                 cellWidth: 20,
-
                 fontStyle: "bold"
-
             },
-
             1: {
-
-                cellWidth: 110
-
+               cellWidth: 110
             },
-
             2: {
-
                 halign: "center",
-
                 cellWidth: 35,
-
                 fontStyle: "bold"
-
             }
-
         },
 
         alternateRowStyles: {
-
             fillColor: [248, 250, 252]
-
         },
-
         didParseCell: (data) => {
-
             if (
                 data.section === "body" &&
                 data.column.index === 0
             ) {
-
                 if (data.row.index === 0) {
-
                     data.cell.styles.fillColor = [255, 243, 205];
-
                 } else if (data.row.index === 1) {
-
                     data.cell.styles.fillColor = [230, 230, 230];
-
                 } else if (data.row.index === 2) {
-
                     data.cell.styles.fillColor = [255, 229, 180];
-
                 }
-
             }
-
         }
-
     });
-
-    // Move cursor below table
-
     currentY =
         (doc as any).lastAutoTable.finalY + 10;
 
@@ -569,19 +377,14 @@ export const exportPatientDemographicReport = async (
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-
     doc.text(
         "Patient Directory",
         15,
         currentY
     );
-
     currentY += 4;
-
     autoTable(doc, {
-
         startY: currentY,
-
         head: [[
             "No",
             "Patient Name",
@@ -590,123 +393,66 @@ export const exportPatientDemographicReport = async (
             "Mobile",
             "Address"
         ]],
-
         body: report.PatientsDetals.map((patient, index) => [
-
             index + 1,
-
             patient.name,
-
             calculateAge(patient.birthDay),
-
             formatDate(patient.birthDay),
-
             patient.mobileNumber,
-
             patient.address
-
         ]),
 
         theme: "striped",
-
         headStyles: {
-
             fillColor: PRIMARY,
-
             textColor: 255,
-
             halign: "center",
-
             fontStyle: "bold"
-
         },
-
         styles: {
-
             fontSize: 8,
-
             cellPadding: 2.5,
-
             overflow: "linebreak",
-
             valign: "middle"
-
         },
-
         alternateRowStyles: {
-
             fillColor: [248, 250, 252]
-
         },
-
         columnStyles: {
-
             0: {
-
                 cellWidth: 12,
-
                 halign: "center"
-
             },
-
             1: {
-
                 cellWidth: 48
-
             },
-
             2: {
-
                 cellWidth: 15,
-
                 halign: "center"
-
             },
-
             3: {
-
                 cellWidth: 28,
-
                 halign: "center"
-
             },
-
             4: {
-
                 cellWidth: 32,
-
                 halign: "center"
-
             },
-
             5: {
-
                 cellWidth: 55
-
             }
-
         },
 
         didDrawPage: () => {
-
             doc.setFontSize(9);
-
             doc.setTextColor(120);
-
             doc.text(
-
                 "Odora Dental Management System",
-
                 15,
-
                 292
-
             );
-
         }
-
     });
-
     currentY =
         (doc as any).lastAutoTable.finalY + 10;
 
@@ -715,9 +461,7 @@ export const exportPatientDemographicReport = async (
     // ============================================
 
     const totalPages = doc.getNumberOfPages();
-
     for (let page = 1; page <= totalPages; page++) {
-
         doc.setPage(page);
 
         // Footer separator line
@@ -761,12 +505,9 @@ export const exportPatientDemographicReport = async (
     // ============================================
     // SAVE PDF
     // ============================================
-
     const fileName =
         from && to
             ? `Patient_Demographic_Report_${from}_to_${to}.pdf`
             : `Patient_Demographic_Report_${filter}.pdf`;
-
     doc.save(fileName);
-
 };

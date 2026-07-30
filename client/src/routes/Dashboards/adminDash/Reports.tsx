@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom"
-import { DoctorRevenueColumns, DoctorRevenueTable, reportCardDetails } from "../../../../data"
+import { DoctorRevenueColumns } from "../../../../data"
 import ComposeChart from "../../../components/dashComponents/adminDash/ComposeChart"
 import RevenueAreaChart from "../../../components/dashComponents/adminDash/RevenueAreaChart"
 import Table from "../../../components/dashComponents/adminDash/Table"
 import DashCard from "../../../components/dashComponents/userDash/DashCard"
 import { useEffect, useState } from "react"
-import type { AdminTableColumn, FilterType, RevenueModelDoctor, StaffCardType } from "../../../../types/types"
+import type { FilterType } from "../../../../types/types"
 import UserChart from "../../../components/dashComponents/adminDash/UserChart"
 import { toast } from "react-hot-toast";
 import API from "../../../../api/axios";
@@ -180,6 +180,7 @@ const Reports = () => {
   const fetchPieChart = async () => {
     try {
       const res = await API.get(`/dash/users/${currentUser._id}`);
+      console.log(res.data)
       setPieChart(res.data);
     } catch (err) {
       console.log(err);
@@ -202,10 +203,10 @@ const Reports = () => {
   };
 
   const reportCardDetails = [
-    { img: "./userDash/patient (2).png", desc: "Total Patients", subDesc: `${reports.totalPatients}+`, color: "bg-blue-600" },
-    { img: "./userDash/doctor (2).png", desc: "Total Doctors", subDesc: `${reports.totalDoctors}+`, color: "bg-green-600" },
-    { img: "./userDash/appointment (1).png", desc: "Total Appointments", subDesc: `${reports.totalAppointments}+`, color: "bg-orange-600" },
-    { img: "./userDash/coin.png", desc: "Total Revenue", subDesc: `LKR : ${reports.totalRevenue || 0}.00`, color: "bg-sky-600" }
+    { img: "./userDash/patient (2).png", desc: "Total Patients", subDesc: `${reports?.totalPatients ?? 0} +`, color: "bg-blue-600" },
+    { img: "./userDash/doctor (2).png", desc: "Total Doctors", subDesc: `${reports?.totalDoctors ?? 0} +`, color: "bg-green-600" },
+    { img: "./userDash/appointment (1).png", desc: "Total Appointments", subDesc: `${reports?.totalAppointments ?? 0} +`, color: "bg-orange-600" },
+    { img: "./userDash/coin.png", desc: "Total Revenue", subDesc: `LKR : ${reports?.formattedRevenue ?? 0}.00`, color: "bg-sky-600" }
   ];
 
   const DoctorRevenueTable = performance.map((p: any) => ({
@@ -229,13 +230,42 @@ const Reports = () => {
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
 
         {/* Appointment Chart */}
-        <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+        {/*         <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+          <h1 className="text-2xl md:text-3xl font-semibold my-5 text-[#2596be]">
+            Total Appointments
+          </h1>
           <ComposeChart />
+        </div> */}
+        <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+
+          <h2 className="mb-6 text-2xl md:text-3xl font-bold text-[#2596be]">
+            Total Appointments
+          </h2>
+
+          <div className="h-[320px] md:h-[380px]">
+            <ComposeChart />
+          </div>
+
         </div>
 
         {/* Revenue Chart */}
-        <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+        {/*         <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+          <h1 className="text-2xl md:text-3xl font-semibold my-5 text-[#2596be]">
+            Revenue Trend
+          </h1>
           <RevenueAreaChart />
+        </div> */}
+
+        <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+
+          <h2 className="mb-6 text-2xl md:text-3xl font-bold text-[#2596be]">
+            Revenue Trend
+          </h2>
+
+          <div className="h-[320px] md:h-[380px]">
+            <RevenueAreaChart />
+          </div>
+
         </div>
 
         {/* Doctor Performance */}

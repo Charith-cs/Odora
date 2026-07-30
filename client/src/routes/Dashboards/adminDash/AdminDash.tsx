@@ -6,6 +6,7 @@ import { adminConfig } from '../../../../types/constants';
 import API from '../../../../api/axios';
 import { toast } from 'react-hot-toast';
 import type { adminCardType, AdminchartData } from '../../../../types/types';
+import MyClinicCard from '../../../components/dashComponents/adminDash/MyClinicCard';
 
 
 const AdminDash = () => {
@@ -15,6 +16,7 @@ const AdminDash = () => {
     const [checked, setChecked] = useState(false);
     const [cardData, setCardData] = useState<any>(null);
     const [cData, setCData] = useState<[]>([]);
+    const [clinic, setClinic] = useState<any>();
 
 
     useEffect(() => {
@@ -23,35 +25,45 @@ const AdminDash = () => {
                 const res = await API.get(`/dash/card/${currentUser._id}`);
                 setCardData(res.data);
             } catch (err: any) {
-                toast.error(err?.response?.data?.message || "Oops! Something went wrong");
+                console.error(err?.response?.data?.message || "Oops! Something went wrong");
             }
         }
         fetchCardData();
     }, [currentUser._id]);
 
-    useEffect(() => {
+/*     useEffect(() => {
         const fetchCData = async () => {
             try {
                 const chartData = await API.get(`/dash/rev_data/${currentUser._id}`)
-                console.log(chartData.data)
                 setCData(chartData.data.chartData);
             } catch (err: any) {
-                toast.error(err?.response?.data?.message || "Oops! Something went wrong");
+                console.error(err?.response?.data?.message || "Oops! Something went wrong");
             }
         }
         fetchCData();
-    }, [currentUser._id]);
+    }, [currentUser._id]); */
 
+    useEffect(() => {
+        const getClinic = async () => {
+            try {
+                const res = await API.get(`/clinic/my/${currentUser._id}`);
+                setClinic(res.data);
+            } catch (err: any) {
+                console.error(err);
+            }
+        }
+        getClinic();
+    }, []);
 
     const adminCardDetails: adminCardType[] = [
-        { img: "./userDash/calendar.png", desc: "Upcomming Appoinments", subDesc: cardData?.upcomming, color: "bg-blue-600" },
-        { img: "./userDash/checked.png", desc: "Completed Appoinments", subDesc: cardData?.completed, color: "bg-green-600" },
-        { img: "./userDash/money-back.png", desc: "Canceled Appoinments", subDesc: cardData?.canceled, color: "bg-red-600" },
-        { img: "./userDash/coin.png", desc: "LKR " + cardData?.totalAmount + ".00", subDesc: "Pending Bills", color: "bg-orange-500" },
-        { img: "./userDash/payment-done.png", desc: "LKR " + cardData?.paidTotalAmount + ".00", subDesc: "Completed Bills", color: "bg-teal-500" },
-        { img: "./userDash/medical-team.png", desc: cardData?.registeredDoctors + "+", subDesc: "Registed Doctors", color: "bg-lime-600" },
-        { img: "./userDash/growth.png", desc: "LKR " + cardData?.revenueAmount + ".00", subDesc: "Last moth revenue", color: "bg-sky-600" },
-        { img: "./userDash/group.png", desc: cardData?.registeredUsers + "+", subDesc: "Registed Users", color: "bg-rose-600" },
+        { img: "./userDash/calendar.png", desc: "Upcomming Appoinments", subDesc: cardData?.upcomming || 0, color: "bg-blue-600" },
+        { img: "./userDash/checked.png", desc: "Completed Appoinments", subDesc: cardData?.completed || 0, color: "bg-green-600" },
+        { img: "./userDash/money-back.png", desc: "Canceled Appoinments", subDesc: cardData?.canceled || 0, color: "bg-red-600" },
+        { img: "./userDash/coin.png", desc: "LKR " + (cardData?.totalAmount ?? 0) + ".00", subDesc: "Pending Bills", color: "bg-orange-500" },
+        { img: "./userDash/payment-done.png", desc: "LKR " + (cardData?.paidTotalAmount ?? 0) + ".00", subDesc: "Completed Bills", color: "bg-teal-500" },
+        { img: "./userDash/medical-team.png", desc: cardData?.registeredDoctors || 0 + " +", subDesc: "Registed Doctors", color: "bg-lime-600" },
+        { img: "./userDash/growth.png", desc: "LKR " + (cardData?.revenueAmount ?? 0) + ".00", subDesc: "Last moth revenue", color: "bg-sky-600" },
+        { img: "./userDash/group.png", desc: (cardData?.registeredUsers ?? 0) + " +", subDesc: "Registed Users", color: "bg-rose-600" },
     ];
 
     return (
@@ -90,13 +102,16 @@ const AdminDash = () => {
 
                 </div>
             </div>
+            <div className=" my-5">
+                <MyClinicCard clinic={clinic} />
+            </div>
             <div className=" flex mt-8 items-center justify-evenly ">
                 <DashCard cardDetails={adminCardDetails} />
             </div>
-            <div className=" flex flex-col w-full mt-8 ">
+            {/*             <div className=" flex flex-col w-full mt-8 ">
                 <h1 className=" text-2xl md:text-3xl font-semibold text-[#2596be] my-4">Monthly Revenue</h1>
                 <Charts data={cData as AdminchartData[]} config={adminConfig} />
-            </div>
+            </div> */}
         </div>
 
     )

@@ -19,7 +19,7 @@ const UserDash = () => {
         const fetchCardData = async () => {
             try {
                 const res = await API.get(`/dash/card/${currentUser._id}`)
-                setCardData(res.data.appointment);
+                setCardData(res.data);
             } catch (err: any) {
                 toast.error(err?.response?.data?.message || "Oops! Something went wrong");
             }
@@ -38,6 +38,8 @@ const UserDash = () => {
         }
         Recent();
     }, [currentUser._id]);
+
+    console.log(cardData)
 
     const cardDetails: CardType[] = [
         { img: "./userDash/calendar.png", desc: "Upcomming Appoinments", subDesc: cardData?.upcomming, color: "bg-blue-600" },

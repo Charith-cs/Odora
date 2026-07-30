@@ -7,11 +7,8 @@ export interface AuthRequest extends Request {
         role:string;
     };
 }
-export const verifyToken = (
-    req:AuthRequest,
-    res:Response,
-    next:NextFunction
-) => {
+export const verifyToken = ( req:AuthRequest, res:Response, next:NextFunction) => {
+    
     const authHeader = req.headers.authorization;
     if(!authHeader || !authHeader.startsWith("Bearer")){
         return res.status(401).json("No Token Provided");

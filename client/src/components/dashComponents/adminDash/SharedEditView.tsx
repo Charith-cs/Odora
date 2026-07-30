@@ -22,14 +22,6 @@ const SharedEditView = ({ dataColumns, tableData, tableTitle, title, label, data
                 />
             </section>
 
-            <section className="rounded-3xl border border-gray-100 bg-white p-5 shadow-md md:p-6">
-                <Table
-                    columns={dataColumns}
-                    data={tableData}
-                    title={tableTitle}
-                />
-            </section>
-
             {!isUser && (
                 <section className="space-y-8 ">
                     {/* Performance Chart */}
@@ -60,6 +52,16 @@ const SharedEditView = ({ dataColumns, tableData, tableTitle, title, label, data
                     </div>
                 </section>
             )}
+
+            <section className="rounded-3xl border border-gray-100 bg-white p-5 shadow-md md:p-6">
+                <Table
+                    columns={dataColumns}
+                    data={tableData}
+                    title={tableTitle}
+                />
+            </section>
+
+            
         </div>
     )
 }
