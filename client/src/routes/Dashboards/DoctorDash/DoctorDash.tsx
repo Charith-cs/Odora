@@ -1,9 +1,8 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import DashCard from '../../../components/dashComponents/userDash/DashCard'
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Charts from '../../../components/dashComponents/doctorDash/Charts'
 import { doctorConfig } from '../../../../types/constants'
-import { AuthContext } from '../../../../context/AuthContext'
 import type { CardType, MyData } from '../../../../types/types'
 import API from '../../../../api/axios'
 import toast from 'react-hot-toast'
@@ -54,7 +53,7 @@ const DoctorDash = () => {
             <div className=" flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <div className="">
                     <h1 className=" text-2xl md:text-3xl font-bold text-[#2596be]">Hello, Dr. {currentUser.firstName + " " + currentUser.lastName} 👋</h1>
-                    <span className=" text-sm text-gray-500 mt-2 block">{}</span>
+                    <span className=" text-sm text-gray-500 mt-2 block">{ }</span>
                 </div>
                 <div className=" flex gap-4 items-center relative self-start md:self-auto ">
                     <img src={notify === false ? `./userDash/bell.png` : `./userDash/notification.png`} onClick={() => { setChecked(!checked) }} alt="userimg" className=" w-7 h-7 object-cover cursor-pointer " />
@@ -89,7 +88,7 @@ const DoctorDash = () => {
                 <DashCard cardDetails={cardDetails} />
             </div>
             <div className=" flex flex-col w-full mt-8 ">
-                <h1 className=" text-xl font-semibold my-4">Number of monthly patients</h1>
+                <h1 className=" text-xl font-semibold my-4 text-[#2598be]">Number of monthly patients</h1>
                 <Charts data={cData as MyData[]} config={doctorConfig} />
             </div>
         </div>

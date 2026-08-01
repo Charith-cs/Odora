@@ -230,7 +230,7 @@ export const getMy = async (req: Request, res: Response) => {
         }
         const user = await User.findById({ _id: userId });
         if (user?.role === "user") {
-            const appointments = await Appointment.find({ userId: new mongoose.Types.ObjectId(userId) }).populate("clinicId", "clinicName").populate("doctorId", "firstName lastName");
+            const appointments = await Appointment.find({ userId: new mongoose.Types.ObjectId(userId) }).populate("clinicId", "clinicName").populate("doctorId", "firstName lastName img");
 
             return res.status(200).json({
                 message: "Data fetched successfully!", total: appointments.length, appointments

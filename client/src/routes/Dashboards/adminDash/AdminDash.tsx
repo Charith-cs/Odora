@@ -15,7 +15,6 @@ const AdminDash = () => {
     const [notify, setNotify] = useState(false);
     const [checked, setChecked] = useState(false);
     const [cardData, setCardData] = useState<any>(null);
-    const [cData, setCData] = useState<[]>([]);
     const [clinic, setClinic] = useState<any>();
 
 
@@ -30,18 +29,6 @@ const AdminDash = () => {
         }
         fetchCardData();
     }, [currentUser._id]);
-
-/*     useEffect(() => {
-        const fetchCData = async () => {
-            try {
-                const chartData = await API.get(`/dash/rev_data/${currentUser._id}`)
-                setCData(chartData.data.chartData);
-            } catch (err: any) {
-                console.error(err?.response?.data?.message || "Oops! Something went wrong");
-            }
-        }
-        fetchCData();
-    }, [currentUser._id]); */
 
     useEffect(() => {
         const getClinic = async () => {
@@ -71,7 +58,6 @@ const AdminDash = () => {
             <div className=" flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <div className="">
                     <h1 className=" text-2xl md:text-3xl font-bold text-[#2596be]">Hello, {currentUser.firstName + " " + currentUser.lastName} 👋</h1>
-                    <span className=" text-sm text-gray-500 mt-2 block">Management</span>
                 </div>
                 <div className=" flex gap-4 items-center relative self-start md:self-auto ">
                     <img src={notify === false ? `./userDash/bell.png` : `./userDash/notification.png`} onClick={() => { setChecked(!checked) }} alt="userimg" className=" w-7 h-7 object-cover cursor-pointer " />

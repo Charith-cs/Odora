@@ -58,8 +58,9 @@ export const getDoctorSessionDetailsForWalkIn = async (req: Request, res: Respon
                 $lte: endOfDay
             }
         })
-            .populate("doctorId", "firstName lastName")
+            .populate("doctorId", "firstName lastName img")
             .populate("clinicId", "clinicName")
+            .populate("templateId" , "maxPatients")
             ;
         return res.status(200).json(sessionDetails);
     } catch (err) {

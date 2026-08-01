@@ -160,7 +160,7 @@ export const ViewEditUserDetails = async (req: Request, res: Response) => {
         } else if (role === "staff") {
 
             const staffDetails = await Staff.find({ userId: id })
-                .populate("userId", "firstName lastName mobileNumber email address birthDay gender createdAt")
+                .populate("userId", "firstName lastName mobileNumber img email address birthDay gender createdAt")
                 .populate("clinic", "clinicName");
 
             const appointmentDetails = await Billing.find({

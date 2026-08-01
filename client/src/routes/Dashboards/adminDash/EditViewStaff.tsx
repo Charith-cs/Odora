@@ -1,6 +1,5 @@
 import SharedEditView from '../../../components/dashComponents/adminDash/SharedEditView'
-import { adminEditViewStaffTitle, adminStaffEditViewTable, StaffEditViewColumns, staffCardTitle, staffCardLabel, staffCard, StaffUpdateLabel, staffPerData, StaffRevData } from '../../../../data';
-import { staffPerConfig, staffRevConfig } from '../../../../types/constants';
+import { adminEditViewStaffTitle, StaffEditViewColumns, staffCardTitle, staffCardLabel } from '../../../../data';
 import type { AdminstaffCard, editViewStaff } from '../../../../types/types';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
@@ -13,34 +12,20 @@ const EditViewStaff = () => {
 
     const [staffDetails, setStaffDetails] = useState<any[]>([]);
     const [appointmentDetails, setAppointmentDetails] = useState<any[]>([]);
-    const [monthly, setMonthly] = useState<any[]>([]);
-    const [weekly, setWeekly] = useState<any[]>([]);
+
 
     const fetchStaffdetails = async () => {
         try {
-
             const res = await API.get(`/management/view_edit_user/${id}`, { params: { role: "staff" } });
             setStaffDetails(res.data.staffDetails || []);
             setAppointmentDetails(res.data.appointmentDetails || []);
-
         } catch (err) {
             toast.error("Oops! Something went wrong");
         }
     };
 
-    const fetchchartData = async () => {
-        try {
-            const res = await API.get(`/dash/per_rev_data/${id}`);
-            setMonthly(res.data.monthly);
-            setWeekly(res.data.weekly);
-        } catch (err) {
-            toast.error("Oops! Something went wrong");
-        }
-    }
-
     useEffect(() => {
         fetchStaffdetails();
-        fetchchartData();
     }, [id]);
 
 
@@ -49,6 +34,7 @@ const EditViewStaff = () => {
         clinic: staffDetails[0]?.clinic?.clinicName,
         tpnum: staffDetails[0]?.userId?.mobileNumber,
         createdAt: new Date(staffDetails[0]?.userId?.createdAt).toDateString(),
+        img : staffDetails[0]?.userId?.img
     };
 
     const adminStaffEditViewTable: editViewStaff[] =
@@ -81,16 +67,11 @@ const EditViewStaff = () => {
                 tableTitle={adminEditViewStaffTitle}
                 title={staffCardTitle}
                 label={staffCardLabel}
-
                 data={staffCard}
                 updateLabel={StaffUpdateLabel}
-
-                performanceData={monthly}
-                revenueData={weekly}
-
-                performanceConf={staffPerConfig}
-                revenueConf={staffRevConfig}
                 isUser={false}
+                staff = {true}
+                onRefresh = {fetchStaffdetails}
             />
         </div>
     )

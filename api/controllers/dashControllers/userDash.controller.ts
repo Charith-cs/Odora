@@ -14,7 +14,12 @@ import { json } from "stream/consumers";
 
 export const dashCard = async (req: Request, res: Response) => {
     try {
-        const user = await User.findById(req.params.id);
+        const id = req.params.id;
+        if (!id || Array.isArray(id)) {
+            return res.status(403).json({ message: "Check user status" });
+        }
+        const user = await User.findById(id);
+
         switch (user?.role) {
             case "user": {
                 const upcomming = await Appointment.countDocuments({
@@ -143,29 +148,40 @@ export const dashCard = async (req: Request, res: Response) => {
                 return res.status(200).json({ pending, lastMonthCompleted, todayTotal, completedBills });
             }
             case "admin": {
+                const clinic = await Clinic.findOne({
+                    managementId: id
+                });
+                if (!clinic) {
+                    return;
+                }
 
                 const upcomming = await Appointment.countDocuments({
-                    status: "approved"
+                    status: "approved",
+                    clinicId: clinic._id
                 });
 
                 const completed = await Appointment.countDocuments({
-                    status: "completed"
+                    status: "completed",
+                    clinicId: clinic._id
                 });
 
                 const canceled = await Appointment.countDocuments({
-                    status: "canceled"
+                    status: "canceled",
+                    clinicId: clinic._id
                 });
 
                 // TOTAL COMPLETED TREATMENT AMOUNT
                 const completedAppointments = await Appointment.find({
-                    status: "completed"
+                    status: "completed",
+                    clinicId: clinic._id
                 });
 
                 const treatmentAmounts = await Promise.all(
                     completedAppointments.map(async (appointment) => {
 
                         const treatments = await Treatment.find({
-                            appointmentId: appointment._id
+                            appointmentId: appointment._id,
+                            clinicId: clinic._id,
                         });
 
                         return treatments.reduce((sum, treatment) => {
@@ -189,14 +205,16 @@ export const dashCard = async (req: Request, res: Response) => {
 
                 // TOTAL PAID BILLING AMOUNT
                 const paidBills = await Billing.find({
-                    status: "paid"
+                    status: "paid",
+                    clinicId: clinic._id
                 });
 
                 const paidAmounts = await Promise.all(
                     paidBills.map(async (bill) => {
 
                         const paidTreatments = await Treatment.find({
-                            appointmentId: bill.appointmentId
+                            appointmentId: bill.appointmentId,
+                            clinicId: clinic._id
                         });
 
                         return paidTreatments.reduce((sum, treatment) => {
@@ -268,9 +286,11 @@ export const dashCard = async (req: Request, res: Response) => {
                 const revenueAmount = lastMonthRevenue[0]?.totalRevenue || 0;
 
                 //registeredusers
-                const registeredUsers = await User.countDocuments({
-                    role: "user"
+                const getRegisteredUsers = await Appointment.distinct("userId", {
+                    clinicId: clinic._id
                 });
+
+                const registeredUsers = getRegisteredUsers.length;
 
                 return res.status(200).json({
                     upcomming,
@@ -445,140 +465,254 @@ export const getChartDataForAdmin = async (req: Request, res: Response) => {
 export const getChartDataForDocStaff = async (req: Request, res: Response) => {
     try {
         const id = req.params.id;
+        const { filter = "Monthly" ,  managementId} = req.query;
+
         if (!id || Array.isArray(id)) {
-            return res.status(404).json({ message: "Check your ID status" });
+            return res.status(400).json({ message: "Check your ID status" });
         }
-        const user = await User.findById(id);
+        if (!managementId || Array.isArray(managementId)) {
+            return res.status(400).json({message: "Management ID is required"});
+        }
 
-        const months = [
-            "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-            "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
-        ];
+        const clinic = await Clinic.findOne({managementId});
 
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - 6);
+        if (!clinic) {
+            return res.status(404).json({ message: "Clinic not found" });
+        }
 
+        const userDetails = await User.findById(id);
 
-        if (user?.role === "doctor") {
-            const performance = await Billing.aggregate([
-                {
-                    $match: {
-                        doctorId: new mongoose.Types.ObjectId(id),
-                        status: "paid"
-                    }
-                },
-                {
-                    $group: {
-                        _id: { $month: "$createdAt" },
-                        patients: { $sum: 1 }
-                    }
-                },
-                {
-                    $sort: { _id: 1 }
-                }
-            ]);
+        if (!userDetails) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
-            const perfMap = new Map(performance.map(i => [i._id, i.patients]));
-            const formattedData = months.map((month, index) => ({
-                month,
-                patients: perfMap.get(index + 1) || 0
-            }));
+        const now = new Date();
+        let matchStage: any = { status: "paid" };
+        let groupId: any;
+        let sortStage: any;
 
+        if (userDetails.role === "doctor") {
+            const clinicStatus = await Clinic.findOne({
+                _id: clinic._id,
+                doctorList: id
+            });
+            if (!clinicStatus) {
+                return res.status(403).json({ message: "Check your clinic status" });
+            }
 
-            const generated = await Billing.aggregate([
-                {
-                    $match: {
-                        doctorId: new mongoose.Types.ObjectId(id),
-                        status: "paid"
-                    }
-                },
-                {
-                    $group: {
-                        _id: { $month: "$createdAt" },
-                        revenue: { $sum: "$amount" }
-                    }
-                },
-                {
-                    $sort: { _id: 1 }
-                }
-            ]);
-            const revMap = new Map(generated.map(i => [i._id, i.revenue]));
-            const formattedRev = months.map((month, index) => ({
-                month,
-                revenue: revMap.get(index + 1) || 0
-            }));
+            matchStage.doctorId = new mongoose.Types.ObjectId(id);
+            matchStage.clinicId = clinic._id;
 
-            return res.status(200).json({ performance: formattedData, generated: formattedRev });
-        } else if (user?.role === "staff") {
-            const monthly = await Billing.aggregate([
-                {
-                    $match: {
-                        staffId: new mongoose.Types.ObjectId(id),
-                        status: "paid"
-                    }
-                },
-                {
-                    $group: {
-                        _id: { month: { $month: "$createdAt" } },
-                        revenue: { $sum: "$amount" }
-                    }
-                },
-                {
-                    $sort: {
-                        "_id.month": 1
-                    }
-                }
-            ]);
+        } else if (userDetails.role === "staff") {
 
-            const revMap = new Map(
-                monthly.map(i => [i._id.month, i.revenue])
-            );
-
-            const formattedRev = months.map((month, index) => ({
-                month,
-                revenue: revMap.get(index + 1) || 0
-            }));
-
-            //weekly
-
-            const weekly = await Billing.aggregate([
-                {
-                    $match: {
-                        staffId: new mongoose.Types.ObjectId(id),
-                        status: "paid",
-                        createdAt: { $gte: startDate }
-                    }
-                },
-                {
-                    $group: {
-                        _id: { $dayOfWeek: "$createdAt" },
-                        revenue: { $sum: "$amount" }
-                    }
-                }
-            ]);
-
-            const map = new Map();
-            weekly.forEach(item => {
-                map.set(item._id, item.revenue);
+            const staffStatus = await Staff.findOne({
+                userId: id,
+                clinic: clinic._id
             });
 
-            const StaffRevData = [
-                { day: "MON", revenue: map.get(2) || 0 },
-                { day: "TUE", revenue: map.get(3) || 0 },
-                { day: "WED", revenue: map.get(4) || 0 },
-                { day: "THU", revenue: map.get(5) || 0 },
-                { day: "FRI", revenue: map.get(6) || 0 },
-                { day: "SAT", revenue: map.get(7) || 0 },
-                { day: "SUN", revenue: map.get(1) || 0 },
-            ];
+            if (!staffStatus) {
+                return res.status(403).json({
+                    message: "Check your clinic status"
+                });
+            }
 
+            matchStage.staffId = new mongoose.Types.ObjectId(id);
+            matchStage.clinicId = clinic._id;
 
-            return res.status(200).json({ monthly: formattedRev, weekly: StaffRevData });
+        } else {
+
+            return res.status(403).json({
+                message: "Invalid user role"
+            });
         }
-    } catch (err) {
-        return res.status(500).json({ message: "Oops! Something went wrong", err });
+
+        if (filter === "Today") {
+
+            const start = new Date();
+            start.setHours(0, 0, 0, 0);
+
+            const end = new Date();
+            end.setHours(23, 59, 59, 999);
+
+            matchStage.createdAt = {
+                $gte: start,
+                $lte: end
+            };
+
+            groupId = {
+                hour: {
+                    $hour: "$createdAt"
+                }
+            };
+
+            sortStage = {
+                "_id.hour": 1
+            };
+        }
+
+        else if (filter === "Weekly") {
+
+            const weekAgo = new Date();
+
+            weekAgo.setDate(now.getDate() - 6);
+            weekAgo.setHours(0, 0, 0, 0);
+
+            matchStage.createdAt = {
+                $gte: weekAgo
+            };
+
+            groupId = {
+                day: {
+                    $dayOfWeek: "$createdAt"
+                }
+            };
+            sortStage = {
+                "_id.day": 1
+            };
+        }
+        else if (filter === "Monthly") {
+
+            matchStage.createdAt = {
+                $gte: new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    1
+                )
+            };
+
+            groupId = {
+                day: {
+                    $dayOfMonth: "$createdAt"
+                }
+            };
+
+            sortStage = {
+                "_id.day": 1
+            };
+        }
+
+        else {
+            matchStage.createdAt = {
+                $gte: new Date(
+                    now.getFullYear(),
+                    0,
+                    1
+                )
+            };
+            groupId = {
+                month: {
+                    $month: "$createdAt"
+                }
+            };
+            sortStage = {
+                "_id.month": 1
+            };
+        }
+
+        const revenue = await Billing.aggregate([
+            {
+                $match: matchStage
+            },
+            {
+                $group: {
+                    _id: groupId,
+                    revenue: {
+                        $sum: "$amount"
+                    }
+                }
+            },
+            {
+                $sort: sortStage
+            }
+        ]);
+
+        const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        const days = [
+            "SUN",
+            "MON",
+            "TUE",
+            "WED",
+            "THU",
+            "FRI",
+            "SAT"
+        ];
+
+        const revenueMap = new Map();
+        revenue.forEach((item: any) => {
+
+            let key: number;
+
+            if (filter === "Today") {
+                key = item._id.hour;
+            } else if (filter === "Weekly") {
+                key = item._id.day;
+            } else if (filter === "Monthly") {
+                key = item._id.day;
+            } else {
+                key = item._id.month;
+            }
+
+            revenueMap.set(key, item);
+        });
+
+        let formattedData: any[] = [];
+
+        // TODAY
+        if (filter === "Today") {
+            for (let hour = 0; hour < 24; hour++) {
+                const item = revenueMap.get(hour);
+                formattedData.push({
+                    label: `${hour}:00`,
+                    revenue: item?.revenue ?? 0
+                });
+            }
+        }
+
+        // WEEKLY
+        else if (filter === "Weekly") {
+            for (let day = 1; day <= 7; day++) {
+                const item = revenueMap.get(day);
+                formattedData.push({
+                    label: days[day - 1],
+                    revenue: item?.revenue ?? 0
+                });
+            }
+        }
+
+        // MONTHLY
+        else if (filter === "Monthly") {
+            const lastDay = new Date(
+                now.getFullYear(),
+                now.getMonth() + 1,
+                0
+            ).getDate();
+
+            for (let day = 1; day <= lastDay; day++) {
+                const item = revenueMap.get(day);
+                formattedData.push({
+                    label: day.toString(),
+                    revenue: item?.revenue ?? 0
+                });
+            }
+        }
+        // YEARLY
+        else {
+
+            for (let month = 1; month <= 12; month++) {
+                const item = revenueMap.get(month);
+                formattedData.push({
+                    label: months[month - 1],
+                    revenue: item?.revenue ?? 0
+                });
+            }
+        }
+
+        return res.status(200).json(formattedData);
+
+    } catch (err:any) {
+        return res.status(500).json({message: "Oops! Something went wrong." ,  error: err.message});
     }
-}
+};
 
 export const reportDashCard = async (req: Request, res: Response) => {
     try {

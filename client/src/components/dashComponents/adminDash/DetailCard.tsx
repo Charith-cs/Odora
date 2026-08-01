@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import type { AdminUserCardProps } from "../../../../types/types";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -37,11 +37,60 @@ const DetailCard = <T extends Record<string, any>>({
     updateLabel,
     data,
     userId,
-    img
+    img,
+    staff,
+    onRefresh
 }: AdminUserCardProps<T>) => {
 
     const [update, setUpdate] = useState(false);
     const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+    const [file, setFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const [preview, setPreview] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+
+
+    const handleUpload = async () => {
+        if (!file) {
+            toast.error("Please select an image");
+            return;
+        }
+        const formData = new FormData();
+        formData.append("image", file);
+        try {
+            setLoading(true);
+            const res = await API.post(`/dash/upload/${userId}`, formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                }
+            });
+            const updatedUser = {
+                managementId: currentUser._id,
+                img: res.data.imageUrl
+            };
+            await API.put(`/staff/updateImg/${userId}`, updatedUser);
+            toast.success("Profile picture uploaded successfully !");
+            onRefresh();
+            setPreview(null);
+            setFile(null);
+        } catch (err) {
+            toast.error("Upload failed");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+
+    const handleRemove = async () => {
+        try {
+            const res = await API.delete(`/dash/remove/${userId}`);
+           /*  const updatedUser = { ...currentUser, img: "" }; */
+            toast.success(res.data.message);
+            onRefresh();
+        } catch (error: any) {
+            toast.error(error.res.data.message)
+        }
+    }
 
     /* ---------------- RHF ---------------- */
     const {
@@ -137,16 +186,75 @@ const DetailCard = <T extends Record<string, any>>({
                             onClick={() => setUpdate(!update)}
                             className="absolute right-5 top-5 rounded-xl border border-gray-200 bg-white p-2 shadow-sm transition-all duration-300 hover:border-[#2596be] hover:shadow-md"
                         >
-                            <img src="/userDash/edit.png" alt="editimg" className="h-5 w-5 object-contain" />
+                            <img
+                                src="/userDash/edit.png"
+                                alt="editimg"
+                                className="h-5 w-5 object-contain" />
                         </button>
 
                         <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-start">
-                            <div className="flex justify-center lg:w-1/4">
-                                <img
-                                    src={img}
-                                    alt="profilepic"
-                                    className="h-28 w-28 rounded-full border-4 border-gray-100 object-cover shadow-md md:h-36 md:w-36"
-                                />
+                            <div className="w-full lg:w-80 shrink-0">
+
+                                <div className="rounded-3xl border border-gray-100 bg-white shadow-sm flex flex-col items-center">
+
+                                    <div className="relative group">
+
+                                        <img
+                                            src={preview ? preview : img}
+                                            alt="profilepic"
+                                            className="w-48 h-48 rounded-full object-cover border-4 border-[#2596be]/15 shadow-lg cursor-pointer transition duration-300 group-hover:scale-[1.02]"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        />
+
+                                        {staff && <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="absolute bottom-3 right-3 w-12 h-12 rounded-full bg-[#2596be] text-white shadow-lg hover:bg-[#1f84a8] transition flex items-center justify-center"
+                                        >
+                                            ✎
+                                        </button>}
+
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                const selectedFile = e.target.files?.[0] || null;
+                                                setFile(selectedFile);
+
+                                                if (selectedFile) {
+                                                    const previewUrl = URL.createObjectURL(selectedFile);
+                                                    setPreview(previewUrl);
+                                                }
+                                            }}
+                                            className="hidden"
+                                        />
+
+                                    </div>
+
+                                    { staff && <div className="w-full flex gap-3 mt-8">
+
+                                        <button
+                                            type="button"
+                                            onClick={handleUpload}
+                                            disabled={loading}
+                                            className="flex-1 rounded-2xl bg-[#2596be] py-3 text-white font-semibold shadow-md hover:bg-[#1f84a8] hover:shadow-lg disabled:opacity-60 transition-all duration-300"
+                                        >
+                                            {loading ? "Uploading..." : "Upload"}
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={handleRemove}
+                                            className="flex-1 rounded-2xl border border-red-300 py-3 text-red-500 font-semibold hover:bg-red-50 transition-all duration-300"
+                                        >
+                                            Remove
+                                        </button>
+
+                                    </div>}
+
+                                </div>
+
                             </div>
 
                             <div className="w-full lg:flex-1">

@@ -1,6 +1,5 @@
 import SharedEditView from '../../../components/dashComponents/adminDash/SharedEditView'
 import { adminEditViewDoctorTitle, DoctorEditViewColumns, doctorCardTitle, doctorCardLabel } from '../../../../data';
-import { doctorPerConfig, doctorRevConfig } from '../../../../types/constants';
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import API from '../../../../api/axios';
@@ -13,8 +12,6 @@ const EditViewDoctor = () => {
 
   const [doctorDetails, setDoctorDetails] = useState<any[]>([]);
   const [appointmentDetails, setAppointmentDetails] = useState<any[]>([]);
-  const [performance, setPerformance] = useState<any[]>([]);
-  const [revenue, setRevenue] = useState<any[]>([]);
 
   const fetchDoctordetails = async () => {
     try {
@@ -28,21 +25,8 @@ const EditViewDoctor = () => {
     }
   }
 
-  const fetchchartData = async () => {
-    try {
-      const res = await API.get(`/dash/per_rev_data/${id}`);
-      setPerformance(res.data.performance);
-      setRevenue(res.data.generated);
-    } catch (err) {
-      toast.error("Oops! Something went wrong");
-    }
-  }
-
-
-
   useEffect(() => {
     fetchDoctordetails();
-    fetchchartData();
   }, [id]);
 
   const doctorCard = {
@@ -98,12 +82,6 @@ const EditViewDoctor = () => {
         label={doctorCardLabel}
         data={doctorCard}
         updateLabel={doctorUpdateLabel}
-
-        performanceData={performance}
-        revenueData={revenue}
-
-        performanceConf={doctorPerConfig}
-        revenueConf={doctorRevConfig}
         isUser={false}
       />
     </div>

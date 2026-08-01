@@ -1,11 +1,11 @@
 import { useParams } from 'react-router-dom';
 import type { editViewUserProps } from '../../../../types/types'
-import Charts from '../doctorDash/Charts'
 import DetailCard from './DetailCard'
 import Table from './Table'
+import CommonChart from './CommonChart';
 
 
-const SharedEditView = ({ dataColumns, tableData, tableTitle, title, label, data, updateLabel, performanceData, revenueData, performanceConf, revenueConf, isUser }: editViewUserProps) => {
+const SharedEditView = ({ dataColumns, tableData, tableTitle, title, label, data, staff, updateLabel, isUser, onRefresh }: editViewUserProps) => {
 
     const { id } = useParams();
 
@@ -17,38 +17,17 @@ const SharedEditView = ({ dataColumns, tableData, tableTitle, title, label, data
                     label={label}
                     data={data}
                     userId={id}
+                    staff={staff}
                     updateLabel={updateLabel}
+                    onRefresh={onRefresh}
                     img={data.img ? data.img : "/userDash/user.png"}
                 />
             </section>
 
             {!isUser && (
                 <section className="space-y-8 ">
-                    {/* Performance Chart */}
                     <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-md md:p-6 hover:shadow-xl">
-                        <h2 className="mb-6 text-2xl font-bold text-[#2596be] md:text-3xl">
-                            {performanceConf.title}
-                        </h2>
-                        <div className="h-[300px] md:h-[380px]">
-                            <Charts
-                                data={performanceData}
-                                config={performanceConf}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Revenue Chart */}
-                    <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-md md:p-6 hover:shadow-xl mb-5">
-                        <h2 className="mb-6 text-2xl font-bold text-[#2596be] md:text-3xl">
-                            {revenueConf.title}
-                        </h2>
-
-                        <div className="h-[300px] md:h-[380px]">
-                            <Charts
-                                data={revenueData}
-                                config={revenueConf}
-                            />
-                        </div>
+                        <CommonChart id={id} />
                     </div>
                 </section>
             )}
@@ -61,7 +40,7 @@ const SharedEditView = ({ dataColumns, tableData, tableTitle, title, label, data
                 />
             </section>
 
-            
+
         </div>
     )
 }

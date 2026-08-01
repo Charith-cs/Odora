@@ -201,21 +201,22 @@ export type editViewUserProps = {
   title: any;
   label: any;
   data: any;
+  staff?:boolean;
   updateLabel: any;
-  performanceData: any;
-  revenueData: any;
-  performanceConf: any;
-  revenueConf: any;
   isUser: boolean;
+  userId ?: any;
+  onRefresh ?: any;
 };
 
 export type AdminUserCardProps<T> = {
   title: any;
   label: readonly { key: keyof T; label: string }[];
   data: T;
-  type: string;
+  type?: string;
   img: string;
-  userId: string;
+  staff?:boolean;
+  userId?: string;
+  onRefresh ?: any;
   updateLabel: readonly { key: keyof T; label: string; placeholder: any }[];
 };
 
@@ -255,6 +256,7 @@ export type AdminstaffCard = {
   clinic: string;
   createdAt: string;
   tpnum: string;
+  img:string;
 };
 
 /* admin omposed chart data types */

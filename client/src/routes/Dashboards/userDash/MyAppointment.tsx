@@ -99,7 +99,7 @@ const MyAppointment = () => {
             toast.error(err?.response?.data?.message);
         }
     };
-    console.log(currentRecords);
+    
     return (
         <div className="mt-6 w-full">
 
@@ -228,7 +228,7 @@ const MyAppointment = () => {
 
                                     <td className="px-6 py-5">
                                         <div className="flex items-center gap-3">
-                                            <img src="/userDash/user.png" alt="Doctor" className="w-10 h-10 rounded-full border object-cover" />
+                                            <img src={item.doctorId?.img ?? "/userDash/user.png"} alt="Doctor" className="w-10 h-10 rounded-full border object-cover" />
 
                                             <div>
                                                 <p className="font-semibold text-gray-800">Dr. {item.doctorId?.firstName} {item.doctorId?.lastName} </p>

@@ -145,7 +145,6 @@ const Reports = () => {
       }
 
     } catch (err) {
-
       console.log(err);
       toast.error("Failed to generate report", { id: "report" });
     }
@@ -157,7 +156,7 @@ const Reports = () => {
       const res = await API.get(`/dash/report_dash/${currentUser._id}`);
       setReports(res.data);
     } catch (err) {
-      toast.error("Oops! Something went wrong");
+      console.error("Oops! Something went wrong");
     }
   }
 
@@ -226,222 +225,182 @@ const Reports = () => {
         <DashCard cardDetails={reportCardDetails} />
       </section>
 
-      {/* Dashboard Content */}
-      <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <section className="space-y-6">
 
-        {/* Appointment Chart */}
-        {/*         <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-          <h1 className="text-2xl md:text-3xl font-semibold my-5 text-[#2596be]">
-            Total Appointments
-          </h1>
-          <ComposeChart />
-        </div> */}
-        <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+        <div className="grid grid-cols-1 gap-6 ">
 
-          <h2 className="mb-6 text-2xl md:text-3xl font-bold text-[#2596be]">
-            Total Appointments
-          </h2>
-
-          <div className="h-[320px] md:h-[380px]">
+          <div className="min-w-0 rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:shadow-xl md:p-7">
             <ComposeChart />
           </div>
 
-        </div>
-
-        {/* Revenue Chart */}
-        {/*         <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-          <h1 className="text-2xl md:text-3xl font-semibold my-5 text-[#2596be]">
-            Revenue Trend
-          </h1>
-          <RevenueAreaChart />
-        </div> */}
-
-        <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-
-          <h2 className="mb-6 text-2xl md:text-3xl font-bold text-[#2596be]">
-            Revenue Trend
-          </h2>
-
-          <div className="h-[320px] md:h-[380px]">
+          <div className="min-w-0 rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:shadow-xl md:p-7">
             <RevenueAreaChart />
           </div>
 
         </div>
 
-        {/* Doctor Performance */}
-        <div className="lg:col-span-2 rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
 
-          <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="min-w-0 rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:shadow-xl md:p-7">
+          <div className="mb-6 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-[#2596be] md:text-3xl">Doctor Performance</h2>
+              <p className="mt-1 text-sm text-gray-500">Review doctor appointments and generated revenue.</p>
+            </div>
 
-            <h2 className="text-2xl md:text-3xl font-bold text-[#2596be]">
-              Doctor Performance
-            </h2>
-
-            <div className="flex flex-wrap gap-2">
+            <div className="flex w-fit flex-wrap items-center gap-1 rounded-2xl border border-gray-100 bg-gray-50 p-1.5">
               {["Today", "Weekly", "Monthly", "Yearly"].map((item) => (
                 <button
                   key={item}
+                  type="button"
                   onClick={() => setFilter(item as FilterType)}
-                  className={`rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${filter === item
-                    ? "bg-[#2596be] text-white shadow-md"
-                    : "border border-gray-200 bg-white text-gray-600 hover:border-[#2596be] hover:text-[#2596be]"
-                    }`}
+                  className={`
+              rounded-xl px-4 py-2
+              text-sm font-medium
+              transition-all duration-300
+              ${filter === item
+                      ? "bg-[#2596be] text-white shadow-md"
+                      : "text-gray-500 hover:bg-white hover:text-[#2596be]"
+                    }
+            `}
                 >
                   {item}
                 </button>
+
               ))}
             </div>
-
           </div>
 
-          <Table
-            columns={DoctorRevenueColumns}
-            data={DoctorRevenueTable}
-            title={null}
-            actions={(_row) => (
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  to={`/view_edit_doctor/${_row?._id}`}
-                  className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-all duration-300 hover:border-[#2596be] hover:text-[#2596be]"
-                >
-                  View
-                </Link>
-              </div>
-            )}
-          />
 
-        </div>
-
-        {/* User Statistics */}
-        <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-
-          <h2 className="mb-6 text-2xl md:text-3xl font-bold text-[#2596be]">
-            User Registration and Others
-          </h2>
-
-          <div className="h-[320px] md:h-[380px]">
-            <UserChart data={pieChart} />
+          <div className="w-full overflow-x-auto">
+            <Table
+              columns={DoctorRevenueColumns}
+              data={DoctorRevenueTable}
+              title={null}
+              actions={(_row) => (
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    to={`/view_edit_doctor/${_row?._id}`}
+                    className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition-all duration-300 hover:border-[#2596be] hover:text-[#2596be]"
+                  >
+                    View
+                  </Link>
+                </div>
+              )}
+            />
           </div>
-
         </div>
 
-        {/* Reports */}
-        <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
 
-          <h2 className="mb-6 text-2xl md:text-3xl font-bold text-[#2596be]">
-            Download Reports
-          </h2>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
 
-          <div className="space-y-6">
-
-            {/* Date Pickers */}
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-
-              <div className="flex flex-col gap-2">
-
-                <label
-                  htmlFor="start"
-                  className="text-sm font-semibold text-gray-700"
-                >
-                  Start Date
-                </label>
-
-                <input
-                  name="start"
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 transition-all duration-300 focus:border-[#2596be] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#2596be]/10"
-                />
-
-              </div>
-
-              <div className="flex flex-col gap-2">
-
-                <label
-                  htmlFor="end"
-                  className="text-sm font-semibold text-gray-700"
-                >
-                  End Date
-                </label>
-
-                <input
-                  name="end"
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 transition-all duration-300 focus:border-[#2596be] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#2596be]/10"
-                />
-
-              </div>
+          <div className="min-w-0 rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:shadow-xl md:p-7">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-[#2596be] md:text-3xl">User Registration</h2>
+              <p className="mt-1 text-sm text-gray-500">Overview of registered users and account distribution.</p>
             </div>
 
-            {/* Report Filters */}
-            <div className="flex flex-wrap gap-2">
+            <div className="h-[340px] w-full md:h-[400px]">
+              <UserChart data={pieChart} />
+            </div>
+          </div>
 
-              {["Today", "Weekly", "Monthly", "Yearly"].map((item) => (
+          <div className="min-w-0 rounded-3xl border border-gray-100 bg-white p-6 shadow-md transition-all duration-300 hover:shadow-xl md:p-7">
+            <div className="mb-7">
+              <h2 className="text-2xl font-bold text-[#2596be] md:text-3xl">Download Reports</h2>
+              <p className="mt-1 text-sm text-gray-500">Generate detailed clinic reports for a selected period.</p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="start" className="text-sm font-semibold text-gray-700">Start Date</label>
+
+                  <input
+                    id="start"
+                    name="start"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-700 transition-all duration-300 focus:border-[#2596be] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#2596be]/10"
+                  />
+
+                </div>
+
+
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="end" className="text-sm font-semibold text-gray-700">End Date</label>
+                  <input
+                    id="end"
+                    name="end"
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-700 transition-all duration-300 focus:border-[#2596be] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#2596be]/10"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-3 text-sm font-semibold text-gray-700">Report Period</p>
+                <div className="flex w-fit max-w-full flex-wrap items-center gap-1 rounded-2xl border border-gray-100 bg-gray-50 p-1.5">
+                  {["Today", "Weekly", "Monthly", "Yearly"].map((item) => (
+
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() =>
+                        setFilterReport(item as FilterType)
+                      }
+                      className={`
+                  rounded-xl px-4 py-2
+                  text-sm font-medium
+                  transition-all duration-300
+
+                  ${filterReport === item
+                          ? "bg-[#2596be] text-white shadow-md"
+                          : "text-gray-500 hover:bg-white hover:text-[#2596be]"
+                        }
+                `}
+                    >
+                      {item}
+                    </button>
+
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-gray-700">Report Type</label>
+                <select value={selectedReport} onChange={(e) => setSelectedReport(e.target.value)}
+                  className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-700 transition-all duration-300 focus:border-[#2596be] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#2596be]/10">
+
+                  <option value=""> Select Report</option>
+                  <option value="doctor">Doctor Performance Report</option>
+                  <option value="patient">Patient Report</option>
+                  <option value="revenue">Revenue Report</option>
+                  <option value="appointment">Appointment Report</option>
+                  <option value="demographic">Patient Demographics Report</option>
+
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={handleDownload}
+                  className="flex-1 rounded-2xl bg-[#21a262] px-5 py-3 font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#1c8d53] hover:shadow-lg"
+                >
+                  Download Report
+                </button>
 
                 <button
-                  key={item}
-                  onClick={() => setFilterReport(item as FilterType)}
-                  className={`rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 ${filterReport === item
-                    ? "bg-[#2596be] text-white shadow-md"
-                    : "border border-gray-200 bg-white text-gray-600 hover:border-[#2596be] hover:text-[#2596be]"
-                    }`}
+                  type="button"
+                  onClick={handleCancel}
+                  className="flex-1 rounded-2xl border border-red-200 bg-white px-5 py-3 font-semibold text-red-500 transition-all duration-300 hover:bg-red-50"
                 >
-                  {item}
+                  Clear
                 </button>
-
-              ))}
-
-            </div>
-
-            {/* Report Selector */}
-            <select
-              value={selectedReport}
-              onChange={(e) => setSelectedReport(e.target.value)}
-              className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 transition-all duration-300 focus:border-[#2596be] focus:bg-white focus:outline-none focus:ring-4 focus:ring-[#2596be]/10"
-            >
-              <option value="">Select Report</option>
-
-              <option value="doctor">
-                Doctor Performance Report
-              </option>
-
-              <option value="patient">
-                Patient Report
-              </option>
-
-              <option value="revenue">
-                Revenue Report
-              </option>
-
-              <option value="appointment">
-                Appointment Report
-              </option>
-
-              <option value="demographic">
-                Patient Demographics Report
-              </option>
-
-            </select>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-4 pt-4 sm:flex-row ">
-
-              <button
-                onClick={handleDownload}
-                className="flex-1 rounded-2xl bg-[#21a262] px-5 py-3 font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#1c8d53] hover:shadow-lg"
-              >
-                Download
-              </button>
-
-              <button
-                onClick={handleCancel}
-                className="flex-1 rounded-2xl bg-red-500 px-5 py-3 font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-red-600 hover:shadow-lg"
-              >
-                Cancel
-              </button>
+              </div>
             </div>
           </div>
         </div>
