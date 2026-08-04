@@ -200,7 +200,7 @@ export const exportBillingInvoice = async (data: any) => {
     );
 
     doc.text(
-        "Invoice Date",
+        "Paid Date",
         14,
         100
     );
@@ -283,14 +283,25 @@ export const exportBillingInvoice = async (data: any) => {
             "Amount (Rs.)"
         ]],
 
-        body: data[0].treatments.map((item: any, index: number) => [
-            index + 1,
-            item.name,
-            item.price.toLocaleString("en-LK", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-            })
-        ]),
+        body: [
+            ...data[0].treatments.map((item: any, index: number) => [
+                index + 1,
+                item.name,
+                Number(item.price).toLocaleString("en-LK", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                })
+            ]),
+
+            [
+                data[0].treatments.length + 1,
+                "Doctor Fee",
+                Number(data[0].appointment.fee || 0).toLocaleString("en-LK", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                })
+            ]
+        ],
 
         theme: "grid",
         styles: {
@@ -458,13 +469,13 @@ export const exportBillingInvoice = async (data: any) => {
 
     ensureSpace(32);
 
-    doc.setDrawColor(180);
-    doc.line(
-        8,
-        currentY,
-        140,
-        currentY
-    );
+    /*     doc.setDrawColor(180);
+        doc.line(
+            8,
+            currentY,
+            140,
+            currentY
+        ); */
 
     currentY += 8;
 
@@ -627,6 +638,21 @@ export const exportBillingInvoice = async (data: any) => {
 
     doc.setTextColor(0);
 
+    currentY += 7;
+
+    doc.setTextColor(120);
+
+    doc.setFontSize(5);
+
+    doc.text(
+        ` Printed Date : ${new Date().toLocaleString()}`,
+        74,
+        currentY,
+        {
+            align: "center"
+        }
+    );
+
     // =====================================================
     // Border (Last Page)
     // =====================================================
@@ -647,7 +673,7 @@ export const exportBillingInvoice = async (data: any) => {
     // =====================================================
 
     doc.save(
-        `Invoice-${data[0].billingId}-${new Date()}.pdf`
+        `Invoice-${data[0].billingId}-${new Date().toDateString()}.pdf`
     );
 
 };

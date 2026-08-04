@@ -5,15 +5,21 @@ import User from "../models/user.model";
 import Treatment from "../models/Treatment.model";
 import mongoose from "mongoose";
 import Staff from "../models/staff.model";
+import SessionTemplate from "../models/sessionTemplate.model";
 
 
 export const createAppointment = async (req: Request, res: Response) => {
     try {
         const { userId, sessionId, dateTime, method, fee } = req.body;
+        const now = new Date();
 
-        const session = await Session.findById(sessionId);
+        const session = await Session.findOne({
+            _id: sessionId,
+            endDateTime: { $gt: now },
+            status: "active"
+        });
 
-        if (!session || session.status !== "active") {
+        if (!session) {
             return res.status(404).json({ message: "Session not available" });
         }
 
@@ -23,12 +29,18 @@ export const createAppointment = async (req: Request, res: Response) => {
             return res.status(400).json({ message: "Invalid dateTime" });
         }
 
+        /*         if (bookingDate <= now) {
+                    return res.status(400).json({
+                        message: "Cannot book an appointment in the past"
+                    });
+                } */
+
         if (
             bookingDate < session.startDateTime ||
             bookingDate > session.endDateTime
         ) {
             return res.status(400).json({
-                message: "Outside session time"
+                message: "Selected appointment time is outside the session"
             });
         }
 
@@ -36,8 +48,10 @@ export const createAppointment = async (req: Request, res: Response) => {
         const userConflict = await Appointment.findOne({
             userId,
             sessionId,
-            dateTime,
-            status: { $ne: "cancelled" }
+            dateTime: bookingDate,
+            status: {
+                $ne: "cancelled"
+            }
         });
 
         if (userConflict) {
@@ -46,13 +60,9 @@ export const createAppointment = async (req: Request, res: Response) => {
             });
         }
 
-
-        if (session.bookedPatients >= session.maxPatientsPerHour) {
-            return res.status(400).json({
-                message: "Session is fully booked"
-            });
+        /* if (session.bookedPatients >= session.maxPatientsPerHour) {
+            return res.status(400).json({ message: "Session is fully booked" });
         }
-
 
         if (session.maxPatientsPerHour) {
             const startOfHour = new Date(bookingDate);
@@ -75,8 +85,19 @@ export const createAppointment = async (req: Request, res: Response) => {
                     message: "Too many patients in this hour"
                 });
             }
+        } */
+
+        const maxBooking = await SessionTemplate.findById(
+            session.templateId
+        );
+
+        if (!maxBooking) {
+            return res.status(404).json({ message: "Session template not found" });
         }
 
+        if (session.bookedPatients >= maxBooking.maxPatients) {
+            return res.status(400).json({ message: "This session is full" });
+        }
 
         const appointment = await Appointment.create({
             userId,
@@ -337,9 +358,18 @@ export const getClinicAppointment = async (req: Request, res: Response) => {
                 }
             },
             { $unwind: "$doctorDetails" },
+            {
+                $lookup: {
+                    from: "billings",
+                    localField: "_id",
+                    foreignField: "appointmentId",
+                    as: "billingDetails"
+                }
+            },
 
             {
                 $project: {
+
                     _id: 1,
                     dateTime: 1,
                     status: 1,
@@ -359,7 +389,27 @@ export const getClinicAppointment = async (req: Request, res: Response) => {
                             " ",
                             "$doctorDetails.lastName"
                         ]
+                    },
+
+                    billingId: {
+                        $cond: [
+                            {
+                                $eq: ["$status", "paid"]
+                            },
+                            {
+                                $arrayElemAt: [
+                                    "$billingDetails._id",
+                                    0
+                                ]
+                            },
+                            null
+                        ]
                     }
+                }
+            },
+            {
+                $sort: {
+                    dateTime: -1
                 }
             }
         ]);

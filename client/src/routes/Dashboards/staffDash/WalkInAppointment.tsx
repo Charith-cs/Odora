@@ -17,6 +17,9 @@ const WalkInAppointment = () => {
     const navigate = useNavigate();
     const AC = 100;
     const [registeredUser, setRegisteredUser] = useState("");
+    const [patientResults, setPatientResults] = useState<any[]>([]);
+    const [searchingPatient, setSearchingPatient] = useState(false);
+    const [selectedPatient, setSelectedPatient] = useState<any>(null);
 
     const userSchema = z.object({
         firstName: z.string().min(1, "First name is required").regex(/^[A-Za-z\s]+$/, "Only letters allowed"),
@@ -38,6 +41,7 @@ const WalkInAppointment = () => {
     const {
         register,
         handleSubmit,
+        setValue,
         formState: { errors, isSubmitting },
     } = useForm<FormData>({
         resolver: zodResolver(userSchema),
@@ -48,12 +52,16 @@ const WalkInAppointment = () => {
 
     const onSubmit = async (data: FormData) => {
         try {
+            if (selectedPatient) {
+                setRegisteredUser(selectedPatient._id);
+                toast.success("Existing patient selected");
+                return;
+            }
             const res = await registerUser(data);
             toast.success(res.message);
             setRegisteredUser(res.user._id);
-            //navigate("/staff_dash");
-        } catch (err) {
-            toast.error("Oops! Something went wrong");
+        } catch (err: any) {
+            toast.error(err.response?.data?.message || "Oops! Something went wrong");
         }
     };
 
@@ -116,6 +124,39 @@ const WalkInAppointment = () => {
 
     };
 
+    const searchPatient = async (value: string) => {
+
+        if (value.trim().length < 2) {
+            setPatientResults([]);
+            return;
+        }
+        try {
+            setSearchingPatient(true);
+            const res = await API.get("/search/patient", {
+                params: {
+                    q: value
+                }
+            }
+            );
+            setPatientResults(res.data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setSearchingPatient(false);
+        }
+    };
+
+    const handleSelectPatient = (patient: any) => {
+
+        setSelectedPatient(patient);
+        setRegisteredUser(patient._id);
+        setPatientResults([]);
+
+        setValue("firstName", patient.firstName);
+        setValue("lastName", patient.lastName);
+        setValue("mobileNumber", patient.mobileNumber);
+    };
+
     return (
         <div className="mt-8 grid grid-cols-1 xl:grid-cols-[450px_1fr] gap-8 items-start">
             <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-3xl border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 p-8 md:p-10">
@@ -146,15 +187,64 @@ const WalkInAppointment = () => {
 
                     {/* First Name */}
 
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
+                    <div className="relative">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            First Name
+                        </label>
+
                         <input
-                            {...register("firstName")}
+                            {...register("firstName", {
+                                onChange: (e) => {
+                                    searchPatient(e.target.value);
+                                },
+                            })}
                             type="text"
                             placeholder="Ex: John"
-                            className={`w-full rounded-2xl border bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10 ${errors.firstName ? "border-red-500" : "border-gray-200"
+                            autoComplete="off"
+                            className={`w-full rounded-2xl border bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10 ${errors.firstName
+                                ? "border-red-500"
+                                : "border-gray-200"
                                 }`}
                         />
+
+                        {searchingPatient && (
+                            <p className="mt-2 text-xs text-gray-400">
+                                Searching patients...
+                            </p>
+                        )}
+
+                        {patientResults.length > 0 && !selectedPatient && (
+                            <div
+                                className=" absolute left-0 top-full z-50 mt-2 w-[calc(200%+1.5rem)]  max-h-72 overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl " >
+                                {patientResults.map((patient: any) => (
+                                    <button
+                                        key={patient._id}
+                                        type="button"
+                                        onClick={() => handleSelectPatient(patient)}
+                                        className=" flex w-full items-center justify-between gap-6 border-b border-gray-100 px-5 py-4 text-left transition hover:bg-[#2596be]/5 last:border-b-0">
+
+                                        <div className="min-w-0">
+                                            <p className="text-base font-semibold text-gray-800">
+                                                {patient.firstName} {patient.lastName}
+                                            </p>
+
+                                            <p className="mt-1 text-xs text-gray-400">
+                                            </p>
+                                        </div>
+
+                                        <div className="shrink-0 text-right">
+                                            <p className="text-xs text-gray-400">
+                                                Mobile Number
+                                            </p>
+
+                                            <p className="mt-1 text-sm font-semibold text-gray-700">
+                                                {patient.mobileNumber}
+                                            </p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
 
                         {errors.firstName && (
                             <p className="mt-2 text-sm text-red-500">
@@ -181,6 +271,8 @@ const WalkInAppointment = () => {
                             </p>
                         )}
                     </div>
+
+
 
                     {/* Email */}
 
@@ -288,10 +380,10 @@ const WalkInAppointment = () => {
                 <div className="flex justify-end mt-10">
                     <button
                         type="submit"
-                        disabled={isSubmitting}
-                        className="px-8 py-3 rounded-2xl bg-[#2596be] hover:bg-[#1f84a8] text-white font-semibold shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300"
+                        disabled={isSubmitting || selectedPatient}
+                        className={`px-8 py-3 rounded-2xl ${selectedPatient ? "bg-green-500 hover:cursor-not-allowed" : "bg-[#2596be] hover:bg-[#1f84a8]"} text-white font-semibold shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300`}
                     >
-                        {isSubmitting ? "Creating..." : "Create Appointment"}
+                        {isSubmitting ? "Creating..." : selectedPatient ? "Patient Selected ✔" : "Create Appointment"}
                     </button>
                 </div>
             </form>
@@ -351,7 +443,12 @@ const WalkInAppointment = () => {
                                                 {new Date(d.startDateTime).toLocaleTimeString([], {
                                                     hour: "2-digit",
                                                     minute: "2-digit",
+                                                })}<br />
+                                                {new Date(d.endDateTime).toLocaleTimeString([], {
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
                                                 })}
+
                                             </p>
                                         </div>
 

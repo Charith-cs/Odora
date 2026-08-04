@@ -15,15 +15,17 @@ import treatmentRoute from "./routes/treatment.route";
 import staffRoute from "./routes/staff.route";
 import billingRoute from "./routes/billing.route";
 import adminRoute from "./routes/admin.route";
+import notifyRoute from "./routes/notification.route";
 import path from "path";
+import { startSessionExpiryJob } from "./utility/sessionExpiry";
 
 dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(
-    "/upload",
-    express.static(path.join(__dirname, "./public/upload"))
+  "/upload",
+  express.static(path.join(__dirname, "./public/upload"))
 );
 
 
@@ -36,20 +38,21 @@ mongoose.connect(MONGO_URL)
   .catch(err => console.log(err));
 
 
-app.use("/api/auth" , authRoute);
-app.use("/api/clinic" , clinicRoute);
-app.use("/api/user" , userRoute);
-app.use("/api/search" , searchRoute);
-app.use("/api/doctor" , doctorRoute);
+app.use("/api/auth", authRoute);
+app.use("/api/clinic", clinicRoute);
+app.use("/api/user", userRoute);
+app.use("/api/search", searchRoute);
+app.use("/api/doctor", doctorRoute);
 app.use("/api/session", sessionRoute);
 app.use("/api/appointment", appointmentRoute);
 app.use("/api/dash", dashRoute);
 app.use("/api/treatment", treatmentRoute);
 app.use("/api/staff", staffRoute);
 app.use("/api/billing", billingRoute);
-app.use("/api/management" , adminRoute);
+app.use("/api/management", adminRoute);
+app.use("/api/notification", notifyRoute);
 
-
+startSessionExpiryJob();
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });

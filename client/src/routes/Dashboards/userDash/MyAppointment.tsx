@@ -258,8 +258,8 @@ const MyAppointment = () => {
 
                                             <button
                                                 onClick={() => item && openCancel(item._id)}
-                                                disabled={item.status === "paid" || item.status === "approved" || item.status === "completed"}
-                                                className={`px-4 py-2 rounded-xl border ${item.status === "paid" || item.status === "approved" || item.status === "completed" ? "cursor-not-allowed text-gray-600 border-gray-600" : "border-red-500 text-red-500 text-sm font-medium hover:bg-red-500 hover:text-white transition"}`}
+                                                disabled={item.status === "paid" || item.status === "approved" || item.status === "completed" || item.status === "canceled"}
+                                                className={`px-4 py-2 rounded-xl border ${item.status === "paid" || item.status === "approved" || item.status === "completed" || item.status === "canceled" ? "cursor-not-allowed text-gray-600 border-gray-600" : "border-red-500 text-red-500 text-sm font-medium hover:bg-red-500 hover:text-white transition"}`}
                                             >
                                                 Cancel
                                             </button>

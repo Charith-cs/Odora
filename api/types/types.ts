@@ -114,7 +114,7 @@ export type sessionModelType = {
     maxPatientsPerHour: number,
     bookedPatients: number,
     fee: number,
-    status: "active" | "cancelled" | "completed",
+    status: "active" | "inactive" ,
 };
 
 export type sessionTemplayteModelType = {

@@ -1,14 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { AppointmentProps, StatusType } from "../../../../types/types";
 import { statusStyles } from "../../../../types/constants";
 import { toast } from "react-hot-toast";
 import API from "../../../../api/axios";
+import { exportBillingInvoice } from "../../../../utils/reports/BillingReport";
 
 const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
+
     const [filter, setFilter] = useState<StatusType | "All">("All");
     const [selectedDate, setSelectedDate] = useState<string>("");
     const recordsPerPage = 10;
     const [currentPage, setCurrentPage] = useState(1);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [selectedDate, filter]);
 
     const filteredAppointments = data.filter((item: any) => {
 
@@ -19,14 +25,35 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
         let dateMatch = true;
 
         if (selectedDate) {
-            const itemDate = new Date(item.dateTime)
-                .toLocaleDateString("en-CA");
 
-            dateMatch = itemDate === selectedDate;
+            const appointmentDate = new Date(item.dateTime);
+
+            const year = appointmentDate.getFullYear();
+            const month = String(
+                appointmentDate.getMonth() + 1
+            ).padStart(2, "0");
+
+            const day = String(
+                appointmentDate.getDate()
+            ).padStart(2, "0");
+
+            const formattedDate = `${year}-${month}-${day}`;
+
+            /*             console.log({
+                            original: item.dateTime,
+                            formattedDate,
+                            selectedDate,
+                            match: formattedDate === selectedDate
+                        }); */
+
+            dateMatch = formattedDate === selectedDate;
         }
 
+
         return statusMatch && dateMatch;
+
     });
+
 
     const approveAppointment = async (id: any) => {
         try {
@@ -48,6 +75,19 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
         }
     }
 
+    const handleDownload = async (id: any) => {
+        try {
+            toast.loading("Generating invoice...", { id: "report" });
+
+            const invoice = await API.get(`/billing/invoice/${id}`);
+            console.log(invoice.data.invoice)
+            exportBillingInvoice(invoice.data.invoice);
+            toast.success("Invoice downloaded", { id: "report" });
+        } catch (err: any) {
+            toast.error("Oops! Something went wrong");
+        }
+    }
+
 
     const indexOfLastRecord = currentPage * recordsPerPage;
     const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
@@ -55,11 +95,14 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
     const currentRecords = filteredAppointments.slice(indexOfFirstRecord, indexOfLastRecord);
     const totalPages = Math.ceil(filteredAppointments.length / recordsPerPage);
 
+
     if (!currentRecords) {
         return <div className="mt-6 w-full">Loading...</div>;
     }
 
-
+    /*     console.log("selectedDate:", selectedDate);
+        console.log("filteredAppointments:", filteredAppointments);
+        console.log("currentRecords:", currentRecords); */
     return (
         <div className="mt-6 w-full">
 
@@ -87,7 +130,7 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                        {["All", "Approved", "Pending", "Canceled", "Paid"].map((item) => (
+                        {["All", "Approved", "Pending", "Canceled", "Paid", "Completed"].map((item) => (
 
                             <button
                                 key={item}
@@ -118,7 +161,7 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
 
                     <tbody className="divide-y divide-gray-100">
 
-                        {filteredAppointments.length === 0 ? (
+                        {currentRecords.length === 0 ? (
 
                             <tr>
                                 <td colSpan={5} className="py-12 text-center text-gray-400">
@@ -132,7 +175,7 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
 
                         ) : (
 
-                            filteredAppointments.map((item: any, index: number) => (
+                            currentRecords.map((item: any, index: number) => (
                                 <tr key={index} className="hover:bg-sky-50 transition-colors duration-200">
 
                                     <td className="px-6 py-5">
@@ -158,44 +201,67 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
                                     </td>
 
 
-
                                     <td className="px-6 py-5">
                                         <div className="flex justify-center gap-2">
-                                            <button
-                                                onClick={() => approveAppointment(item._id)}
-                                                disabled={item.status === "approved" || item.status === "completed" || item.status === "paid"}
-                                                className={`px-3 py-1 rounded-lg border${(item.status === "approved" || item.status === "completed" || item.status === "paid")
-                                                    ? "cursor-not-allowed text-gray-600 border-gray-600"
-                                                    : "text-gray-600 hover:text-green-500 border hover:border-green-600"
-                                                    }`}
-                                            >
-                                                {item.status === "approved"
-                                                    ? "Approved"
-                                                    : item.status === "completed"
-                                                        ? "Completed"
-                                                        : item.status === "paid"
-                                                            ? "Paid"
-                                                            : "Approve"}
-                                            </button>
+
+                                            {item.status === "pending" && (
+                                                <>
+                                                    <button
+                                                        onClick={() => approveAppointment(item._id)}
+                                                        className="px-3 py-1 rounded-lg border text-gray-600 hover:text-green-500 hover:border-green-600"
+                                                    >
+                                                        Approve
+                                                    </button>
+
+                                                    <button
+                                                        onClick={() => cancelAppointment(item._id)}
+                                                        className="px-3 py-1 rounded-lg border text-gray-600 hover:text-red-500 hover:border-red-500"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                </>
+                                            )}
 
 
-                                            <button
-                                                onClick={() => cancelAppointment(item._id)}
-                                                disabled={item.status === "canceled" || item.status === "completed" || item.status === "paid" || item.status === "approved"}
-                                                className={`px-3 py-1 rounded-lg border
-                                                 ${(item.status === "canceled" || item.status === "completed" || item.status === "paid" || item.status === "approved")
-                                                        ? "cursor-not-allowed text-gray-400 border-gray-300"
-                                                        : "text-gray-600 hover:text-red-500 hover:border-red-500"
-                                                    }`}
-                                            >
-                                                {item.status === "canceled"
-                                                    ? "Canceled"
-                                                    : item.status === "completed"
-                                                        ? "Cancel"
-                                                        : item.status === "paid"
-                                                            ? "Cancel"
-                                                            : "Cancel"}
-                                            </button>
+                                            {item.status === "approved" && (
+                                                <button
+                                                    disabled
+                                                    className="px-3 py-1 rounded-lg border cursor-not-allowed text-gray-400 border-gray-300"
+                                                >
+                                                    Approved
+                                                </button>
+                                            )}
+
+
+                                            {item.status === "completed" && (
+                                                <button
+                                                    disabled
+                                                    className="px-3 py-1 rounded-lg border cursor-not-allowed text-gray-400 border-gray-300"
+                                                >
+                                                    Completed
+                                                </button>
+                                            )}
+
+
+                                            {item.status === "canceled" && (
+                                                <button
+                                                    disabled
+                                                    className="px-3 py-1 rounded-lg border cursor-not-allowed text-gray-400 border-gray-300"
+                                                >
+                                                    Canceled
+                                                </button>
+                                            )}
+
+
+                                            {item.status === "paid" && (
+                                                <button
+                                                    onClick={() => handleDownload(item.billingId)}
+                                                    className="px-3 py-1 rounded-lg border text-gray-600 hover:text-[#2596be] hover:border-[#2596be]"
+                                                >
+                                                    Download
+                                                </button>
+                                            )}
+
                                         </div>
                                     </td>
                                 </tr>
@@ -205,35 +271,39 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
                 </table>
 
 
-                <div className="flex justify-center mt-6 gap-2">
-                    <button
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage(prev => prev - 1)}
-                        className="px-3 py-1 border rounded"
-                    >
-                        Prev
-                    </button>
+                {totalPages > 0 && (
+                    <div className="flex justify-center mt-6 gap-2">
+                        <button
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage(prev => prev - 1)}
+                            className="px-3 py-1 border rounded disabled:opacity-40"
+                        >
+                            Prev
+                        </button>
 
-                    <span>{currentPage} / {totalPages}</span>
+                        <span>
+                            {currentPage} / {totalPages}
+                        </span>
 
-                    <button
-                        disabled={currentPage === totalPages}
-                        onClick={() => setCurrentPage(prev => prev + 1)}
-                        className="px-3 py-1 border rounded"
-                    >
-                        Next
-                    </button>
-                </div>
+                        <button
+                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage(prev => prev + 1)}
+                            className="px-3 py-1 border rounded disabled:opacity-40"
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
             </div>
 
 
             <div className="md:hidden flex flex-col gap-4">
-                {filteredAppointments.length === 0 ? (
+                {currentRecords.length === 0 ? (
                     <p className="text-center text-gray-400">
                         No appointments found
                     </p>
                 ) : (
-                    filteredAppointments.map((item: any, index: any) => (
+                    currentRecords.map((item: any, index: any) => (
                         <div
                             key={index}
                             className="bg-white p-4 rounded-xl shadow-md flex flex-col gap-3"
@@ -254,60 +324,86 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
                             </p>
 
                             <div className="flex gap-2">
-                                <button
-                                    onClick={() => approveAppointment(item._id)}
-                                    disabled={item.status === "approved" || item.status === "completed" || item.status === "paid"}
-                                    className={`flex-1 px-3 py-1 rounded-lg border ${(item.status === "approved" || item.status === "completed" || item.status === "paid")
-                                        ? "cursor-not-allowed text-gray-600 border-gray-600"
-                                        : "text-gray-600 hover:text-green-500 hover:border-green-500"
-                                        }`}>
-                                    {item.status === "approved"
-                                        ? "Approved"
-                                        : item.status === "completed"
-                                            ? "Completed"
-                                            : item.status === "paid"
-                                                ? "Paid"
-                                                : "Approve"}
-                                </button>
-                                <button
-                                    onClick={() => cancelAppointment(item.id)}
-                                    disabled={item.status === "canceled" || item.status === "completed" || item.status === "paid" || item.status === "approved"}
-                                    className={`flex-1 px-3 py-1 rounded-lg border ${(item.status === "canceled" || item.status === "completed" || item.status === "paid" || item.status === "approved")
-                                        ? "cursor-not-allowed text-gray-400 border-gray-300"
-                                        : "text-gray-600 hover:text-red-500 hover:border-red-500"
-                                        }`}>
-                                    {item.status === "canceled"
-                                        ? "Canceled"
-                                        : item.status === "completed"
-                                            ? "Cancel"
-                                            : item.status === "paid"
-                                                ? "Cancel"
-                                                : "Cancel"}
-                                </button>
+
+                                {item.status === "pending" && (
+                                    <>
+                                        <button
+                                            onClick={() => approveAppointment(item._id)}
+                                            className="flex-1 px-3 py-2 rounded-lg border text-gray-600 hover:text-green-500 hover:border-green-600 transition"
+                                        >
+                                            Approve
+                                        </button>
+
+                                        <button
+                                            onClick={() => cancelAppointment(item._id)}
+                                            className="flex-1 px-3 py-2 rounded-lg border text-gray-600 hover:text-red-500 hover:border-red-500 transition"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </>
+                                )}
+
+                                {item.status === "approved" && (
+                                    <button
+                                        disabled
+                                        className="flex-1 px-3 py-2 rounded-lg border cursor-not-allowed text-gray-400 border-gray-300"
+                                    >
+                                        Approved
+                                    </button>
+                                )}
+
+                                {item.status === "completed" && (
+                                    <button
+                                        disabled
+                                        className="flex-1 px-3 py-2 rounded-lg border cursor-not-allowed text-gray-400 border-gray-300"
+                                    >
+                                        Completed
+                                    </button>
+                                )}
+
+                                {item.status === "canceled" && (
+                                    <button
+                                        disabled
+                                        className="flex-1 px-3 py-2 rounded-lg border cursor-not-allowed text-gray-400 border-gray-300"
+                                    >
+                                        Canceled
+                                    </button>
+                                )}
+
+                                {item.status === "paid" && (
+                                    <button
+                                        onClick={() => handleDownload(item.billingId)}
+                                        className="flex-1 px-3 py-2 rounded-lg border text-gray-600 hover:text-[#2596be] hover:border-[#2596be] transition"
+                                    >
+                                        Download
+                                    </button>
+                                )}
+
                             </div>
                         </div>
                     ))
 
                 )}
-                <div className="flex justify-center mt-6 gap-2">
-                    <button
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage(prev => prev - 1)}
-                        className="px-3 py-1 border rounded"
-                    >
-                        Prev
-                    </button>
+                {totalPages > 0 &&
+                    <div className="flex justify-center mt-6 gap-2">
+                        <button
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage(prev => prev - 1)}
+                            className="px-3 py-1 border rounded"
+                        >
+                            Prev
+                        </button>
 
-                    <span>{currentPage} / {totalPages}</span>
+                        <span>{currentPage} / {totalPages}</span>
 
-                    <button
-                        disabled={currentPage === totalPages}
-                        onClick={() => setCurrentPage(prev => prev + 1)}
-                        className="px-3 py-1 border rounded"
-                    >
-                        Next
-                    </button>
-                </div>
+                        <button
+                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage(prev => prev + 1)}
+                            className="px-3 py-1 border rounded"
+                        >
+                            Next
+                        </button>
+                    </div>}
             </div>
         </div>
     );

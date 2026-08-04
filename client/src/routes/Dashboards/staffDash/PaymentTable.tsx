@@ -128,7 +128,7 @@ const PaymentTable = () => {
                                 >
                                     <td className="px-4 py-4 font-semibold">{item?.userId?.firstName + " " + item?.userId?.lastName}</td>
                                     <td className="px-4 py-4 font-semibold">{item?.doctorId?.firstName + " " + item?.doctorId?.lastName}</td>
-                                    <td className="px-4 py-4 text-gray-500">{item.dateTime}</td>
+                                    <td className="px-4 py-4 text-gray-500">{new Date(item.dateTime).toLocaleDateString()}</td>
 
                                     <td className="px-4 py-4">
                                         <span
@@ -156,8 +156,8 @@ const PaymentTable = () => {
                                             </Link>
 
                                             <button
-                                                disabled={item.status === "paid"}
-                                                className={`px-3 py-1 rounded-lg border transition-all duration-200 ${item.status === "paid"
+                                                disabled={item.status === "paid" || item.status === "completed"}
+                                                className={`px-3 py-1 rounded-lg border transition-all duration-200 ${item.status === "paid" || item.status === "completed"
                                                         ? "bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed"
                                                         : "text-gray-600 border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-500"
                                                     }`}

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Clinic from "../models/clinic.model";
 import Doctor from "../models/doctor.model";
+import User from "../models/user.model";
 
 export const searchPosts = async (req: Request, res: Response) => {
     try {
@@ -114,7 +115,7 @@ export const searchPosts = async (req: Request, res: Response) => {
 
         const [doctors, clinics] = await Promise.all([
             Doctor.aggregate(doctorPipeline),
-            Clinic.find({$and: clinicConditions}).lean()
+            Clinic.find({ $and: clinicConditions }).lean()
         ]);
 
         return res.status(200).json({
@@ -125,6 +126,54 @@ export const searchPosts = async (req: Request, res: Response) => {
             clinics
         });
     } catch (err) {
-        return res.status(500).json({message: "Search failed."});
+        return res.status(500).json({ message: "Search failed." });
+    }
+};
+
+export const searchPatients = async (req: Request, res: Response) => {
+    try {
+
+        const q = req.query.q;
+
+        if (!q || typeof q !== "string") {
+            return res.status(200).json([]);
+        }
+
+        const search = q.trim();
+
+        if (search.length < 2) {
+            return res.status(200).json([]);
+        }
+
+        const patients = await User.find({
+            role: "user",
+            $or: [
+                {
+                    firstName: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                },
+                {
+                    lastName: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                },
+                {
+                    mobileNumber: {
+                        $regex: search,
+                        $options: "i"
+                    }
+                }
+            ]
+        }).select(
+            "_id firstName lastName mobileNumber"
+        )
+            .limit(8);
+
+        return res.status(200).json(patients);
+    } catch (err) {
+        return res.status(500).json({ message: "Oops! Something went wrong" });
     }
 };

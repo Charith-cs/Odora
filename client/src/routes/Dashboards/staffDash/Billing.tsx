@@ -8,6 +8,7 @@ const Billing = () => {
 
     const currentUser = JSON.parse(localStorage.getItem("user") || "null");
     const [fetchedData, setFetchedData] = useState<any>(null);
+    const [showPayModal, setShowPayModal] = useState(false);
     const { id } = useParams();
     const now = new Date();
 
@@ -45,7 +46,7 @@ const Billing = () => {
     );
 
     // final total
-    const grandTotal = existingTreatmentTotal + newTreatmentTotal;
+    const grandTotal = existingTreatmentTotal + newTreatmentTotal + fetchedData?.appointment?.fee;
 
     const handleAdd = () => {
 
@@ -91,57 +92,64 @@ const Billing = () => {
 
     const handleProceedPayment = async () => {
         try {
-
             let finalTreatmentId = currentTreatment?._id || treatmentId;
-            const treatmentPayload = {
-                userId: fetchedData?.appointment?.userId?._id,
-                appointmentId: fetchedData?.appointment?._id,
-                sessionId: fetchedData?.appointment?.sessionId,
-                doctorId: fetchedData?.appointment?.doctorId?._id,
-                staffId: currentUser._id,
-                treatments: treatmentDetails.map((t) => ({
-                    name: t.name,
-                    price: t.price,
-                })),
-                specialNotes: special,
-            };
-            ///////////////////////////////////////////////////////////////need to check
             if (treatmentDetails.length > 0) {
-                const res = await API.post("/treatment", treatmentPayload);
-                finalTreatmentId = res.data.data._id;
-                setTreatmentId(res.data.data._id);
+
+                const treatmentPayload = {
+                    userId: fetchedData?.appointment?.userId?._id,
+                    appointmentId: fetchedData?.appointment?._id,
+                    sessionId: fetchedData?.appointment?.sessionId,
+                    doctorId: fetchedData?.appointment?.doctorId?._id,
+                    staffId: currentUser._id,
+
+                    treatments: treatmentDetails.map((t) => ({
+                        name: t.name,
+                        price: t.price,
+                    })),
+                    specialNotes: special,
+                };
+
+                if (currentTreatment?._id) {
+                    const treatmentRes = await API.put(`/treatment/${currentTreatment._id}`, treatmentPayload);
+                    finalTreatmentId = treatmentRes.data.data._id;
+
+                } else {
+                    const treatmentRes = await API.post("/treatment", treatmentPayload);
+                    finalTreatmentId = treatmentRes.data.data._id;
+                    setTreatmentId(finalTreatmentId);
+                }
             }
 
             const billingPayload = {
+
                 appointmentId: fetchedData?.appointment?._id,
                 userId: fetchedData?.appointment?.userId?._id,
                 clinicId: fetchedData?.appointment?.clinicId?._id,
                 doctorId: fetchedData?.appointment?.doctorId?._id,
                 amount: grandTotal,
                 treatmentId: finalTreatmentId,
-                status: "paid",
                 staffId: currentUser?._id,
             };
 
             const res = await API.post("/billing/payment", billingPayload);
+
             toast.success("Billing created successfully");
+
             try {
+                toast.loading("Generating invoice...", { id: "report" });
                 const invoice = await API.get(`/billing/invoice/${res.data.billId}`);
                 exportBillingInvoice(invoice.data.invoice);
+                toast.success("Invoice downloaded", { id: "report" });
             } catch (err) {
-                console.log(err);
+                toast.error("Payment completed, but invoice generation failed", { id: "report" });
             }
-            navigate("/payment_list"); 
-
+            navigate("/payment_list", {
+                replace: true
+            });
         } catch (err: any) {
-
-            toast.error(
-                err?.response?.data?.message ||
-                "Oops! Something went wrong"
-            );
+            toast.error(err?.response?.data?.message || err?.message || "Oops! Something went wrong");
         }
     };
-
     if (!fetchedData) {
         return <div className="mt-6">Loading...</div>;
     }
@@ -149,8 +157,46 @@ const Billing = () => {
 
 
     return (
-        <div className=" grid grid-cols-1 gap-8 xl:grid-cols-2 ">
-            {/* LEFT PANEL */}
+        <div className=" grid grid-cols-1 gap-8 xl:grid-cols-2  mb-8">
+
+
+            {showPayModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="w-[420px] rounded-2xl bg-white p-6 shadow-2xl">
+
+                        <div className="flex justify-center">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-lime-100">
+                                <span className="text-3xl">💲</span>
+                            </div>
+                        </div>
+
+                        <h2 className="mt-5 text-center text-xl font-bold text-gray-800"> Confirm Payment</h2>
+                        <p className="mt-3 text-center text-gray-500">Are you sure you want to confirm payment for this appointment?</p>
+                        <p className="mt-2 text-center text-sm text-red-500">This action cannot be undone.</p>
+
+                        <div className="mt-8 flex gap-3">
+                            <button
+                                onClick={() => {
+                                    setShowPayModal(false);
+                                }}
+                                className="flex-1 rounded-xl border py-3 font-semibold bg-red-500 text-white transition hover:bg-red-600"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                onClick={handleProceedPayment}
+                                className="flex-1 rounded-xl bg-green-500 py-3 font-semibold text-white transition hover:bg-green-600"
+                            >
+                                Confirm
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
             <div className="flex flex-col gap-5">
                 <div className="space-y-8">
                     <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-md">
@@ -221,6 +267,10 @@ const Billing = () => {
                             <span className="font-medium text-gray-600">Existing Treatments </span>
                             <span className="font-bold text-gray-800">Rs. {existingTreatmentTotal.toFixed(2)}</span>
                         </div>
+                        <div className="flex items-center justify-between rounded-2xl bg-gray-50 p-4">
+                            <span className="font-medium text-gray-600">Doctor fee</span>
+                            <span className="font-bold text-gray-800">Rs. {fetchedData?.appointment?.fee.toFixed(2) || 0}</span>
+                        </div>
 
                         <div className="flex items-center justify-between rounded-2xl bg-gray-50 p-4">
                             <span className="font-medium text-gray-600">Newly Added</span>
@@ -240,7 +290,7 @@ const Billing = () => {
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <button
-                        onClick={handleProceedPayment}
+                        onClick={() => setShowPayModal(true)}
                         className="rounded-2xl bg-[#2596be] py-3 font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#2088af]">
                         Proceed to Payment
                     </button>

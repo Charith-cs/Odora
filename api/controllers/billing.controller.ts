@@ -69,7 +69,6 @@ export const getCompleted = async (req: Request, res: Response) => {
 
 export const createPayment = async (req: Request, res: Response) => {
     try {
-
         const {
             appointmentId,
             userId,
@@ -77,7 +76,6 @@ export const createPayment = async (req: Request, res: Response) => {
             doctorId,
             amount,
             treatmentId,
-            status,
             staffId
         } = req.body;
 
@@ -86,54 +84,72 @@ export const createPayment = async (req: Request, res: Response) => {
             !userId ||
             !clinicId ||
             !doctorId ||
-            !amount ||
+            amount === undefined ||
+            amount === null ||
             !treatmentId ||
-            !status
+            !staffId
         ) {
-            return res.status(400).json({
-                message: "Please add treatment details!"
-            });
+            return res.status(400).json({ message: "Please add payment details!"});
         }
 
-        const existing = await Billing.findOne({
-            appointmentId: appointmentId
+        if (Number(amount) < 0) {
+            return res.status(400).json({message: "Invalid payment amount"});
+        }
+
+        const appointment = await Appointment.findById(
+            appointmentId
+        );
+
+        if (!appointment) {
+            return res.status(404).json({message: "Appointment not found"});
+        }
+
+        const existingPayment = await Billing.findOne({
+            appointmentId
         });
-        if (existing) {
-            return res.status(403).json({ message: "Payment already success!" });
+
+        if (existingPayment) {
+            return res.status(409).json({ message: "Payment already completed!"});
         }
 
-        const newPaymentDetails = new Billing({
+        const treatment = await Treatment.findOne({
+            _id: treatmentId,
+            appointmentId
+        });
+
+        if (!treatment) {
+            return res.status(400).json({ message: "Treatment does not belong to this appointment"});
+        }
+
+        const payment = await Billing.create({
             appointmentId,
             userId,
             clinicId,
             doctorId,
             amount,
             treatmentId,
-            status,
+            status: "paid",
             staffId
         });
 
-        const response = await newPaymentDetails.save();
-        if (!response._id) {
-            return res.status(403).json("Oops! Something went wrong");
+        const updatedAppointment =
+            await Appointment.findByIdAndUpdate(
+                appointmentId,
+                {
+                    status: "paid"
+                },
+                {
+                    new: true
+                }
+            );
+
+        if (!updatedAppointment) {
+            return res.status(404).json({message: "Appointment could not be updated"});
         }
-        await Appointment.findByIdAndUpdate(
-            appointmentId,
-            { status: "paid" },
-            { new: true }
-        );
 
-        return res.status(201).json({
-            message: "Payment successful!",
-            billId: response._id
-        });
-
-    } catch (err) {
-
-        return res.status(500).json({
-            message: "Oops! Something went wrong",
-            error: err
-        });
+        return res.status(201).json({ message: "Payment successful!",billId: payment._id});
+    } catch (err: any) {
+        return res.status(500).json({message: "Oops! Something went wrong",error: err.message});
     }
 };
 
@@ -227,6 +243,7 @@ export const getInvoiceByBillingId = async (req: Request, res: Response) => {
                     },
                     appointment: {
                         id: "$appointment._id",
+                        fee:"$appointment.fee",
                         dateTime: "$appointment.dateTime"
                     },
                     treatments: "$treatment.treatments",

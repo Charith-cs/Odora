@@ -48,6 +48,7 @@ import PastAppointments from './routes/Dashboards/DoctorDash/PastAppointments.ts
 import JoinReq from './routes/Dashboards/DoctorDash/JoinReq.tsx';
 import DoctorJoinReq from './routes/Dashboards/adminDash/DoctorJoinReq.tsx';
 import ClinicSetting from './routes/Dashboards/adminDash/ClinicSetting.tsx';
+import PassReset from './routes/PassReset.tsx';
 
 
 const router = createBrowserRouter([
@@ -84,6 +85,13 @@ const router = createBrowserRouter([
         element:
           <PublicRoute>
             <DocReg />
+          </PublicRoute>
+      },
+      {
+        path: "/password-reset",
+        element:
+          <PublicRoute>
+            <PassReset/>
           </PublicRoute>
       },
       {
@@ -292,7 +300,7 @@ const router = createBrowserRouter([
             <ClinicSetting />
           </ProtectedRoute>
       },
-            {
+      {
         path: "/my_clinic",
         element:
           <ProtectedRoute allowedRoles={["admin"]}>
@@ -325,7 +333,7 @@ const router = createBrowserRouter([
         path: "/doctor_req",
         element:
           <ProtectedRoute allowedRoles={["admin"]}>
-            <DoctorJoinReq/>
+            <DoctorJoinReq />
           </ProtectedRoute>
       },
       {

@@ -14,7 +14,7 @@ const Sessions = () => {
     const [session, setSession] = useState<any[]>([]);
     const recordsPerPage = 10;
 
-       const indexOfLastRecord = currentPage * recordsPerPage;
+    const indexOfLastRecord = currentPage * recordsPerPage;
     const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
 
 
@@ -39,14 +39,14 @@ const Sessions = () => {
         etime: s?.endDateTime.slice(11, 16),
     })) || [];
 
-        const currentRecords = formattedSessions.slice(indexOfFirstRecord, indexOfLastRecord);
+    const currentRecords = formattedSessions.slice(indexOfFirstRecord, indexOfLastRecord);
     const totalPages = Math.ceil(formattedSessions.length / recordsPerPage);
 
     if (!formattedSessions) {
         return <div className="mt-6 w-full">Loading...</div>;
     }
 
-    console.log({"current record":session})
+    console.log({ "current record": session })
 
     return (
         <div>

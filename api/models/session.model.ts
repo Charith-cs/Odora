@@ -48,7 +48,7 @@ const sessionSchema = new Schema<sessionModelType>({
 
     status: {
         type: String,
-        enum: ["active", "cancelled", "completed"],
+        enum: ["active", "inactive"],
         default: "active",
     },
 }, { timestamps: true });

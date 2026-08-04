@@ -18,15 +18,12 @@ const Bookappointment = () => {
     const AC = 100;
     const total = session?.fee + AC;
 
-    console.log(doctor);
-
     const handleBook = () => {
         setButtton(true);
     }
 
     const handleSubmit = async () => {
         const dateTime = new Date(session.startDateTime);
-
 
         const data = {
             userId: user._id,
@@ -43,7 +40,9 @@ const Bookappointment = () => {
             const res = await API.post("/appointment", data);
             setButtton(false);
             toast.success(res.data.message);
-            navigate(`/my_appointment/${user._id}`);
+            navigate(`/my_appointment/${user._id}`,{
+                replace:true
+            });
         } catch (err: any) {
             setButtton(false);
             toast.error(err.response?.data?.message || "Request failed");
@@ -91,7 +90,7 @@ const Bookappointment = () => {
 
                     <div className=" w-full flex flex-row justify-between">
                         <span className="flex items-center justify-center text-center cursor-pointer">
-                            <img src="/cardIcons/dentist.png" alt="clinicimg" className=" w-16 h-16 rounded-full object-cover" />
+                            <img src={doctor.img ?? ".userDash/user.png"} alt="clinicimg" className=" w-16 h-16 rounded-full object-cover" />
                             <span className=" ml-8 text-start">
                                 <h2 className=" font-semibold">Dr. {doctor.firstName + " " + doctor.lastName}</h2>
                             </span>

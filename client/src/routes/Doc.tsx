@@ -122,7 +122,7 @@ const DocClinic = () => {
                           <span className="mx-1">•</span>
                           {s.endDateTime.slice(11, 16)}
 
-                        </p>
+                        </p> 
                       </div>
 
                       <button

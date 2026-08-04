@@ -21,6 +21,7 @@ export const getAllSessions = async (req: Request, res: Response) => {
 export const getDoctorSessions = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
+        const now = new Date();
 
         if (typeof id !== "string") {
             return res.status(400).json({ message: "Invalid doctor id" });
@@ -31,10 +32,11 @@ export const getDoctorSessions = async (req: Request, res: Response) => {
         }
         const sessions = await Session.find({
             doctorId: id,
-            status: "active"
+            status: "active",
+            startDateTime: { $gte: now }
         })
             .populate("clinicId", "clinicName address")
-            .populate("doctorId" , "firstName lastName")
+            .populate("doctorId", "firstName lastName")
             .sort({ date: 1 });
 
         return res.status(200).json({

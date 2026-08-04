@@ -63,22 +63,43 @@ const UpComming = ({ data }: any) => {
                                 />
 
                                 <p className="font-semibold text-gray-700">
-                                    {data?.dateTime?.slice(0, 10)}
+                                    {new Date(data?.dateTime).toDateString()}
                                 </p>
                             </div>
 
                             <div className="grid grid-cols-2 gap-3 w-full lg:w-auto">
 
                                 <button
-                                    onClick={() => navigate(`/my_appointment/${currentUser._id}`)}
-                                    className="px-5 py-2.5 rounded-2xl border border-[#2596be] text-[#2596be] font-semibold hover:bg-[#2596be] hover:text-white transition-all duration-300"
+                                    onClick={() =>
+                                        navigate(`/my_appointment/${currentUser._id}`)
+                                    }
+                                    disabled={[
+                                        "approved",
+                                        "completed",
+                                        "paid"
+                                    ].includes(data?.status)}
+                                    className={`px-5 py-2.5 rounded-2xl border font-semibold transition-all duration-300 ${["approved", "completed", "paid"].includes(data?.status)
+                                        ? "border-gray-400 text-gray-500 bg-gray-50 cursor-not-allowed"
+                                        : "border-[#2596be] text-[#2596be] hover:bg-[#2596be] hover:text-white"
+                                        }`}
                                 >
                                     Reschedule
                                 </button>
 
                                 <button
-                                    onClick={() => navigate(`/my_appointment/${currentUser._id}`)}
-                                    className="px-5 py-2.5 rounded-2xl border border-red-400 text-red-500 font-semibold hover:bg-red-500 hover:text-white transition-all duration-300"
+                                    onClick={() =>
+                                        navigate(`/my_appointment/${currentUser._id}`)
+                                    }
+                                    disabled={[
+                                        "canceled",
+                                        "approved",
+                                        "completed",
+                                        "paid"
+                                    ].includes(data?.status)}
+                                    className={`px-5 py-2.5 rounded-2xl border font-semibold transition-all duration-300 ${["canceled", "approved", "completed", "paid"].includes(data?.status)
+                                        ? "border-gray-400 text-gray-500 bg-gray-50 cursor-not-allowed"
+                                        : "border-red-400 text-red-500 hover:bg-red-500 hover:text-white"
+                                        }`}
                                 >
                                     Cancel
                                 </button>
