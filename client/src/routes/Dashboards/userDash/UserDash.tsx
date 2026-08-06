@@ -108,7 +108,7 @@ const UserDash = () => {
             <div className=" flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <div className="">
                     <h1 className=" text-2xl md:text-3xl font-bold text-[#2596be]">Hello, {currentUser.firstName + " " + currentUser.lastName} 👋</h1>
-                    <span className=" text-sm text-gray-500 mt-2 block">PID : {currentUser._id}</span>
+                  
                 </div>
 
                 <div className=" flex gap-4 items-center relative self-start md:self-auto ">

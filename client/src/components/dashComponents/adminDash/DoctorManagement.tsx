@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Table from "./Table";
 import { DoctorColumns } from "../../../../data";
 import { Link } from "react-router-dom";
@@ -12,22 +12,32 @@ type Props = {
     refresh: () => Promise<void>;
 };
 
-const DoctorManagement = ({
-    data,
-    refresh,
-}: Props) => {
+const DoctorManagement = ({ data, refresh, }: Props) => {
 
     const [showForm, setShowForm] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
     const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+    const [clinic, setClinic] = useState<any>();
+
+    useEffect(() => {
+        const getClinic = async () => {
+            try {
+                const res = await API.get(`/dash/clinic/${currentUser._id}`);
+                setClinic(res.data);
+            } catch (err: any) {
+                console.error(err);
+            }
+        }
+        getClinic();
+    }, [currentUser])
 
     const handleDelete = async () => {
         if (!selectedDoctorId) return;
         try {
-            await API.delete(`/management/remove_doc/${selectedDoctorId}` ,{
-                data:{
-                    id:currentUser._id
+            await API.delete(`/management/remove_doc/${selectedDoctorId}`, {
+                data: {
+                    id: currentUser._id
                 }
             });
             await refresh();
@@ -74,7 +84,7 @@ const DoctorManagement = ({
                     Showing results ...
                 </p>
 
-                <div className="flex items-center gap-3">
+                {clinic && <div className="flex items-center gap-3">
                     <Link
                         to="/doctor_req"
                         className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-300 hover:border-[#2596be] hover:bg-[#2596be]/5 hover:text-[#2596be] hover:shadow-md"
@@ -93,7 +103,7 @@ const DoctorManagement = ({
                             className="h-6 w-6 transition-transform duration-300 hover:scale-110"
                         />
                     </button>
-                </div>
+                </div>}
                 {showForm === true && (
                     <div className=" fixed inset-0 flex items-center justify-center bg-black/40 z-50">
                         <div className="bg-white rounded-2xl shadow-xl w-[500px] h-[90%] overflow-hidden">

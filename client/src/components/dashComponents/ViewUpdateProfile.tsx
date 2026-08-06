@@ -29,6 +29,7 @@ const doctorExtraSchema = z.object({
     university: z.string().optional(),
     slmcReg: z.string().optional(),
     degree: z.string().optional(),
+    desc: z.string().optional(),
 });
 
 type FormData = z.infer<typeof userSchema> & z.infer<typeof doctorExtraSchema>;
@@ -102,8 +103,8 @@ const ViewUpdateProfile = () => {
             toast.success("Profile picture uploaded successfully !");
             setPreview(null);
             setFile(null);
-        } catch (err) {
-            toast.error("Upload failed");
+        } catch (err: any) {
+            toast.error(err?.response?.message || "Upload failed");
         } finally {
             setLoading(false);
         }
@@ -143,10 +144,10 @@ const ViewUpdateProfile = () => {
     }, [currentUser, reset]);
 
     const handleDelete = async () => {
-        try{
+        try {
             await API.delete(`/auth/delete/${currentUser._id}`)
             toast.success("Your Odora account has been deleted!");
-        }catch(err:any){
+        } catch (err: any) {
             toast.error(err?.message || "Oops! Something went wrong");
         }
     }
@@ -178,7 +179,7 @@ const ViewUpdateProfile = () => {
                             <input
                                 type="file"
                                 ref={fileInputRef}
-                                accept="image/*"
+                                accept="image/jpeg,image/png"
                                 onChange={(e) => {
                                     const selectedFile = e.target.files?.[0] || null;
                                     setFile(selectedFile);
@@ -198,7 +199,7 @@ const ViewUpdateProfile = () => {
                         </h3>
 
                         <p className="text-sm text-gray-500 mt-1">
-                            {currentUser?.role === "doctor" ? "Doctor Account" : "Patient Account"}
+                            {currentUser?.role === "doctor" ? "Doctor Account" : currentUser?.role === "admin" ? "Management Account" : "Patient Account"}
                         </p>
 
                         <div className="w-full flex gap-3 mt-8">
@@ -574,6 +575,25 @@ const ViewUpdateProfile = () => {
                                             placeholder="Enter degree"
                                             className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10"
                                         />
+                                    </div>
+
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                            Description
+                                        </label>
+
+                                        <input
+                                            {...register("desc")}
+                                            type="text"
+                                            placeholder="Enter your description"
+                                            className={`w-full rounded-2xl border bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10 ${errors.desc ? "border-red-500" : "border-gray-200"}`}
+                                        />
+
+                                        {errors.desc && (
+                                            <p className="mt-2 text-sm text-red-500">
+                                                {errors.desc.message}
+                                            </p>
+                                        )}
                                     </div>
                                 </>
                             )}

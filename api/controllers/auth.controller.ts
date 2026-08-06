@@ -117,7 +117,8 @@ export const userRegister = async (req: Request, res: Response) => {
                 consultationFee,
                 university,
                 slmcReg,
-                degree
+                degree,
+                desc
             } = req.body;
 
             const doctorRequiredFields = [
@@ -141,39 +142,53 @@ export const userRegister = async (req: Request, res: Response) => {
                 return res.status(400).json({ field: "consultationFee", message: "Consultation fee must be greater than zero." });
             }
 
-            const doctor = new Doctor({
-                userId: savedUser._id,
-                specialization: specialization.trim(),
-                experience,
-                consultationFee,
-                university: university?.trim(),
-                slmcReg: slmcReg?.trim(),
-                degree: degree?.trim()
-            });
+            try {
+                const doctor = new Doctor({
+                    userId: savedUser._id,
 
-            await doctor.save();
+                    specialization: Array.isArray(specialization)
+                        ? specialization.map((item: string) => item.trim())
+                        : [specialization.trim()],
+
+                    experience: Number(experience),
+                    consultationFee: Number(consultationFee),
+                    desc:desc?.trim(),
+
+                    university: university?.trim(),
+                    slmcReg: slmcReg?.trim(),
+                    degree: degree?.trim()
+                });
+
+                await doctor.save();
+            } catch (err: any) {
+                return res.status(500).json({ error: err, message: "Oops! Something went wrong" });
+            }
         }
 
         if (userData.role === "staff") {
-            const { clinic } = req.body;
-            if (clinic === undefined || clinic === null || clinic === "") {
-                return res.status(400).json({ field: "clinic", message: "Clinic is required." });
-            }
+            try {
+                const { clinic } = req.body;
+                if (clinic === undefined || clinic === null || clinic === "") {
+                    return res.status(400).json({ field: "clinic", message: "Clinic is required." });
+                }
 
-            const staff = new Staff({
-                userId: savedUser._id,
-                clinic:
-                    typeof clinic === "string" ? clinic.trim() : clinic
-            });
-            await staff.save();
+                const staff = new Staff({
+                    userId: savedUser._id,
+                    clinic:
+                        typeof clinic === "string" ? clinic.trim() : clinic
+                });
+                await staff.save();
+            } catch (err: any) {
+                return res.status(500).json({ error: err, message: "Oops! Something went wrong" });
+            }
         }
 
         const token = generateToken(savedUser);
         const userObject = savedUser.toObject();
         delete userObject.password;
         return res.status(201).json({ message: "Successfully registered.", token, user: userObject });
-    } catch (error: any) {
-        return res.status(500).json({ error: error, message: "Oops! Something went wrong.Please try again later" });
+    } catch (err: any) {
+        return res.status(500).json({ error: err, message: "Oops! Something went wrong.Please try again later" });
     }
 };
 
@@ -253,11 +268,9 @@ export const userUpdate = async (req: Request, res: Response) => {
                 university,
                 slmcReg,
                 degree,
+                desc
             } = req.body;
 
-            /*             if (!specialization || !experience || !consultationFee) {
-                            throw new Error("Doctor fields missing");
-                        } */
 
             const { id } = req.params;
             if (!id || Array.isArray(id)) {
@@ -272,6 +285,7 @@ export const userUpdate = async (req: Request, res: Response) => {
             if (university !== undefined) doctorUpdateData.university = university;
             if (slmcReg !== undefined) doctorUpdateData.slmcReg = slmcReg;
             if (degree !== undefined) doctorUpdateData.degree = degree;
+            if (desc !== undefined) doctorUpdateData.desc = desc;
 
             await Doctor.findOneAndUpdate(
                 { userId: userObjectId },
@@ -350,4 +364,22 @@ export const deleteUser = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Oops! Something went wrong" });
     }
 }
+
+export const getCurrentUser = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.id;
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        const user = await User.findById(userId).select("-password");
+
+        if (!user) {
+            return res.status(401).json({ message: "User account no longer exists" });
+        }
+        return res.status(200).json({ user });
+    } catch (err) {
+        return res.status(500).json({ message: "Oops! Something went wrong" });
+    }
+};
 

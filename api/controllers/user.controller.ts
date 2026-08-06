@@ -1,6 +1,5 @@
 import User from "../models/user.model";
 import { Request, Response } from "express";
-import { userModelType } from "../types/types";
 import Appointment from "../models/appointment.model";
 import Treatment from "../models/Treatment.model";
 import mongoose from "mongoose";

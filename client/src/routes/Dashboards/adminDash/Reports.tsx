@@ -29,6 +29,19 @@ const Reports = () => {
   const [selectedReport, setSelectedReport] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [clinic, setClinic] = useState<any>();
+
+  useEffect(() => {
+    const getClinic = async () => {
+      try {
+        const res = await API.get(`/dash/clinic/${currentUser._id}`);
+        setClinic(res.data);
+      } catch (err: any) {
+        console.error(err);
+      }
+    }
+    getClinic();
+  }, [currentUser]);
 
   //report download 
   const handleDownload = async () => {
@@ -385,13 +398,16 @@ const Reports = () => {
               </div>
 
               <div className="flex flex-col gap-3 border-t border-gray-100 pt-6 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={handleDownload}
-                  className="flex-1 rounded-2xl bg-[#21a262] px-5 py-3 font-semibold text-white shadow-md transition-all duration-300 hover:bg-[#1c8d53] hover:shadow-lg"
-                >
-                  Download Report
-                </button>
+               
+                  <button
+                    type="button"
+                    onClick={handleDownload}
+                    disabled = {!clinic}
+                    className={`flex-1 rounded-2xl ${clinic ? "bg-[#21a262] text-white hover:bg-[#1c8d53]" : "bg-gray-100 text-gray-400 hover:bg-gray-200"}  px-5 py-3 font-semibold shadow-md transition-all duration-300  hover:shadow-lg`}
+                  >
+                    Download Report
+                  </button>
+                
 
                 <button
                   type="button"

@@ -14,7 +14,6 @@ const DocClinic = () => {
       if (!slug) return;
       try {
         const docDetails = await API.get(`/doctor/details/${slug}`);
-        console.log(docDetails.data)
         setDetails(docDetails.data);
       } catch (err) {
         console.log(err);
@@ -38,7 +37,7 @@ const DocClinic = () => {
           <div className=" bg-white rounded-3xl border border-gray-100 shadow-md p-6 sm:p-8">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               <img
-                src={ details.doctor.img ? details.doctor.img : "/userDash/user.png"}
+                src={details.doctor.img ? details.doctor.img : "/userDash/user.png"}
                 alt="Doctor"
                 className=" w-28 h-28 rounded-3xl object-cover border border-gray-100" />
 
@@ -115,14 +114,20 @@ const DocClinic = () => {
 
                     <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-800">{s.startDateTime.slice(0, 10)}</h3>
+                        <h3 className="text-lg font-semibold text-gray-800">{new Date(s.startDateTime).toLocaleDateString()}</h3>
                         <p className="text-gray-500 mt-1">
 
-                          {s.startDateTime.slice(11, 16)}{" "}
+                          {new Date(s.startDateTime).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}{" "}
                           <span className="mx-1">•</span>
-                          {s.endDateTime.slice(11, 16)}
+                          {new Date(s.endDateTime).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
 
-                        </p> 
+                        </p>
                       </div>
 
                       <button

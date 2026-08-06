@@ -9,8 +9,25 @@ import Staff from "../../models/staff.model";
 import Billing from "../../models/billing.model";
 import Treatment from "../../models/Treatment.model";
 import Clinic from "../../models/clinic.model";
-import { json } from "stream/consumers";
 
+
+export const getClinic = async (req:Request , res:Response) => {
+    try{
+        const id = req.params.id;
+        if(!id || Array.isArray(id)){
+            return res.status(400).json({message : "Check Id status"});
+        }
+        const isClinic = await Clinic.findOne({
+                managementId : id
+        });
+        if(!isClinic){
+            return res.status(403).json({message:"Not found"});
+        }
+        return res.status(200).json(isClinic._id);
+    }catch(err){
+        return res.status(500).json({message:"Oops! Something went wrong"});
+    }
+}
 
 export const dashCard = async (req: Request, res: Response) => {
     try {
@@ -312,16 +329,28 @@ export const dashCard = async (req: Request, res: Response) => {
 export const imgUpload = async (req: Request, res: Response) => {
     try {
         const file = (req as any).file;
+
         if (!file) {
             return res.status(500).json({ message: "No file upload!" });
         }
+        const allowedTypes = [
+            "image/jpeg",
+            "image/png"
+        ];
+
+        if (!allowedTypes.includes(file.mimetype)) {
+            return res.status(400).json({message: "Only JPG, JPEG and PNG images are allowed!"});
+        }
         const imageUrl = `http://localhost:5000/upload/${file.filename}`;
+
         await User.findByIdAndUpdate(req.params.id, {
             img: imageUrl
         });
-        res.status(200).json({ message: "Upload successful", imageUrl })
+
+        res.status(200).json({ message: "Upload successful", imageUrl });
+
     } catch (err) {
-        return res.status(500).json({ message: "Oops! Something went wrong", err });
+        return res.status(500).json({ message: "Oops! Something went wrong"});
     }
 }
 
@@ -465,16 +494,16 @@ export const getChartDataForAdmin = async (req: Request, res: Response) => {
 export const getChartDataForDocStaff = async (req: Request, res: Response) => {
     try {
         const id = req.params.id;
-        const { filter = "Monthly" ,  managementId} = req.query;
+        const { filter = "Monthly", managementId } = req.query;
 
         if (!id || Array.isArray(id)) {
             return res.status(400).json({ message: "Check your ID status" });
         }
         if (!managementId || Array.isArray(managementId)) {
-            return res.status(400).json({message: "Management ID is required"});
+            return res.status(400).json({ message: "Management ID is required" });
         }
 
-        const clinic = await Clinic.findOne({managementId});
+        const clinic = await Clinic.findOne({ managementId });
 
         if (!clinic) {
             return res.status(404).json({ message: "Clinic not found" });
@@ -709,8 +738,8 @@ export const getChartDataForDocStaff = async (req: Request, res: Response) => {
 
         return res.status(200).json(formattedData);
 
-    } catch (err:any) {
-        return res.status(500).json({message: "Oops! Something went wrong." ,  error: err.message});
+    } catch (err: any) {
+        return res.status(500).json({ message: "Oops! Something went wrong.", error: err.message });
     }
 };
 

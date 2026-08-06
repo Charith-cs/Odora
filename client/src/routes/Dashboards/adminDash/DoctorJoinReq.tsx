@@ -3,12 +3,13 @@ import { toast } from "react-hot-toast";
 import API from "../../../../api/axios";
 import { JoinAdminColumns } from "../../../../data";
 import Table from "../../../components/dashComponents/adminDash/Table";
-import { email } from "zod";
+import { useNavigate } from "react-router-dom";
 
 const DoctorJoinReq = () => {
 
     const [joinRequests, setJoinRequests] = useState<any[]>([]);
     const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+    const navigate = useNavigate();
 
     useEffect(() => {
         const getRequests = async () => {
@@ -33,6 +34,9 @@ const DoctorJoinReq = () => {
         try {
             await API.patch(`/clinic/approve-request/${doctorId}`);
             toast.success("Request approved successfully!");
+            navigate("/doctor_setting" ,{
+                replace : true
+            });
         } catch (err: any) {
             toast.error(err.response?.data.message || "Oops! Something went wrong");
         }

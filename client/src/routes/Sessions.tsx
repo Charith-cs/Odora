@@ -19,6 +19,8 @@ const Sessions = () => {
 
 
 
+
+
     useEffect(() => {
         const getDetails = async () => {
             try {
@@ -34,9 +36,15 @@ const Sessions = () => {
     const formattedSessions = session.map((s: any) => ({
         _id: s?._id,
         clinic: s.clinicId?.clinicName,
-        date: s?.startDateTime.slice(0, 10),
-        stime: s?.startDateTime.slice(11, 16),
-        etime: s?.endDateTime.slice(11, 16),
+        date: new Date(s?.startDateTime).toLocaleDateString(),
+        stime: new Date(s?.startDateTime).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+        }),
+        etime: new Date(s?.endDateTime).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+        }),
     })) || [];
 
     const currentRecords = formattedSessions.slice(indexOfFirstRecord, indexOfLastRecord);

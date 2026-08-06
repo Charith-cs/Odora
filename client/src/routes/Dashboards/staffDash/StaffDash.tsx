@@ -136,9 +136,9 @@ const StaffDash = () => {
                         </button>
                     </div>
 
-                    <Link to="/my_profile">
+                    <button  onClick={() => { toast("Please contact your Administrator to update your account!", { icon: '🚫' }) }}>
                         <img src={currentUser?.img ? currentUser.img : "/userDash/user.png"} alt="userimg" className=" w-16 h-16 object-cover rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition" />
-                    </Link>
+                    </button>
 
                     {checked && (
 

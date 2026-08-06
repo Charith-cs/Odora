@@ -268,7 +268,7 @@ const Add = ({ updateLabel, setShowForm, role , refresh }: Props) => {
                             disabled={item?.disabled}
                             {...register(item.key as any)}
                             className={`w-full rounded-2xl border px-4 py-3 text-sm placeholder:text-gray-400 transition-all duration-300 ${item?.disabled
-                                ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                                ? "bg-gray-100 border-gray-200 text-gray-100 cursor-not-allowed"
                                 : errors?.[item.key]
                                     ? "border-red-500 bg-red-50 text-gray-700 focus:border-red-500 focus:ring-4 focus:ring-red-100 focus:outline-none"
                                     : "border-gray-200 bg-gray-50 text-gray-700 focus:border-[#2596be] focus:bg-white focus:ring-4 focus:ring-[#2596be]/10 focus:outline-none"

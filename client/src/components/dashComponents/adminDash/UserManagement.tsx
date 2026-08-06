@@ -2,8 +2,6 @@ import { useState } from "react";
 import Table from "./Table";
 import { columns } from "../../../../data";
 import { Link } from "react-router-dom";
-import Add from "./Add";
-import type { UpdateLabelType } from "../../../../types/types";
 import { toast } from "react-hot-toast";
 import API from "../../../../api/axios";
 
@@ -12,20 +10,17 @@ type Props = {
     refresh: () => Promise<void>;
 };
 
-const UserManagement = ({
-    data,
-    refresh,
-}: Props) => {
+const UserManagement = ({ data, refresh, }: Props) => {
 
     const formattedUsers = data.map((user: any) => ({
         ...user,
         name: `${user.firstName} ${user.lastName}`,
     }));
 
-    const [showForm, setShowForm] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+    
 
     const handleDelete = async () => {
         if (!selectedUserId) return;
@@ -46,17 +41,6 @@ const UserManagement = ({
         }
     };
 
-    const userUpdateLabel: UpdateLabelType[] = [
-        { key: "firstName", label: "First name :", placeholder: "Jhon", type: "text" },
-        { key: "lastName", label: "Last name :", placeholder: "Doe", type: "text" },
-        { key: "email", label: "Email :", placeholder: "example@gmail.com", type: "email" },
-        { key: "mobileNumber", label: "Mobile number :", placeholder: "07xxxxxxxx", type: "text" },
-        { key: "birthDay", label: "Birth Day :", placeholder: "01/01/1970", type: "date" },
-        { key: "gender", label: "Gender :", placeholder: "Gender", type: "text" },
-        { key: "address", label: "Address :", placeholder: "ExampleStreet", type: "text" },
-        { key: "password", label: "Password :", placeholder: "********", type: "password" },
-    ];
-
     return (
         <div className="mt-6 w-full">
             <div className="flex justify-between items-center my-2 ">
@@ -64,33 +48,6 @@ const UserManagement = ({
                     Showing results...
                 </p>
 
-                <button
-                    onClick={() => setShowForm(!showForm)}
-                    className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:border-[#2596be] hover:bg-[#2596be]/5 hover:shadow-md"
-                >
-                    <img
-                        src="./userDash/add-user.png"
-                        alt="Add User"
-                        className="h-6 w-6 transition-transform duration-300 hover:scale-110"
-                    />
-                </button>
-                {showForm === true && (
-                    <div className=" fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-                        <div className="bg-white rounded-2xl shadow-xl w-[500px] h-[90%] overflow-hidden">
-
-                            <div className="h-full overflow-y-auto p-6">
-                                <Add updateLabel={userUpdateLabel} setShowForm={setShowForm} role={"user"} />
-
-                                <button
-                                    onClick={() => setShowForm(false)}
-                                    className=" mt-5 w-full border-none bg-red-500 shadow:md hover:bg-red-600 hover:shadow-xl px-5 py-3.5 rounded-2xl text-white font-semibold">
-                                    Close
-                                </button>
-                            </div>
-
-                        </div>
-                    </div>
-                )}
                 {showDeleteModal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                         <div className="w-[420px] rounded-2xl bg-white p-6 shadow-2xl">
@@ -135,7 +92,7 @@ const UserManagement = ({
                 columns={columns}
                 data={formattedUsers}
                 title={null}
-                actions={(_row) => (
+                actions={(_row:any) => (
                     <div className="flex gap-2">
                         <Link to={`/view_edit/${_row._id}`} className="px-3 py-1 rounded-lg border text-gray-600 hover:text-sky-500 hover:border-sky-500 transition">View</Link>
                         <button

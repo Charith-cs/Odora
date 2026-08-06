@@ -7,6 +7,7 @@ const DoctorSetting = () => {
   const currentUser = JSON.parse(localStorage.getItem("user") || "null");
   const [doctors, setDoctors] = useState<any[]>([]);
 
+
   const fetchUsers = async () => {
     try {
       const res = await API.get(`/management/registeredUsers/${currentUser._id}`, { params: { role: "doctor" } });
@@ -22,7 +23,7 @@ const DoctorSetting = () => {
 
   return (
     <div className="mt-6 grid grid-cols-1">
-      <DoctorManagement data={doctors} refresh={fetchUsers}/>
+      <DoctorManagement data={doctors} refresh={fetchUsers} />
     </div>
   )
 }

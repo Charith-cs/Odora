@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Table from "./Table";
 import { StaffColumns, StaffUpdateLabel } from "../../../../data";
 import { Link } from "react-router-dom";
 import Add from "./Add";
 import { toast } from "react-hot-toast";
 import API from "../../../../api/axios";
+
 
 type Props = {
     data: any[];
@@ -20,14 +21,27 @@ const StaffManagement = ({
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
     const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+    const [clinic, setClinic] = useState<any>();
+
+    useEffect(() => {
+        const getClinic = async () => {
+            try {
+                const res = await API.get(`/dash/clinic/${currentUser._id}`);
+                setClinic(res.data);
+            } catch (err: any) {
+                console.error(err);
+            }
+        }
+        getClinic();
+    }, [currentUser])
 
     const handleDelete = async () => {
         if (!selectedStaffId) return;
 
         try {
-            await API.delete(`/management/remove_staff/${selectedStaffId}`,{
-                data:{
-                    id:currentUser._id
+            await API.delete(`/management/remove_staff/${selectedStaffId}`, {
+                data: {
+                    id: currentUser._id
                 }
             });
             await refresh();
@@ -48,6 +62,8 @@ const StaffManagement = ({
         _id: `${s?.details?._id}`,
     }));
 
+    console.log(formattedStaff)
+
 
 
     const StaffUpdateLabel = [
@@ -58,7 +74,7 @@ const StaffManagement = ({
         { key: "address", label: "Address :", placeholder: "ExampleStreet", type: "text" },
         { key: "birthDay", label: "Birth Day :", placeholder: "01/01/1970", type: "date" },
         { key: "gender", label: "Gender :", placeholder: "Gender", type: "text" },
-        { key: "clinic", label: "Clinic : ", value: formattedStaff[0]?.clinicId || "", type: "text", disabled: true },
+        { key: "clinic", label: "Clinic : ", value: clinic|| "", type: "text", disabled: true },
         { key: "password", label: "Password :", placeholder: "********", type: "password" }
     ];
 
@@ -70,7 +86,7 @@ const StaffManagement = ({
                     Showing results ...
                 </p>
 
-                <button
+                {clinic && <button
                     onClick={() => setShowForm(!showForm)}
                     className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:border-[#2596be] hover:bg-[#2596be]/5 hover:shadow-md"
                 >
@@ -79,7 +95,7 @@ const StaffManagement = ({
                         alt="Add User"
                         className="h-6 w-6 transition-transform duration-300 hover:scale-110"
                     />
-                </button>
+                </button>}
                 {showForm === true && (
                     <div className=" fixed inset-0 flex items-center justify-center bg-black/40 z-50">
                         <div className="bg-white rounded-2xl shadow-xl w-[500px] h-[90%] overflow-hidden">

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Table from '../../../components/dashComponents/adminDash/Table';
 import { toast } from 'react-hot-toast';
 import API from '../../../../api/axios';

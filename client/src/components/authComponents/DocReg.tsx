@@ -28,6 +28,7 @@ const doctorSchema = z.object({
     birthDay: z.string().min(1, "Birth date is required").refine((date) => new Date(date) <= new Date(), {
         message: "Birth date cannot be in future",
     }),
+    desc: z.string().min(10, "Description is required").max(1000, "Description is too long"),
     address: z.string().min(1, "Address is required"),
     password: z.string().min(1, "Password is required").min(6, "Minimum 6 characters required"),
     role: z.literal("doctor"),
@@ -482,6 +483,36 @@ const DocReg = () => {
                             )}
 
                         </div>
+
+                        {/* Descripton Fee */}
+
+                        <div className=" col-span-2">
+
+                            <label className="font-medium text-gray-700">
+                                Description
+                            </label>
+
+                            <input
+                                {...register("desc")}
+                                type="text"
+                                placeholder="Hello! I'm Dr.Jhon Doe"
+                                className={`mt-2 w-full h-14 rounded-xl border px-4 outline-none transition-all
+                        focus:border-[#2596be]
+                        focus:ring-2
+                        focus:ring-cyan-100
+                        ${errors.desc
+                                        ? "border-red-500"
+                                        : "border-gray-200"
+                                    }`}
+                            />
+
+                            {errors.desc && (
+                                <p className="text-red-500 text-sm mt-2">
+                                    {errors.desc.message}
+                                </p>
+                            )}
+
+                        </div>
                     </div>
                 </div>
                 {/* Security */}
@@ -545,7 +576,7 @@ const DocReg = () => {
 
                     <div className="text-center mt-8">
 
-                        <button type="button" onClick={() => navigate("/auth")} className="text-[#2596be] font-semibold hover:underline"> 
+                        <button type="button" onClick={() => navigate("/auth")} className="text-[#2596be] font-semibold hover:underline">
                             ← Back to Registration Portal
                         </button>
 

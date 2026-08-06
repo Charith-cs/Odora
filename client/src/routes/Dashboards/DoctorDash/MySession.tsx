@@ -56,22 +56,12 @@ const MySession = () => {
             const res = await API.post("/session", data);
             toast.success(res.data.message);
             setFormData(initialFormData);
-        } catch (err) {
-            toast.error("Oops! Something went wrong");
+        } catch (err:any) {
+            toast.error(err?.response?.data?.message || "Oops! Something went wrong");
         }
     };
 
-    useEffect(() => {
-        const getAvailable = async () => {
-            try {
-                const res = await API.get(`/session/template/${currentUser._id}`);
-                setAvailable(res.data);
-            } catch (err) {
-                console.log(err);
-            }
-        }
-        getAvailable();
-    }, [currentUser._id]);
+
 
     const formatDate = (date: string) => {
         return new Date(date).toLocaleDateString("en-GB");
@@ -107,6 +97,17 @@ const MySession = () => {
         }
     }
 
+        useEffect(() => {
+        const getAvailable = async () => {
+            try {
+                const res = await API.get(`/session/template/${currentUser._id}`);
+                setAvailable(res.data);
+            } catch (err) {
+                console.log(err);
+            }
+        }
+        getAvailable();
+    }, [handleSubmit , handleUpdate]);
 
     return (
         <div className="space-y-8">

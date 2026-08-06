@@ -36,7 +36,7 @@ export const getDoctorSessions = async (req: Request, res: Response) => {
             startDateTime: { $gte: now }
         })
             .populate("clinicId", "clinicName address")
-            .populate("doctorId", "firstName lastName")
+            .populate("doctorId", "firstName lastName img")
             .sort({ date: 1 });
 
         return res.status(200).json({
@@ -74,9 +74,6 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
             });
         }
 
-        // ============================
-        // REQUIRED FIELD VALIDATION
-        // ============================
 
         if (
             !doctorId ||
@@ -108,9 +105,6 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
             });
         }
 
-        // ============================
-        // DATE VALIDATION
-        // ============================
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -139,9 +133,7 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
             });
         }
 
-        // ============================
-        // TIME VALIDATION
-        // ============================
+
 
         const [sh, sm] = startTime.split(":").map(Number);
         const [eh, em] = endTime.split(":").map(Number);
@@ -155,7 +147,6 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
             });
         }
 
-        // If session starts today, don't allow past time
 
         const now = new Date();
 
@@ -170,9 +161,6 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
             }
         }
 
-        // ============================
-        // NUMBER VALIDATION
-        // ============================
 
         if (
             Number(maxPatients) <= 0
@@ -207,9 +195,6 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
             });
         }
 
-        // ============================
-        // CREATE TEMPLATE
-        // ============================
 
         const template = await SessionTemplate.create({
             doctorId,
@@ -224,9 +209,6 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
             fee,
         });
 
-        // ============================
-        // GENERATE SESSIONS
-        // ============================
 
         const sessions: any[] = [];
 
@@ -246,8 +228,7 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
                 endDT.setHours(eh, em, 0, 0);
 
                 if (
-                    isNaN(startDT.getTime()) ||
-                    isNaN(endDT.getTime())
+                    isNaN(startDT.getTime()) || isNaN(endDT.getTime())
                 ) {
                     return res.status(400).json({
                         message: "Invalid date or time values.",
@@ -333,9 +314,6 @@ export const updateSessionTemplate = async (req: Request, res: Response) => {
             });
         }
 
-        // ============================
-        // REQUIRED VALIDATION
-        // ============================
 
         if (
             !doctorId ||
@@ -364,9 +342,6 @@ export const updateSessionTemplate = async (req: Request, res: Response) => {
             });
         }
 
-        // ============================
-        // DATE VALIDATION
-        // ============================
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -395,9 +370,6 @@ export const updateSessionTemplate = async (req: Request, res: Response) => {
             });
         }
 
-        // ============================
-        // TIME VALIDATION
-        // ============================
 
         const [sh, sm] = startTime.split(":").map(Number);
         const [eh, em] = endTime.split(":").map(Number);
@@ -425,10 +397,6 @@ export const updateSessionTemplate = async (req: Request, res: Response) => {
             }
         }
 
-        // ============================
-        // NUMBER VALIDATION
-        // ============================
-
         if (Number(maxPatients) <= 0) {
             return res.status(400).json({
                 message: "Maximum patients must be greater than zero.",
@@ -453,10 +421,6 @@ export const updateSessionTemplate = async (req: Request, res: Response) => {
             });
         }
 
-        // ============================
-        // UPDATE TEMPLATE
-        // ============================
-
         const updatedTemplate = await SessionTemplate.findByIdAndUpdate(
             id,
             {
@@ -474,18 +438,13 @@ export const updateSessionTemplate = async (req: Request, res: Response) => {
             { new: true }
         );
 
-        // ============================
-        // REMOVE FUTURE SESSIONS
-        // ============================
+
 
         await Session.deleteMany({
             templateId: template._id,
             date: { $gte: new Date() },
         });
 
-        // ============================
-        // REGENERATE SESSIONS
-        // ============================
 
         const sessions: any[] = [];
 

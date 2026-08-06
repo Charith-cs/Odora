@@ -309,6 +309,14 @@ export const approveDoctorRequest = async (req: any, res: any) => {
             return res.status(400).json({ message: `Doctor is already assigned to ${existingClinic.clinicName}.` });
         }
 
+        const existingDoctorInClinic = await Clinic.findOne({
+            doctorList : doctorId
+        });
+
+        if(existingDoctorInClinic){
+            return res.status(409).json({message : `This Doctor is belong to the ${existingDoctorInClinic.clinicName}`});
+        }
+
         const request = clinic.pendingDoctorRequests?.find(
             (item: any) => item.doctorId.toString() === doctorId
         );
