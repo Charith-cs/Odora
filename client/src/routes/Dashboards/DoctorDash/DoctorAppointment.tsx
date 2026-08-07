@@ -69,7 +69,7 @@ const DoctorAppointment = () => {
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                        {["All", "ongoing", "approved", "completed"].map((item) => (
+                        {["All", /* "ongoing",  */"approved", "completed"].map((item) => (
                             <button
                                 key={item}
                                 onClick={() => setFilter(item as doctorStatusType | "All")}
@@ -139,13 +139,15 @@ const DoctorAppointment = () => {
                                     <td className="px-6 py-5">
                                         <div className="flex justify-center">
                                             <Link
-                                                to={item.status === "completed" ? "#" : `/add_treatment/${item._id}`}
+
+                                                to={item.status === "completed" ? "#" : new Date(item.dateTime).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "#" : `/add_treatment/${item._id}`}
                                                 className={`px-4 py-2 rounded-xl border text-sm font-medium transition
-                                ${item.status === "completed"
-                                                        ? "pointer-events-none opacity-60 cursor-not-allowed border-gray-300 text-gray-500"
-                                                        : "border-[#2596be] text-[#2596be] hover:bg-[#2596be] hover:text-white"
+                                                        ${item.status === "completed"
+                                                        ? "pointer-events-none opacity-60 cursor-not-allowed border-green-300 text-green-500"
+                                                        : new Date(item.dateTime).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "pointer-events-none opacity-60 cursor-not-allowed border-gray-300 text-gray-500"
+                                                            : "border-[#2596be] text-[#2596be] hover:bg-[#2596be] hover:text-white"
                                                     }`}>
-                                                {item.status === "completed" ? "Treatment Added" : "Add Treatment"}
+                                                {item.status === "completed" ? "Treatment Added" : new Date(item.dateTime).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting..." : "Add Treatment"}
                                             </Link>
                                         </div>
                                     </td>

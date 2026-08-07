@@ -188,7 +188,7 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
 
                                     <td className="px-6 py-5">
                                         <div className="font-medium text-gray-800">
-                                            {new Date(item.dateTime).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", })}
+                                            {new Date(item.dateTime).toLocaleDateString("en-GB"/* , { day: "2-digit", month: "short", year: "numeric", } */)}
                                         </div>
                                         <div className="text-sm text-gray-500 mt-1">
                                             {new Date(item.dateTime).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", })}

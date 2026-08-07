@@ -11,7 +11,6 @@ import UserDash from "./routes/Dashboards/userDash/UserDash.tsx";
 import MyAppointment from './routes/Dashboards/userDash/MyAppointment.tsx';
 import Profile from './routes/Dashboards/userDash/Profile.tsx';
 import StaffDash from './routes/Dashboards/staffDash/StaffDash.tsx';
-import Appointments from './routes/Dashboards/staffDash/Appointments.tsx';
 import Patients from './routes/Dashboards/staffDash/Patients.tsx';
 import WalkInAppointment from './routes/Dashboards/staffDash/WalkInAppointment.tsx';
 import Billing from './routes/Dashboards/staffDash/Billing.tsx';

@@ -236,7 +236,7 @@ const StaffDash = () => {
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
                     <h2 className="text-2xl font-bold text-gray-800">
-                        Today Appointments
+                        Clinic Appointments
                     </h2>
 
                     <Link

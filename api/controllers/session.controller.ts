@@ -63,18 +63,6 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
             fee,
         } = req.body;
 
-        const clinic = await Clinic.findOne(
-            { doctorList: doctorId },
-            { _id: 1 }
-        );
-
-        if (!clinic) {
-            return res.status(404).json({
-                message: "Clinic not found",
-            });
-        }
-
-
         if (
             !doctorId ||
             !startDate ||
@@ -82,44 +70,51 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
             !startTime ||
             !endTime
         ) {
-            return res.status(400).json({
-                message: "Please fill all required fields.",
-            });
+            return res.status(400).json({message: "Please fill all required fields." });
         }
+
 
         if (
-            !Array.isArray(daysOfWeek) ||
-            daysOfWeek.length === 0
+            !Array.isArray(daysOfWeek) || daysOfWeek.length === 0
         ) {
-            return res.status(400).json({
-                message: "Please select at least one day.",
-            });
+            return res.status(400).json({ message: "Please select at least one day." });
         }
 
-        if (
-            !startTime.includes(":") ||
-            !endTime.includes(":")
-        ) {
-            return res.status(400).json({
-                message: "Invalid time format. Use HH:mm",
-            });
-        }
+        const clinic = await Clinic.findOne(
+            {
+                doctorList: doctorId,
+            },
+            {
+                _id: 1,
+            }
+        );
 
+
+        if (!clinic) {
+            return res.status(404).json({ message: "Clinic not found.",});
+        }
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
+
         const start = new Date(startDate);
         start.setHours(0, 0, 0, 0);
+
 
         const end = new Date(endDate);
         end.setHours(0, 0, 0, 0);
 
-        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+
+        if (
+            isNaN(start.getTime()) ||
+            isNaN(end.getTime())
+        ) {
             return res.status(400).json({
                 message: "Invalid date.",
             });
         }
+
 
         if (start < today) {
             return res.status(400).json({
@@ -127,155 +122,248 @@ export const createSessionTemplate = async (req: Request, res: Response) => {
             });
         }
 
+
         if (end < start) {
             return res.status(400).json({
-                message: "End date cannot be before the start date.",
+                message:
+                    "End date cannot be before the start date.",
             });
         }
 
 
+        const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
-        const [sh, sm] = startTime.split(":").map(Number);
-        const [eh, em] = endTime.split(":").map(Number);
+        if (
+            !timeRegex.test(startTime) ||!timeRegex.test(endTime)
+        ) {
+            return res.status(400).json({ message: "Invalid time format. Use HH:mm.",});
+        }
 
-        const startMinutes = sh * 60 + sm;
-        const endMinutes = eh * 60 + em;
+
+        const [sh, sm] = startTime
+            .split(":")
+            .map(Number);
+
+        const [eh, em] = endTime
+            .split(":")
+            .map(Number);
+
+
+        const startMinutes =
+            sh * 60 + sm;
+
+        const endMinutes =
+            eh * 60 + em;
+
 
         if (endMinutes <= startMinutes) {
             return res.status(400).json({
-                message: "End time must be later than the start time.",
-            });
+                message:"End time must be later than the start time." });
         }
-
 
         const now = new Date();
 
-        if (start.toDateString() === now.toDateString()) {
+        if (
+            start.toDateString() === now.toDateString()
+        ) {
             const currentMinutes =
                 now.getHours() * 60 + now.getMinutes();
 
+
             if (startMinutes <= currentMinutes) {
                 return res.status(400).json({
-                    message: "Start time cannot be in the past.",
-                });
+                    message: "Start time cannot be in the past."});
             }
         }
 
+        const maxPatientsNumber = Number(maxPatients);
+        const maxPatientsPerHourNumber = Number(maxPatientsPerHour);
+        const feeNumber = Number(fee);
 
         if (
-            Number(maxPatients) <= 0
+            !Number.isFinite(maxPatientsNumber) || maxPatientsNumber <= 0
         ) {
-            return res.status(400).json({
-                message: "Maximum patients must be greater than zero.",
-            });
+            return res.status(400).json({ message:"Maximum patients must be greater than zero.",});
         }
+
 
         if (
-            Number(maxPatientsPerHour) <= 0
+            !Number.isFinite(maxPatientsPerHourNumber) || maxPatientsPerHourNumber <= 0
         ) {
-            return res.status(400).json({
-                message:
-                    "Maximum patients per hour must be greater than zero.",
-            });
+            return res.status(400).json({message: "Maximum patients per hour must be greater than zero."});
         }
+
 
         if (
-            Number(maxPatientsPerHour) >
-            Number(maxPatients)
+            maxPatientsPerHourNumber > maxPatientsNumber
         ) {
             return res.status(400).json({
-                message:
-                    "Maximum patients per hour cannot exceed maximum patients.",
-            });
+                message: "Maximum patients per hour cannot exceed maximum patients."});
         }
 
-        if (Number(fee) < 0) {
+
+        if (
+            !Number.isFinite(feeNumber) || feeNumber < 0
+        ) {
+            return res.status(400).json({ message:"Fee must be a valid non-negative number."});
+        }
+
+
+        const validDays = daysOfWeek.every(
+            (day: any) =>
+                Number.isInteger(Number(day)) &&
+                Number(day) >= 0 &&
+                Number(day) <= 6
+        );
+
+
+        if (!validDays) {
             return res.status(400).json({
-                message: "Fee cannot be negative.",
+                message: "Invalid selected day.",
             });
         }
 
-
-        const template = await SessionTemplate.create({
-            doctorId,
-            clinicId: clinic._id,
-            startDate,
-            endDate,
-            startTime,
-            endTime,
-            daysOfWeek,
-            maxPatients,
-            maxPatientsPerHour,
-            fee,
-        });
+        const selectedDays = daysOfWeek.map(
+            (day: any) => Number(day)
+        );
 
 
-        const sessions: any[] = [];
+        const sessionDates: {
+            date: Date;
+            startDateTime: Date;
+            endDateTime: Date;
+        }[] = [];
 
-        let current = new Date(startDate);
-        const templateEnd = new Date(endDate);
+        let current = new Date(start);
+        const templateEnd = new Date(end);
 
         while (current <= templateEnd) {
 
             const day = current.getDay();
 
-            if (daysOfWeek.includes(day)) {
+            if (selectedDays.includes(day)) {
 
-                const startDT = new Date(current);
-                startDT.setHours(sh, sm, 0, 0);
-
-                const endDT = new Date(current);
-                endDT.setHours(eh, em, 0, 0);
+                const startDT =new Date(current);
+                startDT.setHours(sh,sm, 0, 0);
+                const endDT =new Date(current);
+                endDT.setHours(eh,em, 0,0);
 
                 if (
                     isNaN(startDT.getTime()) || isNaN(endDT.getTime())
                 ) {
-                    return res.status(400).json({
-                        message: "Invalid date or time values.",
-                    });
+                    return res.status(400).json({message:"Invalid date or time values.",});
                 }
 
-                sessions.push({
-                    doctorId,
-                    clinicId: clinic._id,
-                    templateId: template._id,
 
+                if (startDT <= now) {
+
+
+                    if (
+                        startDT.toDateString() ===
+                        now.toDateString()
+                    ) {
+                        return res.status(400).json({
+                            message:"One or more selected sessions would start in the past."});
+                    }
+                }
+
+
+                sessionDates.push({
                     date: new Date(current),
-
                     startDateTime: startDT,
                     endDateTime: endDT,
-
-                    maxPatients,
-                    maxPatientsPerHour,
-                    bookedPatients: 0,
-
-                    fee,
-
-                    status: "active",
                 });
             }
 
+
             current = new Date(current);
-            current.setDate(current.getDate() + 1);
+
+            current.setDate(
+                current.getDate() + 1
+            );
         }
 
-        if (sessions.length > 0) {
-            await Session.insertMany(sessions);
+        if (sessionDates.length === 0) {
+            return res.status(400).json({
+                message:"No sessions can be generated for the selected date range and days."});
+        }
+
+        for (const proposedSession of sessionDates) {
+
+            const overlappingSession =
+                await Session.findOne({
+                    doctorId,
+                    status: "active",
+                    startDateTime: {
+                        $lt: proposedSession.endDateTime,
+                    },
+                    endDateTime: {
+                        $gt: proposedSession.startDateTime,
+                    },
+                });
+
+            if (overlappingSession) {
+
+                const conflictDate = proposedSession.startDateTime.toLocaleDateString("en-LK");
+                const conflictStart =proposedSession.startDateTime.toLocaleTimeString("en-LK",{ hour: "2-digit", minute: "2-digit",} );
+                const conflictEnd = proposedSession.endDateTime.toLocaleTimeString("en-LK",{hour: "2-digit", minute: "2-digit",});
+
+                return res.status(409).json({ message:`Session conflict detected on ${conflictDate} between ${conflictStart} and ${conflictEnd}.`,});
+            }
+        }
+
+        const template =
+            await SessionTemplate.create({
+                doctorId,
+                clinicId:  clinic._id,
+                startDate: start,
+                endDate: end,
+                startTime,
+                endTime,
+                daysOfWeek: selectedDays,
+                maxPatients: maxPatientsNumber,
+                maxPatientsPerHour:  maxPatientsPerHourNumber,
+                fee: feeNumber,
+            });
+
+
+        const sessions =
+            sessionDates.map(
+                (session) => ({
+                    doctorId,
+                    clinicId: clinic._id,
+                    templateId: template._id,
+                    date:  session.date,
+                    startDateTime: session.startDateTime,
+                    endDateTime: session.endDateTime,
+                    maxPatients:  maxPatientsNumber,
+                    maxPatientsPerHour: maxPatientsPerHourNumber,
+                    bookedPatients: 0,
+                    fee: feeNumber,
+                    status: "active"
+                })
+            );
+
+        try {
+            await Session.insertMany(
+                sessions
+            );
+
+        } catch (sessionError) {
+            await SessionTemplate.findByIdAndDelete(
+                template._id
+            );
+
+            throw sessionError;
         }
 
         return res.status(201).json({
-            message: "Session template created & sessions generated.",
+            message:"Session template created and sessions generated successfully.",
             template,
-            totalSessions: sessions.length,
-        });
+            totalSessions: sessions.length,});
 
     } catch (err: any) {
-
-        return res.status(500).json({
-            message: "Oops! Something went wrong.",
-            error: err.message,
-        });
-
+        return res.status(500).json({ message: "Oops! Something went wrong.", merror: err.message });
     }
 };
 

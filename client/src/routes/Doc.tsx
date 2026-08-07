@@ -42,7 +42,7 @@ const DocClinic = () => {
                 className=" w-28 h-28 rounded-3xl object-cover border border-gray-100" />
 
               <div className="flex-1 text-center sm:text-left">
-                <h1 className="text-2xl sm:text-3xl font-bold text-[#2596be]">
+                <h1 className="text-2xl sm:text-3xl font-bold">
                   Dr. {details.doctor.firstName} {details.doctor.lastName}
                 </h1>
 

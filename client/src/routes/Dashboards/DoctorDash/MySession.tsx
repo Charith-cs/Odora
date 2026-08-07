@@ -22,14 +22,23 @@ const MySession = () => {
     const [formData, setFormData] = useState<any>(initialFormData);
 
     const days = [
-        { label: "Sunday", value: 1 },
-        { label: "Monday", value: 2 },
-        { label: "Tuesday", value: 3 },
-        { label: "Wednesday", value: 4 },
-        { label: "Thursday", value: 5 },
-        { label: "Friday", value: 6 },
-        { label: "Saturday", value: 7 },
+        { label: "Sunday", value: 0 },
+        { label: "Monday", value: 1 },
+        { label: "Tuesday", value: 2 },
+        { label: "Wednesday", value: 3 },
+        { label: "Thursday", value: 4 },
+        { label: "Friday", value: 5 },
+        { label: "Saturday", value: 6 },
     ];
+
+    const getAvailable = async () => {
+        try {
+            const res = await API.get(`/session/template/${currentUser._id}`);
+            setAvailable(res.data);
+        } catch (err) {
+            console.log(err);
+        }
+    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({
@@ -56,7 +65,8 @@ const MySession = () => {
             const res = await API.post("/session", data);
             toast.success(res.data.message);
             setFormData(initialFormData);
-        } catch (err:any) {
+            await getAvailable();
+        } catch (err: any) {
             toast.error(err?.response?.data?.message || "Oops! Something went wrong");
         }
     };
@@ -83,31 +93,23 @@ const MySession = () => {
     }
 
     const handleUpdate = async () => {
-        try{
+        try {
             const data = {
-                doctorId : editingTemplate.doctorId,
-                clinicId : editingTemplate.clinicId,
+                doctorId: editingTemplate.doctorId,
+                clinicId: editingTemplate.clinicId,
                 ...formData
             }
-            const res = await API.put(`/session/update/${editingTemplate._id}` , data);
+            await API.put(`/session/update/${editingTemplate._id}`, data);
             toast.success("Template is updated successfully!")
-            //console.log(data)
-        }catch(err){
+            await getAvailable();
+        } catch (err) {
             toast.error("Oops! Something went wrong");
         }
     }
 
-        useEffect(() => {
-        const getAvailable = async () => {
-            try {
-                const res = await API.get(`/session/template/${currentUser._id}`);
-                setAvailable(res.data);
-            } catch (err) {
-                console.log(err);
-            }
-        }
+    useEffect(() => {
         getAvailable();
-    }, [handleSubmit , handleUpdate]);
+    }, [currentUser._id]);
 
     return (
         <div className="space-y-8">
@@ -246,7 +248,7 @@ const MySession = () => {
                         <button type="button" onClick={editingTemplate ? handleUpdate : handleSubmit} className="w-full rounded-2xl bg-[#2596be] py-3 font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#2088af] hover:shadow-lg">
                             {editingTemplate ? "Update Template" : "Create Template"}
                         </button>
-                        <button type="button" onClick={() => {setEditingTemplate(null) ; setFormData(initialFormData);}} className="w-full rounded-2xl bg-white py-3 border border-red-500 font-semibold text-red-500 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-red-500 hover:shadow-lg hover:text-white">
+                        <button type="button" onClick={() => { setEditingTemplate(null); setFormData(initialFormData); }} className="w-full rounded-2xl bg-white py-3 border border-red-500 font-semibold text-red-500 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-red-500 hover:shadow-lg hover:text-white">
                             Reset
                         </button>
                     </div>
@@ -304,7 +306,7 @@ const MySession = () => {
                                             );
                                         })}
                                     </div>
-                                    <button onClick={()=>handleEdit(item)} className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-xl bg-[#2596be] text-white shadow-lg transition hover:bg-[#2088af]">✎</button>
+                                    <button onClick={() => handleEdit(item)} className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-xl bg-[#2596be] text-white shadow-lg transition hover:bg-[#2088af]">✎</button>
                                 </div>
 
                             )) :
