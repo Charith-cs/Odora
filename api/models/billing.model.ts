@@ -40,7 +40,30 @@ const billingSchema = new Schema<billingModelType>({
     amount: {
         type: Number,
         required: true
-    }
+    },
+    refundRequests: {
+        type: [
+            {
+                requestedAt: {
+                    type: Date,
+                    default: Date.now
+                },
+                amount:{
+                    type:Number,
+                    required :true
+                },
+                status: {
+                    type: String,
+                    enum: ["pending", "refunded","rejected"],
+                    default: "pending"
+                },
+                reason : {
+                    type:String
+                }
+            }
+        ],
+        default: []
+    },
 }, { timestamps: true });
 
 export default mongoose.model<billingModelType>("Billing", billingSchema);

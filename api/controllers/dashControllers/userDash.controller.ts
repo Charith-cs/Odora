@@ -9,23 +9,24 @@ import Staff from "../../models/staff.model";
 import Billing from "../../models/billing.model";
 import Treatment from "../../models/Treatment.model";
 import Clinic from "../../models/clinic.model";
+import { isContext } from "vm";
 
 
-export const getClinic = async (req:Request , res:Response) => {
-    try{
+export const getClinic = async (req: Request, res: Response) => {
+    try {
         const id = req.params.id;
-        if(!id || Array.isArray(id)){
-            return res.status(400).json({message : "Check Id status"});
+        if (!id || Array.isArray(id)) {
+            return res.status(400).json({ message: "Check Id status" });
         }
         const isClinic = await Clinic.findOne({
-                managementId : id
+            managementId: id
         });
-        if(!isClinic){
-            return res.status(403).json({message:"Not found"});
+        if (!isClinic) {
+            return res.status(403).json({ message: "Not found" });
         }
         return res.status(200).json(isClinic._id);
-    }catch(err){
-        return res.status(500).json({message:"Oops! Something went wrong"});
+    } catch (err) {
+        return res.status(500).json({ message: "Oops! Something went wrong" });
     }
 }
 
@@ -46,13 +47,13 @@ export const dashCard = async (req: Request, res: Response) => {
                 });
                 const completed = await Appointment.countDocuments({
                     userId: user._id,
-                    status: "completed"
+                    status: "paid"
                 });
                 const result = await Appointment.aggregate([
                     {
                         $match: {
                             userId: user._id,
-                            status: "completed"
+                            status: "paid"
                         }
                     },
                     {
@@ -339,7 +340,7 @@ export const imgUpload = async (req: Request, res: Response) => {
         ];
 
         if (!allowedTypes.includes(file.mimetype)) {
-            return res.status(400).json({message: "Only JPG, JPEG and PNG images are allowed!"});
+            return res.status(400).json({ message: "Only JPG, JPEG and PNG images are allowed!" });
         }
         const imageUrl = `http://localhost:5000/upload/${file.filename}`;
 
@@ -350,7 +351,7 @@ export const imgUpload = async (req: Request, res: Response) => {
         res.status(200).json({ message: "Upload successful", imageUrl });
 
     } catch (err) {
-        return res.status(500).json({ message: "Oops! Something went wrong"});
+        return res.status(500).json({ message: "Oops! Something went wrong" });
     }
 }
 
@@ -768,10 +769,35 @@ export const reportDashCard = async (req: Request, res: Response) => {
             status: "paid"
         });
         const totalDoctors = clinic.doctorList?.length;
-        const totalAppointments = await Appointment.countDocuments({
-            clinicId: clinic._id,
-            status: "completed"
-        });
+        //refund
+        const refund = await Billing.aggregate([
+            {
+                $match: {
+                    clinicId: clinic._id,
+                    refundRequests: {
+                        $elemMatch: {
+                            status: "refunded"
+                        }
+                    }
+                }
+            },
+            {
+                $unwind: "$refundRequests"
+            },
+            {
+                $match: { "refundRequests.status": "refunded" }
+            },
+            {
+                $group: {
+                    _id: null,
+                    refundAmount: {
+                        $sum: {$toDouble : "$refundRequests.amount"}
+                    }
+                }
+            }
+        ]);
+        const refundAmount = refund[0]?.refundAmount || 0;
+
         const totalRevenue = await Billing.aggregate([
             {
                 $match: {
@@ -793,7 +819,7 @@ export const reportDashCard = async (req: Request, res: Response) => {
             }
         ]);
         const formattedRevenue = totalRevenue[0].revenue
-        return res.status(200).json({ totalPatients, totalDoctors, totalAppointments, formattedRevenue });
+        return res.status(200).json({ totalPatients, totalDoctors, refundAmount, formattedRevenue });
     } catch (err) {
         return res.status(500).json({ message: "Oops! Something went wrong" });
     }
@@ -1385,6 +1411,150 @@ export const userPieChart = async (req: Request, res: Response) => {
     }
 };
 
+export const getRefund = async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id;
+        if (!id || Array.isArray(id)) {
+            return res.status(403).json({ message: "Oops! Something went wrong" });
+        }
+        const isClinic = await Clinic.findOne({
+            managementId: id
+        });
+        if (!isClinic) {
+            return res.status(403).json({ message: "Please check your clinic status" });
+        }
+        const refunds = await Billing.find({
+            clinicId: isClinic._id,
+            refundRequests: {
+                $elemMatch: {
+                    status: "pending"
+                }
+            }
+        })
+            .populate("userId", "firstName lastName mobileNumber")
+            .populate("doctorId", "firstName lastName");
+        return res.status(200).json(refunds);
+
+    } catch (err: any) {
+        return res.status(500).json({ message: "Oops! Something went wrong" });
+    }
+};
+
+export const requestRefund = async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id;
+        const { amount, reason } = req.body;
+
+        if (!id || Array.isArray(id)) {
+            return res.status(400).json({ message: "Invalid billing ID" });
+        }
+        const billing = await Billing.findById(id);
+
+        if (!billing) {
+            return res.status(404).json({ message: "Billing record not found" });
+        }
+
+        if (billing.refundRequests.length > 0) {
+            return res.status(409).json({ message: "Already requested" });
+        }
+
+        if (amount <= 0) {
+            return res.status(400).json({ message: "Refund amount must be greater than zero" });
+        }
+
+        if (amount > billing.amount) {
+            return res.status(400).json({ message: "Refund amount cannot exceed bill amount" });
+        }
+
+        billing.refundRequests.push({
+            amount,
+            reason,
+            status: "pending",
+            requestedAt: new Date()
+        });
+
+        await billing.save();
+        return res.status(200).json({ message: "Refund request sent successfully", billing });
+
+    } catch (err: any) {
+        return res.status(500).json({ message: "Oops! Something went wrong" });
+    }
+};
+
+export const approveRefundRequest = async (req: Request, res: Response) => {
+    try {
+
+        const id = req.params.id;
+
+        if (!id || Array.isArray(id)) {
+            return res.status(400).json({ message: "Invalid billing ID" });
+        }
+
+        const billing = await Billing.findById(id);
+
+        if (!billing) {
+            return res.status(404).json({ message: "Billing record not found" });
+        }
+
+        if (!billing.refundRequests || billing.refundRequests.length === 0) {
+            return res.status(400).json({ message: "No refund request found" });
+        }
+
+        const refundRequest = billing.refundRequests[billing.refundRequests.length - 1];
+
+        if (!refundRequest) {
+            return res.status(400).json({ message: "Invalid refund request" });
+        }
+
+        const refundAmount = Number(refundRequest.amount);
+
+        if (refundAmount <= 0) {
+            return res.status(400).json({ message: "Invalid refund amount" });
+        }
+
+        if (refundAmount > billing.amount) {
+            return res.status(400).json({ message: "Refund amount cannot exceed bill amount" });
+        }
+
+        billing.amount -= refundAmount;
+        refundRequest.status = "refunded";
+
+        await billing.save();
+
+        return res.status(200).json({ message: "Refund approved successfully" });
+
+    } catch (err: any) {
+        return res.status(500).json({ message: "Oops! Something went wrong" });
+    }
+};
+
+export const rejectRefundRequest = async (req: Request, res: Response) => {
+    try {
+
+        const id = req.params.id;
+
+        if (!id || Array.isArray(id)) {
+            return res.status(400).json({ message: "Invalid billing ID" });
+        }
+
+        const billing = await Billing.findById(id);
+
+        if (!billing) {
+            return res.status(404).json({ message: "Billing record not found" });
+        }
+
+        if (billing.refundRequests.length > 0) {
+            billing.refundRequests[billing.refundRequests.length - 1]!.status = "rejected";
+        }
+
+        await billing.save();
+        return res.status(200).json({ message: "Refund request rejected" });
+
+    } catch (err: any) {
+        return res.status(500).json({ message: "Oops! Something went wrong", error: err });
+    }
+};
+
 
 //report controllers
 
@@ -1808,11 +1978,12 @@ export const patientReport = async (req: any, res: any) => {
                 $lookup: {
                     from: "appointments",
                     let: {
-                        patientId: "$userId"
+                        patientId: "$userId",
                     },
                     pipeline: [
                         {
                             $match: {
+                                status: "paid",
                                 $expr: {
                                     $and: [
                                         {
@@ -1943,12 +2114,7 @@ export const patientReport = async (req: any, res: any) => {
         return res.status(200).json(patientReportDetails);
 
     } catch (err) {
-
-        console.error(err);
-
-        return res.status(500).json({
-            message: "Oops! Something went wrong"
-        });
+        return res.status(500).json({ message: "Oops! Something went wrong" });
 
     }
 };
@@ -2156,13 +2322,13 @@ export const revenueReport = async (req: any, res: any) => {
                     from: "users",
                     localField: "staffId",
                     foreignField: "_id",
-                    as: "staff"
+                    as: "staffs"
                 }
             },
 
             {
                 $unwind: {
-                    path: "$staff",
+                    path: "$staffs",
                     preserveNullAndEmptyArrays: true
                 }
             },
@@ -2244,9 +2410,9 @@ export const revenueReport = async (req: any, res: any) => {
                         $trim: {
                             input: {
                                 $concat: [
-                                    { $ifNull: ["$staff.firstName", ""] },
+                                    { $ifNull: ["$staffs.firstName", ""] },
                                     " ",
-                                    { $ifNull: ["$staff.lastName", ""] }
+                                    { $ifNull: ["$staffs.lastName", ""] }
                                 ]
                             }
                         }

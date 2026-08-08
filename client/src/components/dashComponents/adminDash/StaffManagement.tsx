@@ -169,6 +169,7 @@ const StaffManagement = ({
                         >
                             Delete
                         </button>
+                        <Link to={"/refund"} className="px-3 py-1 rounded-lg border text-gray-600 hover:text-orange-500 hover:border-orange-500 transition">Refund</Link>
                     </div>
                 )}
             />

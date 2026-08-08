@@ -70,7 +70,7 @@ const userSchema = z.object({
     address: z
         .string()
         .trim()
-        .min(1, "Address is required")
+        .min(5, "Address is required")
         .max(255, "Maximum 255 characters"),
 
     password: z

@@ -48,6 +48,7 @@ import JoinReq from './routes/Dashboards/DoctorDash/JoinReq.tsx';
 import DoctorJoinReq from './routes/Dashboards/adminDash/DoctorJoinReq.tsx';
 import ClinicSetting from './routes/Dashboards/adminDash/ClinicSetting.tsx';
 import PassReset from './routes/PassReset.tsx';
+import Refund from './routes/Dashboards/adminDash/Refund.tsx';
 
 
 const router = createBrowserRouter([
@@ -283,6 +284,13 @@ const router = createBrowserRouter([
         element:
           <ProtectedRoute allowedRoles={["admin"]}>
             <StaffSetting />
+          </ProtectedRoute>
+      },
+            {
+        path: "/refund",
+        element:
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <Refund />
           </ProtectedRoute>
       },
       {

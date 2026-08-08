@@ -1,4 +1,4 @@
-import type { adminCardType, AdminchartData, AdminDoctor, AdminDoctorCard, AdminStaff, AdminstaffCard, AdminTableColumn, AdminUser, AdminUserCard, AppointmentDetailsType, AppointmentType, CardType, compoedChartType, docAdminJoin, docJoin, docPast, doctorAppointmentType, DoctorListType, DoctorPerChartData, DoctorRevChartData, editViewDoctor, editViewStaff, editViewUser, MyData, PatientType, revenueChartType, RevenueModelDoctor, SessionType, staffAppointmentType, StaffCardType, StaffPerChartData, StaffRevChartData } from "./types/types";
+import type { adminCardType, AdminchartData, AdminDoctor, AdminDoctorCard, AdminStaff, AdminstaffCard, AdminTableColumn, AdminUser, AdminUserCard, AppointmentDetailsType, AppointmentType, CardType, compoedChartType, docAdminJoin, docJoin, docPast, doctorAppointmentType, DoctorListType, DoctorPerChartData, DoctorRevChartData, editViewDoctor, editViewStaff, editViewUser, MyData, PatientType, Refund, revenueChartType, RevenueModelDoctor, SessionType, staffAppointmentType, StaffCardType, StaffPerChartData, StaffRevChartData } from "./types/types";
 
 
 /* user data */
@@ -346,6 +346,15 @@ export const DoctorColumns: AdminTableColumn<AdminDoctor>[] = [
   { key: "address", label: "Address" },
 ];
 /* end of test data for prototype table component */
+
+export const RefundColumns: AdminTableColumn<Refund>[] = [
+  { key: "name", label: "Patient " },
+  { key: "doctor", label: "Doctor " },
+  { key: "contact", label: "Mobile Number " },
+  { key: "reason", label: "Reason" },
+  { key: "amount", label: "Amount" },
+
+];
 
 /* start of test data for prototype user edit view component */
 export const DoctorEditViewColumns: AdminTableColumn<editViewDoctor>[] = [

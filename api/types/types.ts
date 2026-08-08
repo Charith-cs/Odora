@@ -70,6 +70,12 @@ export type billingModelType = {
     staffId: Types.ObjectId;
     status: "pending" | "paid";
     amount: number;
+    refundRequests: {
+        requestedAt : Date,
+        amount :Number,
+        status : "pending" | "refunded" | "rejected",
+        reason : string
+    }[];
 }
 
 /* billing model types */

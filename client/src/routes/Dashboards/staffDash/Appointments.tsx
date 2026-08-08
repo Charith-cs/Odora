@@ -4,6 +4,7 @@ import { statusStyles } from "../../../../types/constants";
 import { toast } from "react-hot-toast";
 import API from "../../../../api/axios";
 import { exportBillingInvoice } from "../../../../utils/reports/BillingReport";
+import { _ZodString } from "zod";
 
 const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
 
@@ -11,6 +12,10 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
     const [selectedDate, setSelectedDate] = useState<string>("");
     const recordsPerPage = 10;
     const [currentPage, setCurrentPage] = useState(1);
+    const [showRefundModal, setShowRefundModal] = useState(false);
+    const [showSelectedBillingId, setShowSelectedBillingId] = useState<string | null>(null);
+    const [refundReason, setRefundReason] = useState("");
+    const [refundAmount, setRefundAmount] = useState("");
 
     useEffect(() => {
         setCurrentPage(1);
@@ -88,6 +93,22 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
         }
     }
 
+    const handleRefund = async (billingId: any, reason: any, amount: any) => {
+        try {
+            if (!reason || !amount) {
+                toast.error("Please enter refund reason and amount");
+                return;
+            }
+            await API.post(`/dash/refund_request/${billingId}`, {
+                reason,
+                amount
+            });
+            toast.success("Refund requested");
+        } catch (err: any) {
+            toast.error(err?.response?.data.message || "Oops! Something went wrong");
+        }
+    }
+
 
     const indexOfLastRecord = currentPage * recordsPerPage;
     const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
@@ -105,6 +126,79 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
         console.log("currentRecords:", currentRecords); */
     return (
         <div className="mt-6 w-full">
+
+            {showRefundModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="w-[420px] rounded-2xl bg-white p-6 shadow-2xl">
+                        <div className="flex justify-center">
+                            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-100">
+                                <span className="text-3xl">↻</span>
+                            </div>
+                        </div>
+                        <h2 className="mt-5 text-center text-xl font-bold text-gray-800"> Refund request</h2>
+                        <p className="mt-3 text-center text-gray-500"> Provide refund details for this bill.</p>
+
+
+                        <div className="mt-6 space-y-4">
+                            <div>
+                                <label className="mb-1 block text-sm font-semibold text-gray-700"> Reason</label>
+                                <textarea
+                                    placeholder="Enter refund reason"
+                                    value={refundReason}
+                                    onChange={(e) => setRefundReason(e.target.value)}
+                                    rows={3}
+                                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-700 outline-none transition focus:border-[#3A86FF] focus:ring-2 focus:ring-[#3A86FF]/20"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-sm font-semibold text-gray-700"> Refund Amount</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-3 text-gray-400"> Rs.</span>
+
+                                    <input
+                                        type="number"
+                                        value={refundAmount}
+                                        onChange={(e) => setRefundAmount(e.target.value)}
+                                        placeholder="Enter amount"
+                                        className="w-full rounded-xl border border-gray-200 py-3 pl-12 pr-4 text-sm text-gray-700 outline-none transition focus:border-[#3A86FF] focus:ring-2 focus:ring-[#3A86FF]/20"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <p className="mt-4 text-center text-sm text-red-500">This action cannot be undone.</p>
+                        <div className="mt-6 flex gap-3">
+                            <button
+                                onClick={() => {
+                                    setShowRefundModal(false);
+
+                                    handleRefund(
+                                        showSelectedBillingId,
+                                        refundReason,
+                                        Number(refundAmount)
+                                    );
+
+                                    setRefundReason("");
+                                    setRefundAmount("");
+                                }}
+                                className="flex-1 rounded-xl border border-gray-300 py-3 font-semibold text-gray-600 transition hover:bg-gray-100"
+                            >
+                                Request
+                            </button>
+
+
+                            <button
+                                onClick={() => setShowRefundModal(false)}
+                                className="flex-1 rounded-xl bg-red-500 py-3 font-semibold text-white transition hover:bg-red-600"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
@@ -254,12 +348,24 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
 
 
                                             {item.status === "paid" && (
-                                                <button
-                                                    onClick={() => handleDownload(item.billingId)}
-                                                    className="px-3 py-1 rounded-lg border text-gray-600 hover:text-[#2596be] hover:border-[#2596be]"
-                                                >
-                                                    Download
-                                                </button>
+                                                <>
+                                                    <button
+                                                        onClick={() => handleDownload(item.billingId)}
+                                                        className="px-3 py-1 rounded-lg border text-gray-600 hover:text-[#2596be] hover:border-[#2596be]"
+                                                    >
+                                                        Download
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowSelectedBillingId(item.billingId);
+                                                            setShowRefundModal(true);
+                                                        }
+                                                        }
+                                                        className="px-3 py-1 rounded-lg border text-gray-600 hover:text-orange-500 hover:border-orange-500"
+                                                    >
+                                                        Refund
+                                                    </button>
+                                                </>
                                             )}
 
                                         </div>
@@ -371,12 +477,25 @@ const Appointments = ({ data, refreshAppointments }: AppointmentProps) => {
                                 )}
 
                                 {item.status === "paid" && (
-                                    <button
-                                        onClick={() => handleDownload(item.billingId)}
-                                        className="flex-1 px-3 py-2 rounded-lg border text-gray-600 hover:text-[#2596be] hover:border-[#2596be] transition"
-                                    >
-                                        Download
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={() => handleDownload(item.billingId)}
+                                            className="flex-1 px-3 py-2 rounded-lg border text-gray-600 hover:text-[#2596be] hover:border-[#2596be] transition"
+                                        >
+                                            Download
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setShowSelectedBillingId(item.billingId);
+                                                setShowRefundModal(true);
+                                            }
+                                            }
+                                            className="flex-1 px-3 py-2 rounded-lg border text-gray-600 hover:text-orange-500 hover:border-orange-500 transition"
+                                        >
+                                            Refund
+                                        </button>
+                                    </>
                                 )}
 
                             </div>

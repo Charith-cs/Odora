@@ -171,6 +171,15 @@ export type AdminDoctor = {
   address: string;
 };
 
+export type Refund = {
+  _id?: string;
+  name: string;
+  doctor:string;
+  contact : string;
+  amount: string;
+  reason: string;
+};
+
 export type AdminStaff = {
   account: string;
   clinic: string;

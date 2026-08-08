@@ -14,14 +14,14 @@ const loginSchema = z.object({
     email: z
         .string()
         .trim()
-        .toLowerCase()
-        .min(1, "Email is required")
+        /* .toLowerCase() */
+        .min(8, "Email is required")
         .email("Invalid email format"),
 
-    password: z
-        .string()
-        .min(6, "Password is required")
-        .max(16)
+    password: z.string().min(8, "Minimum 8 characteres required").max(16, "Maximum 16 characters allowed").regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
+        "Please check your password."
+    ).trim(),
 
 });
 

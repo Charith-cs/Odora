@@ -1,5 +1,5 @@
 import express from "express";
-import { dashCard , imgUpload , imgRemove,getChartDataForAdmin ,getChartDataForDocDash , getChartDataForDocStaff , reportDashCard, getAppointmentAnalytics, getRevenueTrend, docPerformanceReport, userPieChart , patientReport, revenueReport, appointmentReport, patientDemographicReport, getClinic} from "../controllers/dashControllers/userDash.controller";
+import { dashCard , imgUpload , imgRemove,getChartDataForAdmin ,getChartDataForDocDash , getChartDataForDocStaff , reportDashCard, getAppointmentAnalytics, getRevenueTrend, docPerformanceReport, userPieChart , patientReport, revenueReport, appointmentReport, patientDemographicReport, getClinic, requestRefund, approveRefundRequest, rejectRefundRequest, getRefund} from "../controllers/dashControllers/userDash.controller";
 import { verifyToken } from "../middleware/auth.middleware";
 import { upload } from "../utility/multer";
 
@@ -16,6 +16,11 @@ router.get("/appointments" , verifyToken , getAppointmentAnalytics);
 router.get("/revenue" , verifyToken , getRevenueTrend);
 router.get("/users/:id" , verifyToken , userPieChart);
 router.get("/clinic/:id" , verifyToken , getClinic);
+
+router.get("/refund/:id" , verifyToken , getRefund);
+router.post("/refund_request/:id" , verifyToken , requestRefund);
+router.post("/refund_approve/:id" , verifyToken , approveRefundRequest);
+router.post("/reject_refund/:id" , verifyToken , rejectRefundRequest);
 
 //report routes
 

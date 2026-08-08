@@ -115,7 +115,7 @@ export const exportAppointmentReport = async (
         ]],
 
         body: data.map((item) => [
-            item.id,
+            item.appointmentId,
             item.userName,
             item.doctorName,
             item.sessionDateTime,

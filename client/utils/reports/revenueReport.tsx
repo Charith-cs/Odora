@@ -124,7 +124,7 @@ export const exportRevenueReport = async (
             item.doctor,
             item.amount,
             item.method,
-            item.BilledBy,
+            item.billedBy,
             item.status,
             item.date
         ]),

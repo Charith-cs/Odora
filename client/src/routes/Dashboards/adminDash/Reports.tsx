@@ -73,6 +73,9 @@ const Reports = () => {
           endDate
         );
         toast.success("Doctor report downloaded", { id: "report" });
+        await setSelectedReport("");
+        await setStartDate("");
+        await setEndDate("");
 
       } else if (selectedReport === "patient") {
 
@@ -98,8 +101,7 @@ const Reports = () => {
       } else if (selectedReport === "revenue") {
 
         toast.loading("Generating report...", { id: "report" });
-        const res = await API.get(
-          `/dash/revenue_report/${currentUser._id}`,
+        const res = await API.get(`/dash/revenue_report/${currentUser._id}`,
           {
             params: {
               filterReport,
@@ -133,7 +135,8 @@ const Reports = () => {
           filterReport,
           startDate,
           endDate
-        );
+        ); 
+        console.log(res.data)
         toast.success("Appointment report downloaded", { id: "report" });
       } else if (selectedReport === "demographic") {
 
@@ -217,7 +220,7 @@ const Reports = () => {
   const reportCardDetails = [
     { img: "./userDash/patient (2).png", desc: "Total Patients", subDesc: `${reports?.totalPatients ?? 0} +`, color: "bg-blue-600" },
     { img: "./userDash/doctor (2).png", desc: "Total Doctors", subDesc: `${reports?.totalDoctors ?? 0} +`, color: "bg-green-600" },
-    { img: "./userDash/appointment (1).png", desc: "Total Appointments", subDesc: `${reports?.totalAppointments ?? 0} +`, color: "bg-orange-600" },
+    { img: "./userDash/appointment (1).png", desc: "Total Refunded", subDesc: `LKR : ${reports?.refundAmount ?? 0}.00 `, color: "bg-orange-600" },
     { img: "./userDash/coin.png", desc: "Total Revenue", subDesc: `LKR : ${reports?.formattedRevenue ?? 0}.00`, color: "bg-sky-600" }
   ];
 

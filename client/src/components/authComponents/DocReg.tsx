@@ -1,36 +1,49 @@
 import { useNavigate } from 'react-router-dom';
 import { registerUser } from '../../../services/authService';
 import toast from 'react-hot-toast';
-
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 
-// ✅ Zod schema
 const doctorSchema = z.object({
-    firstName: z.string().min(1, "First name is required").regex(/^[A-Za-z\s]+$/, "Only letters allowed"),
-    lastName: z.string().min(1, "Last name is required").regex(/^[A-Za-z\s]+$/, "Only letters allowed"),
-    email: z.string().min(1, "Email is required").email("Invalid email format"),
-    gender: z.string().min(1, "Gender is required"),
-    mobileNumber: z.string().min(1, "Mobile number is required").regex(/^07[0-9]{8}$/, "Invalid Sri Lankan number"),
-    university: z.string().min(1, "University name is required").regex(/^[A-Za-z\s]+$/, "Valid name allowed"),
-    slmcReg: z.string().min(1, "SLMC number is required").regex(/^[0-9\s]+$/, "Valid SLMC allowed"),
-    degree: z.string().min(1, "Degree is required").regex(/^[A-Za-z\s]+$/, "Valid degree allowed"),
+    firstName: z.string().min(1, "First name is required").regex(/^[A-Za-z.'-s]+$/, "Only letters allowed").trim(),
+    lastName: z.string().min(1, "Last name is required").regex(/^[A-Za-z.'\s]+$/, "Only letters allowed").trim(),
+    email: z.string().min(8, "Email is required").email("Invalid email format").trim(),
+    gender: z.enum(["male", "female"], {
+        errorMap: () => ({
+            message: "Gender is required",
+        }),
+    }),
+    mobileNumber: z.string().min(1, "Mobile number is required").regex(/^07[0-9]{8}$/, "Invalid Sri Lankan number").trim(),
+    university: z.string().min(1, "University name is required").regex(/^[A-Za-z0-9().,'\- ]+$/, "Valid name allowed").trim(),
+    slmcReg: z.coerce.number().min(4, "SLMC number is required").max(5),
+    degree: z.string().min(1, "Degree is required").regex(/^[A-Za-z0-9().,'\- ]+$/, "Valid degree allowed").trim(),
     specialization: z
         .string()
-        .min(1, "Specialization is required")
+        .min(10, "Specialization is required").max(200)
         .transform((val) =>
             val.split(",").map((v) => v.trim()).filter(Boolean)
+        ).refine(
+            arr => arr.length > 0,
+            "At least one specialization required"
         ),
-    experience: z.string().min(1, "Experience is required").regex(/^[0-9\s]+$/, "Numbers are allowed"),
-    consultationFee: z.string().min(1, "Consultation fee is required").regex(/^[0-9\s]+$/, "Valid fee allowed"),
+    experience: z.coerce.number().min(1, "Experience is required").max(20),
+    consultationFee: z.coerce.number().min(500, "Minimum fee is Rs:500.00").max(10000, "Maximum fee is Rs:10000.00"),
     birthDay: z.string().min(1, "Birth date is required").refine((date) => new Date(date) <= new Date(), {
         message: "Birth date cannot be in future",
-    }),
-    desc: z.string().min(10, "Description is required").max(1000, "Description is too long"),
-    address: z.string().min(1, "Address is required"),
-    password: z.string().min(1, "Password is required").min(6, "Minimum 6 characters required"),
+    }).refine(date => {
+        const age =
+            new Date().getFullYear() - new Date(date).getFullYear();
+
+        return age >= 18 && age <= 100;
+    }, "Doctor age must be between 18 and 100").trim(),
+    desc: z.string().min(10, "Description is required").max(1000, "Description is too long").trim(),
+    address: z.string().min(10, "Address is required").max(200).trim(),
+    password: z.string().min(8, "Minimum 8 characteres required").max(16, "Maximum 16 characters allowed").regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
+        "Password must contain upper, lower, number and special character."
+    ).trim(),
     role: z.literal("doctor"),
 });
 
