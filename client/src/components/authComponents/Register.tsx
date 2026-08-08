@@ -12,16 +12,16 @@ const userSchema = z.object({
     firstName: z
         .string()
         .trim()
-        .min(1, "First name is required")
+        .min(4, "First name is required")
         .max(50, "Maximum 50 characters")
-        .regex(/^[A-Za-z\s'-]+$/, "Only letters are allowed"),
+        .regex(/^[A-Za-z\s'-]+$/, "Only letters, spaces, hyphens and apostrophes are allowed"),
 
     lastName: z
         .string()
         .trim()
-        .min(1, "Last name is required")
+        .min(4, "Last name is required")
         .max(50, "Maximum 50 characters")
-        .regex(/^[A-Za-z\s'-]+$/, "Only letters are allowed"),
+        .regex(/^[A-Za-z\s'-]+$/, "Only letters, spaces, hyphens and apostrophes are allowed"),
 
     email: z
         .string()
@@ -70,7 +70,7 @@ const userSchema = z.object({
     address: z
         .string()
         .trim()
-        .min(5, "Address is required")
+        .min(10, "Address is required")
         .max(255, "Maximum 255 characters"),
 
     password: z
@@ -82,14 +82,23 @@ const userSchema = z.object({
         .regex(/[0-9]/, "Must contain a number")
         .regex(/[!@#$%^&*(),.?":{}|<>]/, "Must contain a special character"),
 
+    confirmPassword: z.string(),
+
     role: z.literal("user"),
-});
+}).refine(
+    (data) => data.password === data.confirmPassword,
+    {
+        message: "Passwords do not match",
+        path: ["confirmPassword"],
+    }
+);
 
 type FormData = z.infer<typeof userSchema>;
 
 const Register = () => {
     const navigate = useNavigate();
-    const [showPassword, setShowPassword] = useState(false)
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfPassword, setShowConfPassword] = useState(false);
 
     const {
         register,
@@ -106,7 +115,9 @@ const Register = () => {
         try {
             const res = await registerUser(data);
             toast.success(res.message);
-            navigate("/auth");
+            navigate("/auth" , {
+                replace:true
+            });
         } catch (err) {
             console.error(err);
             toast.error("Oops! Something went wrong");
@@ -343,6 +354,43 @@ const Register = () => {
                 {errors.password && (
                     <p className="text-red-500 text-sm mt-2">
                         {errors.password.message}
+                    </p>
+                )}
+
+                {/* confirm password */}
+                <label className="mt-6 font-medium text-gray-700">
+                    Confirm  Password
+                </label>
+
+                <div className="relative mt-2">
+
+                    <input
+                        {...register("confirmPassword")}
+                        type={showConfPassword ? "text" : "password"}
+                        placeholder="Confirm your password"
+                        className={`w-full h-14 rounded-xl border bg-white px-4 pr-14 outline-none transition-all
+                focus:border-[#2596be]
+                focus:ring-2
+                focus:ring-cyan-100
+                ${errors.password
+                                ? "border-red-500"
+                                : "border-gray-200"
+                            }`}
+                    />
+
+                    <button
+                        type="button"
+                        onClick={() => setShowConfPassword(!showConfPassword)}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-500 hover:text-[#2596be]"
+                    >
+                        {showConfPassword ? "🙈" : "👁️"}
+                    </button>
+
+                </div>
+
+                {errors.confirmPassword && (
+                    <p className="text-red-500 text-sm mt-2">
+                        {errors.confirmPassword.message}
                     </p>
                 )}
 

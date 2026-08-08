@@ -251,6 +251,14 @@ export const requestJoinClinic = async (req: any, res: any) => {
             return res.status(400).json({ message: "You already belong to this clinic." });
         }
 
+        const otherClinic = await Clinic.findOne({
+            doctorList : doctorId
+        });
+        
+        if (otherClinic) {
+            return res.status(400).json({ message: "You can register in only one clinic" });
+        }
+
         const alreadyRequested = clinic.pendingDoctorRequests.some(
             (item: any) => item.doctorId.toString() === doctorId
         );

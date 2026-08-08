@@ -7,45 +7,62 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 
 const doctorSchema = z.object({
-    firstName: z.string().min(1, "First name is required").regex(/^[A-Za-z.'-s]+$/, "Only letters allowed").trim(),
-    lastName: z.string().min(1, "Last name is required").regex(/^[A-Za-z.'\s]+$/, "Only letters allowed").trim(),
-    email: z.string().min(8, "Email is required").email("Invalid email format").trim(),
+    firstName: z.string().trim().min(1, "First name is required").regex(/^[A-Za-z.'-s]+$/, "Only letters, spaces, periods, apostrophes and hyphens are allowed"),
+    lastName: z.string().trim().min(1, "Last name is required").regex(/^[A-Za-z.'\s]+$/, "Only letters, spaces, periods, apostrophes and hyphens are allowed"),
+    email: z.string().trim().min(8, "Email is required").email("Invalid email format"),
     gender: z.enum(["male", "female"], {
         errorMap: () => ({
             message: "Gender is required",
         }),
     }),
-    mobileNumber: z.string().min(1, "Mobile number is required").regex(/^07[0-9]{8}$/, "Invalid Sri Lankan number").trim(),
-    university: z.string().min(1, "University name is required").regex(/^[A-Za-z0-9().,'\- ]+$/, "Valid name allowed").trim(),
-    slmcReg: z.coerce.number().min(4, "SLMC number is required").max(5),
-    degree: z.string().min(1, "Degree is required").regex(/^[A-Za-z0-9().,'\- ]+$/, "Valid degree allowed").trim(),
+    mobileNumber: z.string().trim().min(1, "Mobile number is required").regex(/^07[0-9]{8}$/, "Invalid Sri Lankan number"),
+    university: z.string().trim().min(1, "University name is required").regex(/^[A-Za-z0-9().,'\- ]+$/, "Valid name allowed"),
+    slmcReg: z.string().min(4, "SLMC number is required").max(5).regex(/^[0-9]/, "Valid SLMC required"),
+    degree: z.string().trim().min(5, "Degree is required").regex(/^[A-Za-z0-9().,'\- ]+$/, "Valid degree allowed"),
     specialization: z
         .string()
-        .min(10, "Specialization is required").max(200)
+        .trim()
+        .min(1, "Specialization is required")
+        .max(200, "Specialization must be less than 200 characters")
         .transform((val) =>
-            val.split(",").map((v) => v.trim()).filter(Boolean)
-        ).refine(
-            arr => arr.length > 0,
-            "At least one specialization required"
+            val
+                .split(",")
+                .map((v) => v.trim())
+                .filter(Boolean)
+        )
+        .refine(
+            (arr) => arr.length > 0,
+            "At least one specialization is required"
+        )
+        .refine(
+            (arr) => arr.every((item) => item.length >= 2 && item.length <= 100),
+            "Each specialization must be between 2 and 100 characters"
         ),
-    experience: z.coerce.number().min(1, "Experience is required").max(20),
+    experience: z.coerce.number().min(0, "Experience is required").max(20),
     consultationFee: z.coerce.number().min(500, "Minimum fee is Rs:500.00").max(10000, "Maximum fee is Rs:10000.00"),
-    birthDay: z.string().min(1, "Birth date is required").refine((date) => new Date(date) <= new Date(), {
+    birthDay: z.string().trim().min(1, "Birth date is required").refine((date) => new Date(date) <= new Date(), {
         message: "Birth date cannot be in future",
     }).refine(date => {
         const age =
             new Date().getFullYear() - new Date(date).getFullYear();
 
         return age >= 18 && age <= 100;
-    }, "Doctor age must be between 18 and 100").trim(),
-    desc: z.string().min(10, "Description is required").max(1000, "Description is too long").trim(),
-    address: z.string().min(10, "Address is required").max(200).trim(),
+    }, "Doctor age must be between 18 and 100"),
+    desc: z.string().trim().min(10, "Description is required").max(1000, "Description is too long"),
+    address: z.string().trim().min(10, "Address is required").max(200),
     password: z.string().min(8, "Minimum 8 characteres required").max(16, "Maximum 16 characters allowed").regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/,
         "Password must contain upper, lower, number and special character."
     ).trim(),
+    confirmPassword: z.string(),
     role: z.literal("doctor"),
-});
+}).refine(
+    (data) => data.password === data.confirmPassword,
+    {
+        message: "Passwords do not match",
+        path: ["confirmPassword"],
+    }
+);
 
 type FormData = z.infer<typeof doctorSchema>;
 
@@ -53,6 +70,7 @@ const DocReg = () => {
 
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfPassword, setShowConfPassword] = useState(false);
 
     const {
         register,
@@ -69,7 +87,9 @@ const DocReg = () => {
         try {
             const res = await registerUser(data);
             toast.success(res.message);
-            navigate("/auth");
+            navigate("/auth" ,{
+                replace:true
+            });
         } catch (err: any) {
             toast.error(err?.response?.data?.message || "Oops! Something went wrong");
         }
@@ -572,6 +592,45 @@ const DocReg = () => {
                     {errors.password && (
                         <p className="text-red-500 text-sm mt-2">
                             {errors.password.message}
+                        </p>
+                    )}
+
+
+                    {/* Password */}
+
+                    <label className="font-medium text-gray-700">
+                        Confirm Password
+                    </label>
+
+                    <div className="relative mt-2">
+
+                        <input
+                            {...register("confirmPassword")}
+                            type={showConfPassword ? "text" : "password"}
+                            placeholder="Confrm your password"
+                            className={`w-full h-14 rounded-xl border bg-white px-4 pr-14 outline-none transition-all
+                    focus:border-[#2596be]
+                    focus:ring-2
+                    focus:ring-cyan-100
+                    ${errors.password
+                                    ? "border-red-500"
+                                    : "border-gray-200"
+                                }`}
+                        />
+
+                        <button
+                            type="button"
+                            onClick={() => setShowConfPassword(!showConfPassword)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-xl text-gray-500 hover:text-[#2596be] transition"
+                        >
+                            {showConfPassword ? "🙈" : "👁️"}
+                        </button>
+
+                    </div>
+
+                    {errors.confirmPassword && (
+                        <p className="text-red-500 text-sm mt-2">
+                            {errors.confirmPassword.message}
                         </p>
                     )}
 

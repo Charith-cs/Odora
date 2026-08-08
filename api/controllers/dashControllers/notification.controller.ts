@@ -278,4 +278,4 @@ export const getAdminNotifications = async (req: Request, res: Response) => {
     } catch (err: any) {
         return res.status(500).json({ message: "Oops! Something went wrong", error: err.message });
     }
-};
+}; 

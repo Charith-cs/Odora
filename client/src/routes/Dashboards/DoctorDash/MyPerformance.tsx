@@ -33,9 +33,7 @@ const MyPerformance = () => {
             <h1 className="  text-2xl font font-semibold">
                 My Performance
             </h1>
-            <span className=" flex flex-col">
-                <h1 className="font-semibold text-gray-600">Monthly Avg:{monthlyAverage < 0 ? "0" : monthlyAverage.toFixed()}+ per Day</h1>
-            </span>
+            
            
         </div>
          <Charts data={cData} config={doctorConfig}/>

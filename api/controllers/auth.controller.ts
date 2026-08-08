@@ -53,8 +53,12 @@ export const userRegister = async (req: Request, res: Response) => {
             return res.status(400).json({ field: "mobileNumber", message: "Invalid Sri Lankan mobile number." });
         }
 
-        if (userData.password.length < 8) {
-            return res.status(400).json({ field: "password", message: "Password must contain at least 8 characters." });
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,16}$/;
+
+        if (!passwordRegex.test(userData.password)) {
+            return res.status(400).json({
+                field: "password",
+                message:"Password must contain uppercase, lowercase, number and special character."});
         }
 
         const birth = new Date(userData.birthDay);
@@ -152,7 +156,7 @@ export const userRegister = async (req: Request, res: Response) => {
 
                     experience: Number(experience),
                     consultationFee: Number(consultationFee),
-                    desc:desc?.trim(),
+                    desc: desc?.trim(),
 
                     university: university?.trim(),
                     slmcReg: slmcReg?.trim(),
@@ -188,7 +192,7 @@ export const userRegister = async (req: Request, res: Response) => {
         delete userObject.password;
         return res.status(201).json({ message: "Successfully registered.", token, user: userObject });
     } catch (err: any) {
-        return res.status(500).json({ error: err, message: "Oops! Something went wrong.Please try again later" });
+        return res.status(500).json({ message: "Oops! Something went wrong.Please try again later" });
     }
 };
 

@@ -17,7 +17,7 @@ const JoinReq = () => {
             } catch (err) {
                 toast.error("No clinics found!");
             }
-        }
+        } 
         getClinics();
     }, []);
 

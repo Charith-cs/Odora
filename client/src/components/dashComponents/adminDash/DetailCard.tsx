@@ -7,7 +7,6 @@ import API from "../../../../api/axios";
 import { toast } from "react-hot-toast";
 
 
-/* ---------------- ZOD SCHEMA ---------------- */
 const emptyToUndefined = (value: unknown) =>
     value === "" ? undefined : value;
 
@@ -92,7 +91,7 @@ const DetailCard = <T extends Record<string, any>>({
         }
     }
 
-    /* ---------------- RHF ---------------- */
+
     const {
         register,
         handleSubmit,
@@ -172,7 +171,7 @@ const DetailCard = <T extends Record<string, any>>({
     return (
         <>
             {update === false ? (
-                /* ---------------- VIEW MODE ---------------- */
+               
                 <div className="w-full">
 
                     {title && (

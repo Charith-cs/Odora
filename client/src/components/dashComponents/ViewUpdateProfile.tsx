@@ -23,13 +23,31 @@ const userSchema = z.object({
 });
 
 const doctorExtraSchema = z.object({
-    specialization: z.string().optional(),
-    experience: z.string().optional(),
-    consultationFee: z.string().optional(),
-    university: z.string().optional(),
-    slmcReg: z.string().optional(),
-    degree: z.string().optional(),
-    desc: z.string().optional(),
+    specialization: z
+        .string()
+        .trim()
+        .min(1, "Specialization is required")
+        .max(200, "Specialization must be less than 200 characters")
+        .transform((val) =>
+            val
+                .split(",")
+                .map((v) => v.trim())
+                .filter(Boolean)
+        )
+        .refine(
+            (arr) => arr.length > 0,
+            "At least one specialization is required"
+        )
+        .refine(
+            (arr) => arr.every((item) => item.length >= 2 && item.length <= 100),
+            "Each specialization must be between 2 and 100 characters"
+        ).optional(),
+    experience: z.coerce.number().min(0, "Experience is required").max(20).optional(),
+    consultationFee: z.coerce.number().min(500, "Minimum fee is Rs:500.00").max(10000, "Maximum fee is Rs:10000.00").optional(),
+    university: z.string().trim().min(1, "University name is required").regex(/^[A-Za-z0-9().,'\- ]+$/, "Valid name allowed").optional(),
+    slmcReg: z.string().min(4, "SLMC number is required").max(5).regex(/^[0-9]/, "Valid SLMC required").optional(),
+    degree: z.string().trim().min(5, "Degree is required").regex(/^[A-Za-z0-9().,'\- ]+$/, "Valid degree allowed").optional(),
+    desc: z.string().trim().min(10, "Description is required").max(1000, "Description is too long").optional(),
 });
 
 type FormData = z.infer<typeof userSchema> & z.infer<typeof doctorExtraSchema>;
@@ -510,6 +528,11 @@ const ViewUpdateProfile = () => {
                                             placeholder="Enter specialization"
                                             className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10"
                                         />
+                                        {errors.specialization && (
+                                            <p className="text-red-500 text-sm mt-2">
+                                                {errors.specialization.message}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div>
@@ -523,6 +546,11 @@ const ViewUpdateProfile = () => {
                                             placeholder="Enter experience"
                                             className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10"
                                         />
+                                        {errors.experience && (
+                                            <p className="text-red-500 text-sm mt-2">
+                                                {errors.experience.message}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div>
@@ -536,6 +564,11 @@ const ViewUpdateProfile = () => {
                                             placeholder="Enter fee"
                                             className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10"
                                         />
+                                        {errors.consultationFee && (
+                                            <p className="text-red-500 text-sm mt-2">
+                                                {errors.consultationFee.message}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div>
@@ -549,6 +582,11 @@ const ViewUpdateProfile = () => {
                                             placeholder="Enter university"
                                             className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10"
                                         />
+                                        {errors.university && (
+                                            <p className="text-red-500 text-sm mt-2">
+                                                {errors.university.message}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div>
@@ -562,6 +600,11 @@ const ViewUpdateProfile = () => {
                                             placeholder="Enter SLMC registration"
                                             className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10"
                                         />
+                                        {errors.slmcReg && (
+                                            <p className="text-red-500 text-sm mt-2">
+                                                {errors.slmcReg.message}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div>
@@ -575,6 +618,11 @@ const ViewUpdateProfile = () => {
                                             placeholder="Enter degree"
                                             className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition-all duration-300 focus:border-[#2596be] focus:ring-4 focus:ring-[#2596be]/10"
                                         />
+                                        {errors.degree && (
+                                            <p className="text-red-500 text-sm mt-2">
+                                                {errors.degree.message}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div className="md:col-span-2">
